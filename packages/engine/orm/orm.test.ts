@@ -83,15 +83,17 @@ function registerSalesHooks(): void {
 beforeAll(async () => {
   db = pgliteDatabase();
   await syncSchema(db, registry);
-  const boot = new Environment({ registry, db, uid: 1, superuser: true });
+  // No company exists yet, so the bootstrap environment has none selected.
+  const boot = new Environment({ registry, db, uid: 1, superuser: true, companyIds: [] });
 
   currencyId = await boot.model('res.currency').create({ name: 'QAR', symbol: 'QR', position: 'after', decimal_places: 2, active: true });
   const companyPartner = await boot.model('res.partner').create({ name: 'masta', autopost_bills: 'ask', is_company: true });
   companyId = await boot.model('res.company').create({ name: 'masta', partner_id: companyPartner, currency_id: currencyId });
   const userPartner = await boot.model('res.partner').create({ name: 'Admin', autopost_bills: 'ask' });
   await boot.cr.query(
-    `INSERT INTO res_users (id, login, partner_id, company_id, notification_type, outgoing_mail_server_type, active) VALUES (2, 'admin', $1, $2, 'email', 'default', true)`,
-    [userPartner, companyId],
+    `INSERT INTO res_users (id, login, partner_id, company_id, notification_type, outgoing_mail_server_type, active)
+     VALUES (1, '__system__', $1, $2, 'email', 'default', false), (2, 'admin', $3, $2, 'email', 'default', true)`,
+    [companyPartner, companyId, userPartner],
   );
   await boot.cr.query(
     `INSERT INTO ir_sequence (name, code, prefix, padding, number_next_actual, number_increment, use_date_range, implementation, active)

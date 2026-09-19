@@ -194,9 +194,10 @@ export class Model {
     const list = idList(ids);
     if (list.length === 0) return [];
 
-    const names = (fieldNames ?? Object.keys(this.fields)).filter((name) => name !== 'id');
-    const wantDisplay = names.includes('display_name') || fieldNames === undefined;
-    const scalar = names.map((name) => this.field(name)).filter((field) => !X2MANY.has(field.type) && field.name !== 'display_name');
+    const requested = (fieldNames ?? Object.keys(this.fields)).filter((name) => name !== 'id');
+    const wantDisplay = requested.includes('display_name') || fieldNames === undefined;
+    const names = requested.filter((name) => name !== 'display_name');
+    const scalar = names.map((name) => this.field(name)).filter((field) => !X2MANY.has(field.type));
     const x2many = names.map((name) => this.field(name)).filter((field) => X2MANY.has(field.type));
 
     // Reads respect record rules too: rows outside the rules simply vanish.
@@ -311,8 +312,7 @@ export class Model {
 
   async readGroup(domain: Domain, fields: string[], groupby: string[], options: ReadGroupOptions = {}): Promise<ReadGroupRow[]> {
     this.checkAccess('read');
-    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest)], '&');
-    return readGroup(this, full, fields, groupby, options);
+    return readGroup(this, domain, this.implicitDomain('read', options.activeTest), fields, groupby, options);
   }
 
   /** Public for read-group and friends. */
@@ -391,8 +391,8 @@ export class Model {
     const defaults: Values = {};
 
     // Generic company / currency defaults.
-    if (this.fields.company_id && this.name !== 'res.company') defaults.company_id = this.env.companyId;
-    if (this.fields.currency_id && this.name !== 'res.currency') {
+    if (this.fields.company_id && this.name !== 'res.company' && this.env.companyId) defaults.company_id = this.env.companyId;
+    if (this.fields.currency_id && this.name !== 'res.currency' && this.env.companyId) {
       const company = await this.env.cr.query<{ currency_id: number | null }>(
         `SELECT currency_id FROM res_company WHERE id = $1`, [this.env.companyId],
       );
@@ -470,7 +470,8 @@ export class Model {
     const now = nowSql();
 
     for (const raw of list) {
-      const vals = { ...(await this.defaultGet()), ...raw };
+      let vals = { ...(await this.defaultGet()), ...raw };
+      if (hooks.beforeCreate) vals = await hooks.beforeCreate(this.env, vals);
       this.validateRequired(vals, true);
       const { columns, relations } = this.splitValues(vals);
 
@@ -507,9 +508,10 @@ export class Model {
     return this.env.withTransaction((env) => env.model(this.name).writeInTx(list, vals));
   }
 
-  private async writeInTx(ids: number[], vals: Values): Promise<boolean> {
+  private async writeInTx(ids: number[], rawVals: Values): Promise<boolean> {
     this.checkAccess('write');
     const hooks = hooksFor(this.name);
+    const vals = hooks.beforeWrite ? await hooks.beforeWrite(this.env, ids, rawVals) : rawVals;
     const { columns, relations } = this.splitValues(vals);
     this.validateRequired(vals, false);
 
@@ -542,8 +544,9 @@ export class Model {
     }
 
     const changed = Object.keys(vals);
-    await this.recompute(ids, changed, false);
-    await this.triggerDependents(ids, changed);
+    const computed = await this.recompute(ids, changed, false);
+    // Dependents react to computed outputs too (a line's subtotal → order total).
+    await this.triggerDependents(ids, [...changed, ...computed]);
     for (const constraint of hooks.constraints ?? []) await constraint(this.env, ids);
     await hooks.onWrite?.(this.env, ids, vals, previous);
 
@@ -712,10 +715,14 @@ export class Model {
     await this.env.cr.query(`UPDATE ${quoteIdent(this.table)} SET ${sets.join(', ')} WHERE "id" = $${params.length}`, params);
   }
 
-  /** Run the model's compute hooks whose dependencies intersect `changed`. */
-  async recompute(ids: number[], changed: string[], all: boolean): Promise<void> {
+  /**
+   * Run the model's compute hooks whose dependencies intersect `changed`;
+   * returns the names of every field that was recomputed.
+   */
+  async recompute(ids: number[], changed: string[], all: boolean): Promise<string[]> {
     const computes = hooksFor(this.name).computes ?? [];
-    if (computes.length === 0 || ids.length === 0) return;
+    const touched = new Set<string>();
+    if (computes.length === 0 || ids.length === 0) return [];
     let pending = new Set(changed);
     for (let round = 0; round < 5 && pending.size; round += 1) {
       const next = new Set<string>();
@@ -725,7 +732,7 @@ export class Model {
         const values = await compute.compute(this.env, ids);
         for (const [id, vals] of Object.entries(values)) {
           await this.writeRaw(Number(id), vals);
-          for (const name of Object.keys(vals)) next.add(name);
+          for (const name of Object.keys(vals)) { next.add(name); touched.add(name); }
         }
       }
       // Only fields not already processed this round can trigger again.
@@ -733,6 +740,7 @@ export class Model {
       pending = next;
       all = false;
     }
+    return [...touched];
   }
 
   /**

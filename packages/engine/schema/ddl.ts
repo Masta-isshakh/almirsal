@@ -116,7 +116,8 @@ export function tableFor(model: ModelDef, registry: Registry): TableSpec {
       };
       indexes.push({ name: pgIdentifier(`${model.table}_${field.name}_idx`), columns: [field.name] });
     }
-    if (field.type === 'boolean') column.defaultSql = 'false';
+    // Odoo's `active` flag defaults to true; every other boolean to false.
+    if (field.type === 'boolean') column.defaultSql = field.name === 'active' ? 'true' : 'false';
     columns.push(column);
   }
 

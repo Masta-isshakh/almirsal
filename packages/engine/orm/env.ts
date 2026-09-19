@@ -68,8 +68,9 @@ export class Environment {
     };
   }
 
+  /** Current company; `0` only during bootstrap, before any company exists. */
   get companyId(): number {
-    return this.companyIds[0];
+    return this.companyIds[0] ?? 0;
   }
 
   /** The model API for `name` (`env.model('sale.order')`). */

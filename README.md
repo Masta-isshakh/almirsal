@@ -1,25 +1,30 @@
-## AWS Amplify Next.js (App Router) Starter Template
+# Rodeo ERP
 
-This repository provides a starter template for creating applications using Next.js (App Router) and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+A metadata-driven clone of Odoo 19.4 Enterprise (22 apps, EN/AR) on AWS
+Amplify Gen 2 + Next.js, built for the lowest possible AWS bill.
 
-## Overview
+- Spec: `ODOO_CLONE_MASTER_PROMPT_1.md` (prose parts in `docs/spec/`)
+- Machine-readable capture of the live instance: `registry/odoo_spec.json`
+- Status and roadmap: `BUILD.md` · Cost design: `docs/COST.md`
 
-This template equips you with a foundational Next.js application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+## Run locally
 
-## Features
+```bash
+npm install
+npm run dev            # http://localhost:3000 — uses an in-process Postgres (.pglite/)
+```
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+Log in with the seeded admin (`mastaisshakh@gmail.com`); the first login sets
+the password. Language switch is in the user menu.
 
-## Deploying to AWS
+```bash
+npm test               # engine, ORM, seed and app tests (in-process Postgres)
+npm run typecheck
+npm run generate:registry   # registry/generated/*.json + messages/{en,ar}.json
+npm run db:shell -- "SELECT count(*) FROM sale_order"
+```
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/#deploy-a-fullstack-app-to-aws) of our documentation.
+## Deploy
 
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
+`npx ampx sandbox` for a personal cloud sandbox, or connect the repo to
+Amplify Hosting. See `docs/COST.md` → Deploying for the two console steps.

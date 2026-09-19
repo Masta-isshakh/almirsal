@@ -336,6 +336,14 @@
     "utm.source": {
       "name": "UTM Source ⇔ مصدر UTM",
       "transient": false
+    },
+    "ir.translation": {
+      "name": "Translation ⇔ الترجمة",
+      "transient": false
+    },
+    "knowledge.article.template.category": {
+      "name": "Article Template Category ⇔ فئة قالب المقال",
+      "transient": false
     }
   },
   "models": {
@@ -3463,8 +3471,7 @@
       "dpi": {
         "s": "Output DPI",
         "ar": "دقة الإخراج",
-        "t": "integer",
-        "req": 1
+        "t": "integer"
       },
       "print_page_width": {
         "s": "Print page width (mm)",
@@ -4354,6 +4361,386 @@
         "s": "TOTP Secret",
         "ar": "سر TOTP",
         "t": "char"
+      }
+    },
+    "ir.translation": {
+      "res_model": {
+        "s": "Model",
+        "ar": "النموذج",
+        "t": "char",
+        "req": 1
+      },
+      "res_id": {
+        "s": "Record ID",
+        "ar": "معرف السجل",
+        "t": "integer",
+        "req": 1
+      },
+      "field_name": {
+        "s": "Field",
+        "ar": "الحقل",
+        "t": "char",
+        "req": 1
+      },
+      "lang": {
+        "s": "Language",
+        "ar": "اللغة",
+        "t": "char",
+        "req": 1
+      },
+      "value": {
+        "s": "Translation Value",
+        "ar": "قيمة الترجمة",
+        "t": "text"
+      }
+    },
+    "res.partner": {
+      "customer_rank": {
+        "s": "Customer Rank",
+        "ar": "ترتيب العميل",
+        "t": "integer"
+      },
+      "supplier_rank": {
+        "s": "Supplier Rank",
+        "ar": "ترتيب المورد",
+        "t": "integer"
+      },
+      "commercial_partner_id": {
+        "s": "Commercial Entity",
+        "ar": "الكيان التجاري",
+        "t": "many2one",
+        "rel": "res.partner",
+        "ro": 1
+      },
+      "sale_warn": {
+        "s": "Sales Warnings",
+        "ar": "تحذيرات المبيعات",
+        "t": "selection",
+        "sel": [
+          "no-message=No Message ⇔ لا توجد رسالة",
+          "warning=Warning ⇔ تحذير",
+          "block=Blocking Message ⇔ رسالة حظر"
+        ]
+      },
+      "sale_warn_msg": {
+        "s": "Message for Sales Order",
+        "ar": "رسالة أمر البيع",
+        "t": "text"
+      },
+      "purchase_warn": {
+        "s": "Purchase Order",
+        "ar": "أمر الشراء",
+        "t": "selection",
+        "sel": [
+          "no-message=No Message ⇔ لا توجد رسالة",
+          "warning=Warning ⇔ تحذير",
+          "block=Blocking Message ⇔ رسالة حظر"
+        ]
+      },
+      "purchase_warn_msg": {
+        "s": "Message for Purchase Order",
+        "ar": "رسالة أمر الشراء",
+        "t": "text"
+      },
+      "invoice_warn": {
+        "s": "Invoice",
+        "ar": "الفاتورة",
+        "t": "selection",
+        "sel": [
+          "no-message=No Message ⇔ لا توجد رسالة",
+          "warning=Warning ⇔ تحذير",
+          "block=Blocking Message ⇔ رسالة حظر"
+        ]
+      },
+      "invoice_warn_msg": {
+        "s": "Message for Invoice",
+        "ar": "رسالة الفاتورة",
+        "t": "text"
+      }
+    },
+    "product.category": {
+      "complete_name": {
+        "s": "Complete Name",
+        "ar": "الاسم الكامل",
+        "t": "char",
+        "ro": 1
+      },
+      "parent_path": {
+        "s": "Parent Path",
+        "ar": "مسار الأصل",
+        "t": "char"
+      }
+    },
+    "uom.uom": {
+      "parent_path": {
+        "s": "Parent Path",
+        "ar": "مسار الأصل",
+        "t": "char"
+      }
+    },
+    "discuss.channel": {
+      "member_count": {
+        "s": "Member Count",
+        "ar": "عدد الأعضاء",
+        "t": "integer",
+        "ro": 1
+      }
+    },
+    "documents.document": {
+      "sequence": {
+        "s": "Sequence",
+        "ar": "التسلسل",
+        "t": "integer"
+      },
+      "is_folder": {
+        "s": "Is Folder",
+        "ar": "مجلد",
+        "t": "boolean"
+      }
+    },
+    "documents.tag": {
+      "sequence": {
+        "s": "Sequence",
+        "ar": "التسلسل",
+        "t": "integer"
+      }
+    },
+    "sign.item.type": {
+      "default_width": {
+        "s": "Default Width",
+        "ar": "العرض الافتراضي",
+        "t": "float"
+      },
+      "default_height": {
+        "s": "Default Height",
+        "ar": "الارتفاع الافتراضي",
+        "t": "float"
+      }
+    },
+    "account.account": {
+      "currency_id": {
+        "s": "Account Currency",
+        "ar": "عملة الحساب",
+        "t": "many2one",
+        "rel": "res.currency"
+      }
+    },
+    "res.company": {
+      "primary_color": {
+        "s": "Primary Color",
+        "ar": "اللون الأساسي",
+        "t": "char"
+      },
+      "secondary_color": {
+        "s": "Secondary Color",
+        "ar": "اللون الثانوي",
+        "t": "char"
+      },
+      "font": {
+        "s": "Font",
+        "ar": "الخط",
+        "t": "selection",
+        "sel": [
+          "Lato=Lato",
+          "Roboto=Roboto",
+          "Open_Sans=Open Sans",
+          "Montserrat=Montserrat",
+          "Oswald=Oswald",
+          "Raleway=Raleway",
+          "Tajawal=Tajawal"
+        ]
+      },
+      "external_report_layout_id": {
+        "s": "Document Template",
+        "ar": "قالب المستند",
+        "t": "many2one",
+        "rel": "ir.ui.view"
+      },
+      "tax_calculation_rounding_method": {
+        "s": "Tax Calculation Rounding Method",
+        "ar": "طريقة تقريب حساب الضريبة",
+        "t": "selection",
+        "sel": [
+          "round_per_line=Round per Line ⇔ التقريب لكل بند",
+          "round_globally=Round Globally ⇔ التقريب الإجمالي"
+        ]
+      },
+      "fiscalyear_last_day": {
+        "s": "Fiscalyear Last Day",
+        "ar": "آخر يوم في السنة المالية",
+        "t": "integer"
+      },
+      "fiscalyear_last_month": {
+        "s": "Fiscalyear Last Month",
+        "ar": "آخر شهر في السنة المالية",
+        "t": "selection",
+        "sel": [
+          "1=January ⇔ يناير",
+          "2=February ⇔ فبراير",
+          "3=March ⇔ مارس",
+          "4=April ⇔ أبريل",
+          "5=May ⇔ مايو",
+          "6=June ⇔ يونيو",
+          "7=July ⇔ يوليو",
+          "8=August ⇔ أغسطس",
+          "9=September ⇔ سبتمبر",
+          "10=October ⇔ أكتوبر",
+          "11=November ⇔ نوفمبر",
+          "12=December ⇔ ديسمبر"
+        ]
+      },
+      "account_fiscal_country_id": {
+        "s": "Fiscal Country",
+        "ar": "الدولة المالية",
+        "t": "many2one",
+        "rel": "res.country"
+      },
+      "quick_edit_mode": {
+        "s": "Quick encoding",
+        "ar": "الترميز السريع",
+        "t": "selection",
+        "sel": [
+          "out_invoices=Customer Invoices ⇔ فواتير العملاء",
+          "in_invoices=Vendor Bills ⇔ فواتير الموردين",
+          "out_and_in_invoices=Customer Invoices and Vendor Bills ⇔ فواتير العملاء والموردين"
+        ]
+      }
+    },
+    "knowledge.article": {
+      "is_template": {
+        "s": "Is Template",
+        "ar": "قالب",
+        "t": "boolean"
+      },
+      "template_category_id": {
+        "s": "Template Category",
+        "ar": "فئة القالب",
+        "t": "many2one",
+        "rel": "knowledge.article.template.category"
+      }
+    },
+    "knowledge.article.template.category": {
+      "name": {
+        "s": "Name",
+        "ar": "الاسم",
+        "t": "char",
+        "req": 1
+      },
+      "sequence": {
+        "s": "Sequence",
+        "ar": "التسلسل",
+        "t": "integer"
+      }
+    },
+    "hr.skill": {
+      "skill_type_id": {
+        "s": "Skill Type",
+        "ar": "نوع المهارة",
+        "t": "many2one",
+        "rel": "hr.skill.type",
+        "req": 1
+      }
+    },
+    "hr.skill.level": {
+      "skill_type_id": {
+        "s": "Skill Type",
+        "ar": "نوع المهارة",
+        "t": "many2one",
+        "rel": "hr.skill.type"
+      }
+    },
+    "account.payment.method.line": {
+      "journal_id": {
+        "s": "Journal",
+        "ar": "دفتر اليومية",
+        "t": "many2one",
+        "rel": "account.journal"
+      }
+    },
+    "account.return.type": {
+      "default_deadline_periodicity": {
+        "s": "Periodicity",
+        "ar": "الدورية",
+        "t": "selection",
+        "sel": [
+          "year=annually ⇔ سنوياً",
+          "semester=semi-annually ⇔ نصف سنوي",
+          "4_months=every 4 months ⇔ كل 4 أشهر",
+          "trimester=quarterly ⇔ ربع سنوي",
+          "2_months=every 2 months ⇔ كل شهرين",
+          "monthly=monthly ⇔ شهرياً"
+        ]
+      },
+      "default_deadline_start_date": {
+        "s": "Start Date",
+        "ar": "تاريخ البدء",
+        "t": "date"
+      }
+    },
+    "sale.order": {
+      "partner_shipping_id": {
+        "s": "Delivery Address",
+        "ar": "عنوان التوصيل",
+        "t": "many2one",
+        "rel": "res.partner"
+      },
+      "invoice_ids": {
+        "s": "Invoices",
+        "ar": "الفواتير",
+        "t": "many2many",
+        "rel": "account.move"
+      },
+      "invoice_count": {
+        "s": "Invoice Count",
+        "ar": "عدد الفواتير",
+        "t": "integer",
+        "ro": 1
+      },
+      "amount_to_invoice": {
+        "s": "Amount to invoice",
+        "ar": "المبلغ المراد فوترته",
+        "t": "monetary",
+        "ro": 1
+      },
+      "amount_invoiced": {
+        "s": "Amount invoiced",
+        "ar": "المبلغ المفوتر",
+        "t": "monetary",
+        "ro": 1
+      }
+    },
+    "sale.order.line": {
+      "qty_to_invoice": {
+        "s": "Quantity To Invoice",
+        "ar": "الكمية المراد فوترتها",
+        "t": "float",
+        "ro": 1
+      },
+      "price_tax": {
+        "s": "Total Tax",
+        "ar": "إجمالي الضريبة",
+        "t": "float",
+        "ro": 1
+      },
+      "invoice_lines": {
+        "s": "Invoice Lines",
+        "ar": "بنود الفاتورة",
+        "t": "many2many",
+        "rel": "account.move.line"
+      },
+      "price_reduce_taxexcl": {
+        "s": "Price Reduce Tax excl",
+        "ar": "السعر المخفض بدون ضريبة",
+        "t": "monetary",
+        "ro": 1
+      }
+    },
+    "account.move.line": {
+      "sale_line_ids": {
+        "s": "Sales Order Lines",
+        "ar": "بنود أمر البيع",
+        "t": "many2many",
+        "rel": "sale.order.line"
       }
     }
   }

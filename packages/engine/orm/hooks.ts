@@ -44,6 +44,10 @@ export interface ModelHooks {
   searchFields?: string[];
   /** Custom display name (e.g. "[CODE] Name"); receives the read record. */
   displayName?: (env: Environment, record: Values) => string;
+  /** Adjust values before the insert (sequence numbers, derived defaults). */
+  beforeCreate?: (env: Environment, vals: Values) => Promise<Values> | Values;
+  /** Adjust values before the update; return the values to write. */
+  beforeWrite?: (env: Environment, ids: number[], vals: Values) => Promise<Values> | Values;
   /** Called after rows are inserted (ids in creation order). */
   onCreate?: (env: Environment, ids: number[], vals: Values[]) => Promise<void>;
   /** Called after rows are updated. */

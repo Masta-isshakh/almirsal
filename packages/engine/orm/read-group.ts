@@ -1,5 +1,6 @@
 import type { Domain, FieldDef } from '../registry/types.js';
 import { PyDate, applyRelativeDelta, RelativeDelta } from '../expr/pydate.js';
+import { combineDomains } from '../domain/normalize.js';
 import { quoteIdent } from '../schema/ddl.js';
 import type { Model } from './model.js';
 import { ValidationError } from './errors.js';
@@ -110,6 +111,7 @@ function parseAggregate(model: Model, item: string): AggregateSpec | null {
 export async function readGroup(
   model: Model,
   domain: Domain,
+  implicitDomain: Domain,
   fields: string[],
   groupby: string[],
   options: ReadGroupOptions = {},
@@ -121,7 +123,9 @@ export async function readGroup(
   const aggregates = fields.map((item) => parseAggregate(model, item)).filter((agg): agg is AggregateSpec => Boolean(agg))
     .filter((agg) => !groups.some((group) => group.field.name === agg.alias));
 
-  const where = model.compileDomain(domain, 't');
+  // The implicit (active/company/rules) part filters rows but never leaks
+  // into __domain, which the client shows and re-submits.
+  const where = model.compileDomain(combineDomains([domain, implicitDomain], '&'), 't');
   const selects = [
     ...groups.map((group, index) => `${group.expr} AS ${quoteIdent(`g${index}`)}`),
     'count(*)::int AS "__count"',

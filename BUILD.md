@@ -133,13 +133,88 @@ the A-8 gate: every `invisible` / `readonly` / `required` / `domain` /
 views and 277 actions is parsed by the expression engine — 5,000+ expressions,
 zero failures.
 
-### `styles/tokens.css`
+### `styles/tokens.css` + `styles/webclient.css`
 Every PART B token as CSS custom properties, values literal (0.6667px borders,
-40.67px rows, 16.1px empty-state body), plus the 12 kanban swatches, the D3
-category20 chart palette, and the RTL rule that keeps amounts LTR inside
-Arabic text.
+40.67px rows, 16.1px empty-state body), the 12 kanban swatches, the D3
+category20 chart palette, and the shell styles (navbar 46px, control panel,
+list, kanban, form, chatter, dialogs, toasts) written with logical properties
+so `[dir=rtl]` mirrors.
 
-**112 unit tests pass; `tsc --noEmit` is clean under `strict`.**
+### `packages/engine/schema` — schema from the registry
+`generateDdl` / `syncSchema`: Odoo-style `_auto_init`. One table per model
+(transient ones included), relation tables for many2many (symmetric pairs
+share one), indexes on every many2one, DEFERRABLE foreign keys, `active`
+defaulting to true. Idempotent; the registry is the migration history. The
+full 270+ table schema builds in PGlite in ~8 s.
+
+### `packages/engine/db` — database adapters
+One `Database` interface, three adapters: **PGlite** (in-process Postgres for
+tests and `npm run dev`), **pg**, and the **Aurora Data API** (translates
+`$n` placeholders, expands arrays, maps transactions to transaction ids).
+
+### `packages/engine/orm` — the ORM (A-3)
+`Environment` (per request: uid, context, lang, companies, groups,
+transaction) and `Model` with Odoo semantics: `default_get` (company /
+currency / `default_*` context / hooks), required-field validation with
+bilingual messages, x2many commands (0–6) for one2many and many2many,
+stored computes with cross-model dependency triggers (`order_line.
+price_subtotal` → order totals, and the reverse on unlink), record rules
+(global AND, group OR), multi-company filtering, `active_test`, ordering by
+many2one display name, `read` with `[id, display_name]`, `web_read` /
+`web_save` specifications, `name_search`, `copy` ("(copy)"), `toggle_active`,
+`onchange`, `call_button`, and chatter primitives (creation message, tracking
+values, thread cleanup). `ir.sequence` draws numbers under `FOR UPDATE` with
+date ranges and Odoo's `%(year)s` interpolation; a rolled-back transaction
+releases its number.
+
+### `packages/engine/seed` — Part I loader
+Two-pass load of all 88 seed models: explicit ids with deferred FKs, then
+display-name references (`"QAR"`, `"400101 Sales Account"`) resolved by
+name/code, x2many links, `name_ar` → `ir_translation`, name-only comodels
+(paper formats, template categories) created on demand, identity sequences
+reset. Idempotent. Only the nameless Knowledge template articles and one
+unit stay unresolved.
+
+### `packages/apps` — business modules (Part D)
+- `base`: partners (commercial entity), products (variant creation and
+  mirroring, `[CODE] Name`), users, taxes (defaults incl. a tax group).
+- `sale` (D-2): numbering on save, partner-driven addresses and payment
+  terms, product-driven lines (description, unit, price, taxes), sections
+  and notes, subtotal/tax/total with currency rounding, `qty_to_invoice` and
+  invoice status by invoice policy, confirm / send / cancel / set-to-quotation
+  / lock / unlock / preview, onchange with partner sale warnings, tracking.
+
+### AWS backend (`amplify/`) — see `docs/COST.md`
+Cognito (invitation-only), S3, Aurora Serverless v2 at 0 ACU minimum with
+auto-pause and the Data API (no VPC in the app tier, no NAT, no proxy), and
+a managed policy for the Hosting compute role. The ORM runs in Next.js route
+handlers on Amplify Hosting — no AppSync, no separate RPC Lambda.
+
+### Web client (`app/`, `components/`, `lib/`)
+- `/web/login` (B-10), `/odoo` home menu with the 22 redrawn app icons
+  (C-2), `/odoo/<slug>[/id|/new]?view_type=` routing (C-4).
+- Navbar with app sections and dropdowns, systray, user menu with
+  language switch and logout (C-1); `<html dir="rtl">` + Bootstrap RTL for
+  Arabic (B-9).
+- Control panel: New, breadcrumb, search facets (default `search_default_*`,
+  text search via `filter_domain`, Filters / Group By panel), pager, view
+  switcher.
+- List view: sticky sortable header, optional columns, decorations, badges,
+  tags, avatars, priority stars, footer sums via `read_group`, folded group
+  headers with counts and sums, sample-data empty state (B-8).
+- Kanban view (from the card summaries), form view (status bar with header
+  buttons and stage pipeline, smart buttons, groups, notebook, embedded
+  lines, save/discard with Alt+S / Alt+J, `call_button`), field widgets
+  (char, text, number, boolean, toggle, selection, radio, date, datetime,
+  many2one with autocomplete/quick-create, many2many tags, priority, image),
+  chatter (send message / log note, feed with tracking values).
+- `/api/rpc` dispatching the A-4 surface; local password sessions or Cognito.
+
+Verified over HTTP on the seeded database: login → home menu → Sales →
+create partner, product, quotation `S00001` with lines (1,000 + 200) →
+confirm → `sale`, grouped list, Arabic RTL home menu.
+
+**160 tests pass; `tsc --noEmit` is clean under `strict`.**
 
 ## Next — J-1 build phases
 
@@ -164,6 +239,9 @@ J-1 fixes the order and the gate for each phase:
 5. **Cross-app flows** integration tests (D).
 6. **Polish** — empty states, shortcuts, PWA, performance, a11y, mobile.
 
-Immediate step: Phase 1 foundation, starting with the Drizzle schema
-generator (needed by both the Aurora migration and the ORM) and the 70
-uncaptured comodels.
+Phase 1 is complete and Phase 2 has started (ORM, list/kanban/form, Sales
+hooks). Remaining for the Phase 2 gate: editable embedded lines and the
+product catalog on the quotation form, the `sale.advance.payment.inv`
+invoice wizard with `account.move` creation, dialogs for `target=new`
+actions, search date filters and favorites, the messaging/activities systray
+panels, the remaining field widgets, and pixel-parity screenshots.
