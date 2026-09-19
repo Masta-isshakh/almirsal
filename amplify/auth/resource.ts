@@ -9,11 +9,8 @@ export const auth = defineAuth({
   loginWith: {
     email: {
       verificationEmailSubject: 'Rodeo ERP — verify your email',
-      verificationEmailBody: (createCode) => `Your verification code is ${createCode()}`,
+      verificationEmailStyle: 'CODE',
     },
-  },
-  userAttributes: {
-    preferredUsername: { mutable: true, required: false },
   },
   accountRecovery: 'EMAIL_ONLY',
 });

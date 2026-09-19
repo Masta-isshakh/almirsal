@@ -49,6 +49,17 @@ const dataApiPolicy = new iam.ManagedPolicy(dbStack, 'DataApiAccess', {
   ],
 });
 
+/**
+ * The role Amplify Hosting's SSR compute assumes. Select it once in the
+ * console (App settings → IAM roles → Compute role); everything else is
+ * automatic because the app reads the cluster details from amplify_outputs.
+ */
+const computeRole = new iam.Role(dbStack, 'ComputeRole', {
+  roleName: `rodeo-compute-${Stack.of(dbStack).stackName}`.slice(0, 64),
+  assumedBy: new iam.ServicePrincipal('amplify.amazonaws.com'),
+  managedPolicies: [dataApiPolicy],
+});
+
 backend.addOutput({
   custom: {
     database: {
@@ -57,6 +68,7 @@ backend.addOutput({
       databaseName: database.databaseName,
       region: Stack.of(dbStack).region,
       dataApiPolicyArn: dataApiPolicy.managedPolicyArn,
+      computeRoleArn: computeRole.roleArn,
     },
   },
 });

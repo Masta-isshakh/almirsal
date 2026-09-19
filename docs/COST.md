@@ -60,13 +60,16 @@ dominated by Aurora compute hours.
 
 ## Deploying
 
-1. `npx ampx sandbox` (personal cloud sandbox) or push to the `main` branch
-   with Amplify Hosting connected.
-2. In the Amplify console, attach the managed policy printed in
-   `amplify_outputs.json` → `custom.database.dataApiPolicyArn` to the app's
-   **compute role** (App settings → IAM roles), and set these environment
-   variables on the app from the same output:
-   `RODEO_DB_CLUSTER_ARN`, `RODEO_DB_SECRET_ARN`, `RODEO_DB_NAME`,
-   `RODEO_DB_REGION`, plus a random `RODEO_SESSION_SECRET`.
-3. The first request syncs the schema and loads the seed; both are
-   idempotent.
+1. Push to `main` with Amplify Hosting connected (or `npx ampx sandbox
+   --profile <profile>` for a personal cloud sandbox). The backend phase
+   creates Cognito, S3, the Aurora cluster and writes their details into
+   `amplify_outputs.json`; the app reads the cluster ARN/secret from that
+   file, so no environment variables are needed.
+2. One console step, once per app: **App settings → IAM roles → Compute
+   role** → select `rodeo-compute-<stack>` (its ARN is printed in
+   `amplify_outputs.json` → `custom.database.computeRoleArn`). That role
+   carries the Data API + secret permissions.
+3. Set `RODEO_SESSION_SECRET` (any long random string) in **App settings →
+   Environment variables** so local sessions are signed with a private key.
+4. The first request syncs the schema and loads the seed; both are
+   idempotent. Aurora takes ~15 s to resume from a pause on that first hit.
