@@ -1,4 +1,4 @@
-import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
@@ -49,7 +49,7 @@ export class AuroraDatabase extends Construct {
       serverlessV2AutoPauseDuration: Duration.minutes(10),
       enableDataApi: true,
       defaultDatabaseName: this.databaseName,
-      credentials: rds.Credentials.fromGeneratedSecret('rodeo', { secretName: `rodeo-db-${Stack.of(this).stackName}` }),
+      credentials: rds.Credentials.fromGeneratedSecret('rodeo'),
       backup: { retention: Duration.days(props.production ? 7 : 1) },
       deletionProtection: props.production ?? false,
       removalPolicy: props.production ? RemovalPolicy.SNAPSHOT : RemovalPolicy.DESTROY,

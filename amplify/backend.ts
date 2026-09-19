@@ -32,8 +32,10 @@ const branch = process.env.AWS_BRANCH ?? 'sandbox';
 const database = new AuroraDatabase(dbStack, 'Aurora', { production: branch === 'main' });
 
 /** Managed policy granting Data API + secret access; attach to the SSR compute role. */
+// Names are left to CloudFormation: a nested stack's name is ~80 characters,
+// which would push a hand-built IAM role name past the 64-character limit.
 const dataApiPolicy = new iam.ManagedPolicy(dbStack, 'DataApiAccess', {
-  managedPolicyName: `rodeo-data-api-${Stack.of(dbStack).stackName}`.slice(0, 64),
+  description: 'Rodeo ERP: Aurora Data API and DB secret access for the Amplify Hosting compute role',
   statements: [
     new iam.PolicyStatement({
       actions: [
@@ -51,11 +53,12 @@ const dataApiPolicy = new iam.ManagedPolicy(dbStack, 'DataApiAccess', {
 
 /**
  * The role Amplify Hosting's SSR compute assumes. Select it once in the
- * console (App settings → IAM roles → Compute role); everything else is
- * automatic because the app reads the cluster details from amplify_outputs.
+ * console (App settings → IAM roles → Compute role; its name starts with
+ * "amplify-…-ComputeRole"); everything else is automatic because the app
+ * reads the cluster details from amplify_outputs.
  */
 const computeRole = new iam.Role(dbStack, 'ComputeRole', {
-  roleName: `rodeo-compute-${Stack.of(dbStack).stackName}`.slice(0, 64),
+  description: 'Rodeo ERP: assumed by Amplify Hosting SSR compute (select it under App settings > IAM roles)',
   assumedBy: new iam.ServicePrincipal('amplify.amazonaws.com'),
   managedPolicies: [dataApiPolicy],
 });

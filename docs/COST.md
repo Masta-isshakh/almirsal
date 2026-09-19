@@ -66,8 +66,9 @@ dominated by Aurora compute hours.
    `amplify_outputs.json`; the app reads the cluster ARN/secret from that
    file, so no environment variables are needed.
 2. One console step, once per app: **App settings → IAM roles → Compute
-   role** → select `rodeo-compute-<stack>` (its ARN is printed in
-   `amplify_outputs.json` → `custom.database.computeRoleArn`). That role
+   role** → select the role whose name contains `databaseComputeRole`
+   (its ARN is in `amplify_outputs.json` → `custom.database.computeRoleArn`,
+   visible under the branch's "Deployed backend resources"). That role
    carries the Data API + secret permissions.
 3. Set `RODEO_SESSION_SECRET` (any long random string) in **App settings →
    Environment variables** so local sessions are signed with a private key.
