@@ -43,5 +43,11 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "^0.25.12",
+    "@next/swc-linux-x64-gnu": "^15.5.25",
+    "@parcel/watcher-linux-x64-glibc": "^2.6.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.63.4"
   }
 }
