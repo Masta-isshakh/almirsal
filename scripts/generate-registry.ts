@@ -14,11 +14,12 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { collectMessages, loadRegistry, type RawSpec } from '../packages/engine/registry/spec-loader.js';
+import { collectMessages, loadRegistry, type ExtraModels, type RawSpec } from '../packages/engine/registry/spec-loader.js';
 
 const root = resolve(import.meta.dirname, '..');
 const spec = JSON.parse(readFileSync(resolve(root, 'registry/odoo_spec.json'), 'utf8')) as RawSpec;
-const registry = loadRegistry(spec);
+const extra = JSON.parse(readFileSync(resolve(root, 'registry/extra-models.json'), 'utf8')) as ExtraModels;
+const registry = loadRegistry(spec, extra);
 const messages = collectMessages(spec);
 
 const out = resolve(root, 'registry/generated');

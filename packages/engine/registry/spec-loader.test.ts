@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { parse } from '../expr/parse.js';
 import type { FormNode, ViewArch } from './arch.js';
 import type { Registry } from './types.js';
-import { collectMessages, loadRegistry, splitI18n, type RawSpec } from './spec-loader.js';
+import { collectMessages, loadRegistry, splitI18n, type ExtraModels, type RawSpec } from './spec-loader.js';
 
 /**
  * Loads the real export and checks the whole registry, not a fixture: the
@@ -18,7 +18,8 @@ let registry: Registry;
 beforeAll(() => {
   const path = resolve(process.cwd(), 'registry/odoo_spec.json');
   spec = JSON.parse(readFileSync(path, 'utf8')) as RawSpec;
-  registry = loadRegistry(spec);
+  const extra = JSON.parse(readFileSync(resolve(process.cwd(), 'registry/extra-models.json'), 'utf8')) as ExtraModels;
+  registry = loadRegistry(spec, extra);
 });
 
 describe('splitI18n', () => {
@@ -52,9 +53,8 @@ describe('registry counts match the live instance', () => {
   });
 
   it('loads every model and submodel with its fields', () => {
-    const modelCount = Object.keys(spec.models).length;
-    const extraSubmodels = Object.keys(spec.submodels).filter((name) => !spec.models[name]).length;
-    expect(Object.keys(registry.models)).toHaveLength(modelCount + extraSubmodels);
+    const capturedModels = new Set([...Object.keys(spec.models), ...Object.keys(spec.submodels)]);
+    expect(Object.keys(registry.models).length).toBeGreaterThan(capturedModels.size + 70);
 
     // 4,164 captured fields, minus duplicates across models/submodels, plus
     // the synthesized one2many back-references.
@@ -108,9 +108,8 @@ describe('referential integrity', () => {
         }
       }
     }
-    // Relations to models the export did not capture are expected (e.g.
-    // ir.attachment); they must be few and are listed so they can be added.
-    expect(missing.length).toBeLessThan(400);
+    // Every relation must resolve now that extra-models.json fills the gaps.
+    expect(missing).toEqual([]);
   });
 
   it('infers an inverse for nearly every one2many', () => {

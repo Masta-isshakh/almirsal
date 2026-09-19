@@ -1,4 +1,5 @@
 import type { I18n } from '../i18n/types.js';
+import { pgIdentifier } from '../db/identifiers.js';
 import type {
   ActivityArch,
   Attrs,
@@ -922,6 +923,7 @@ export function tableNameOf(model: string): string {
   return model.replace(/\./g, '_');
 }
 
+
 function convertFieldDef(name: string, raw: RawField): FieldDef {
   const type = FIELD_TYPES.has(raw.t as FieldType) ? (raw.t as FieldType) : 'char';
   const field: FieldDef = {
@@ -970,29 +972,61 @@ function inferInverse(
   return (required ?? candidates[0]).name;
 }
 
+/**
+ * many2many fields that are the two ends of ONE relation. Odoo stores each
+ * pair in a single table; without the export naming those tables, the pairs
+ * are declared here so both sides read and write the same rows.
+ */
+const M2M_PAIRS: [string, string][] = [
+  ['res.users.group_ids', 'res.groups.user_ids'],
+  ['product.template.product_tag_ids', 'product.tag.product_template_ids'],
+  ['project.project.type_ids', 'project.task.type.project_ids'],
+  ['res.country.country_group_ids', 'res.country.group.country_ids'],
+  ['helpdesk.team.stage_ids', 'helpdesk.stage.team_ids'],
+  ['res.partner.category_id', 'res.partner.category.partner_ids'],
+  ['hr.employee.category_ids', 'hr.employee.category.employee_ids'],
+  ['res.users.company_ids', 'res.company.user_ids'],
+  ['account.journal.journal_group_ids', 'account.journal.group.excluded_journal_ids'],
+  ['sale.order.template.line.product_document_ids', 'product.document.sale_order_template_line_ids'],
+];
+
 function m2mTableFor(model: string, field: FieldDef): Pick<FieldDef, 'm2mTable' | 'm2mColumn1' | 'm2mColumn2'> {
   const left = tableNameOf(model);
   const right = tableNameOf(field.relation ?? 'unknown');
   return {
-    m2mTable: `${left}_${field.name}_rel`,
+    m2mTable: pgIdentifier(`${left}_${field.name}_rel`),
     m2mColumn1: `${left}_id`,
     // Self-referencing relations need distinct column names.
     m2mColumn2: left === right ? `${right}_other_id` : `${right}_id`,
   };
 }
 
-export function convertModels(spec: RawSpec): Record<string, ModelDef> {
+/**
+ * Models the export references but never captured (their fields appeared in
+ * no view), plus infrastructure models the ORM needs. Same raw format.
+ */
+export interface ExtraModels {
+  model_names: Record<string, { name: string; transient: boolean }>;
+  models: Record<string, Record<string, RawField>>;
+}
+
+export function convertModels(spec: RawSpec, extra?: ExtraModels): Record<string, ModelDef> {
   const models: Record<string, ModelDef> = {};
 
   // 21 models appear in both lists; union their fields (main capture wins).
+  // Extra definitions fill gaps only: a captured field is never overridden.
   const sources: Record<string, Record<string, RawField>> = {};
-  for (const [name, fields] of Object.entries(spec.submodels)) sources[name] = { ...fields };
+  for (const [name, fields] of Object.entries(extra?.models ?? {})) sources[name] = { ...fields };
+  for (const [name, fields] of Object.entries(spec.submodels)) {
+    sources[name] = { ...(sources[name] ?? {}), ...fields };
+  }
   for (const [name, fields] of Object.entries(spec.models)) {
     sources[name] = { ...(sources[name] ?? {}), ...fields };
   }
+  const modelNames = { ...(extra?.model_names ?? {}), ...spec.model_names };
 
   for (const [name, fields] of Object.entries(sources)) {
-    const meta = spec.model_names[name];
+    const meta = modelNames[name];
     const description = meta ? splitI18n(meta.name) : { en: name, ar: name };
     const converted: Record<string, FieldDef> = {};
     for (const [fieldName, raw] of Object.entries(fields)) {
@@ -1015,13 +1049,37 @@ export function convertModels(spec: RawSpec): Record<string, ModelDef> {
     for (const field of Object.values(model.fields)) {
       if (field.type === 'one2many') {
         field.inverse = inferInverse(name, field, models) ?? synthesizeInverse(name, model, field, models);
+        // A required back-reference means the line belongs to its parent and
+        // goes with it (Odoo declares these ondelete='cascade').
+        const inverse = field.relation && field.inverse ? models[field.relation]?.fields[field.inverse] : undefined;
+        if (inverse && inverse.type === 'many2one' && inverse.required === true && !inverse.ondelete) {
+          inverse.ondelete = 'cascade';
+        }
       } else if (field.type === 'many2many') {
         Object.assign(field, m2mTableFor(name, field));
       }
     }
   }
 
+  // Third pass: the declared symmetric pairs share one relation table.
+  for (const [left, right] of M2M_PAIRS) {
+    const [leftModel, leftField] = splitFieldRef(left);
+    const [rightModel, rightField] = splitFieldRef(right);
+    const a = models[leftModel]?.fields[leftField];
+    const b = models[rightModel]?.fields[rightField];
+    if (!a || !b || a.type !== 'many2many' || b.type !== 'many2many') continue;
+    b.m2mTable = a.m2mTable;
+    b.m2mColumn1 = a.m2mColumn2;
+    b.m2mColumn2 = a.m2mColumn1;
+  }
+
   return models;
+}
+
+/** `sale.order.line.product_id` → [`sale.order.line`, `product_id`]. */
+function splitFieldRef(ref: string): [string, string] {
+  const index = ref.lastIndexOf('.');
+  return [ref.slice(0, index), ref.slice(index + 1)];
 }
 
 /**
@@ -1197,7 +1255,7 @@ function convertAppIcons(spec: RawSpec): AppIconDef[] {
  * Entry point
  * ------------------------------------------------------------------ */
 
-export function loadRegistry(spec: RawSpec): Registry {
+export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
   const views: Record<string, ViewDef> = {};
   for (const [key, raw] of Object.entries(spec.views)) {
     views[key] = convertView(key, raw);
@@ -1207,7 +1265,7 @@ export function loadRegistry(spec: RawSpec): Registry {
 
   return {
     session: spec.session,
-    models: convertModels(spec),
+    models: convertModels(spec, extra),
     views,
     actions: convertActions(spec),
     menus: roots,
