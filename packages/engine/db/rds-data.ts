@@ -63,12 +63,40 @@ export function prepare(text: string, params: unknown[]): { sql: string; paramet
   return { sql, parameters };
 }
 
+/** How long to keep retrying while a 0-ACU cluster wakes up (it takes ~15 s). */
+const RESUME_WAIT_MS = 120_000;
+
+function isResuming(error: unknown): boolean {
+  const name = (error as { name?: string })?.name ?? '';
+  const message = (error as { message?: string })?.message ?? '';
+  return name === 'DatabaseResumingException' || /resuming after being auto-paused/i.test(message);
+}
+
+/**
+ * An auto-paused cluster answers `DatabaseResumingException` until it is
+ * back; the Data API does not wait for it. Poll with a short backoff instead
+ * of failing the deploy-time migration or a user's first request.
+ */
+async function withResume<T>(fn: () => Promise<T>): Promise<T> {
+  const started = Date.now();
+  let delay = 2_000;
+  for (;;) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (!isResuming(error) || Date.now() - started > RESUME_WAIT_MS) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay = Math.min(delay * 1.5, 8_000);
+    }
+  }
+}
+
 export function rdsDataDatabase(options: RdsDataOptions): Database {
   const client = options.client ?? new RDSDataClient({ region: options.region });
 
   const execute = async <T extends Row>(text: string, params: unknown[], transactionId?: string): Promise<QueryResult<T>> => {
     const { sql, parameters } = prepare(text, params);
-    const response = await client.send(new ExecuteStatementCommand({
+    const response = await withResume(() => client.send(new ExecuteStatementCommand({
       resourceArn: options.clusterArn,
       secretArn: options.secretArn,
       database: options.database,
@@ -77,7 +105,7 @@ export function rdsDataDatabase(options: RdsDataOptions): Database {
       transactionId,
       formatRecordsAs: 'JSON',
       continueAfterTimeout: false,
-    }));
+    })));
     const rows = response.formattedRecords ? (JSON.parse(response.formattedRecords) as T[]) : [];
     return { rows, rowCount: response.numberOfRecordsUpdated ?? rows.length };
   };
@@ -89,9 +117,9 @@ export function rdsDataDatabase(options: RdsDataOptions): Database {
   return {
     query: queryable().query,
     async transaction(fn) {
-      const begun = await client.send(new BeginTransactionCommand({
+      const begun = await withResume(() => client.send(new BeginTransactionCommand({
         resourceArn: options.clusterArn, secretArn: options.secretArn, database: options.database,
-      }));
+      })));
       const transactionId = begun.transactionId!;
       try {
         const value = await fn(queryable(transactionId));

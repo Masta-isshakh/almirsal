@@ -33,3 +33,32 @@ describe('Data API parameter preparation', () => {
     expect(parameters).toHaveLength(1);
   });
 });
+
+describe('auto-pause resume handling', () => {
+  it('retries while the cluster reports it is resuming, then succeeds', async () => {
+    const { rdsDataDatabase } = await import('./rds-data.js');
+    let calls = 0;
+    const client = {
+      send: async () => {
+        calls += 1;
+        if (calls < 3) {
+          const error = new Error('The Aurora DB instance db-X is resuming after being auto-paused. Please wait a few seconds and try again.');
+          error.name = 'DatabaseResumingException';
+          throw error;
+        }
+        return { formattedRecords: JSON.stringify([{ n: 1 }]), numberOfRecordsUpdated: 0 };
+      },
+    };
+    const db = rdsDataDatabase({ clusterArn: 'a', secretArn: 'b', database: 'c', client: client as never });
+    const result = await db.query<{ n: number }>('SELECT 1 AS n');
+    expect(result.rows).toEqual([{ n: 1 }]);
+    expect(calls).toBe(3);
+  }, 20_000);
+
+  it('does not retry other errors', async () => {
+    const { rdsDataDatabase } = await import('./rds-data.js');
+    const client = { send: async () => { throw new Error('syntax error'); } };
+    const db = rdsDataDatabase({ clusterArn: 'a', secretArn: 'b', database: 'c', client: client as never });
+    await expect(db.query('SELECT')).rejects.toThrow('syntax error');
+  });
+});
