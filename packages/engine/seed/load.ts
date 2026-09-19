@@ -1,7 +1,7 @@
 import type { FieldDef, ModelDef, Registry } from '../registry/types.js';
 import type { Database, Queryable } from '../db/types.js';
-import { quoteIdent } from '../schema/ddl.js';
-import { paramExpr, toSql } from '../orm/values.js';
+import { getParameter, quoteIdent, setParameter } from '../schema/ddl.js';
+import { toSql } from '../orm/values.js';
 
 /**
  * Loads Part I — the default records captured from the live instance — into
@@ -18,7 +18,10 @@ import { paramExpr, toSql } from '../orm/values.js';
  *           exists; `name_ar` goes to `ir_translation`
  *   finally reset identity sequences past the explicit ids
  *
- * Idempotent: a record whose id already exists is skipped.
+ * Everything is batched — multi-row INSERTs, VALUES-joined UPDATEs — because
+ * over the Aurora Data API each statement is an HTTPS round-trip: ~150 calls
+ * instead of ~3,400. A marker in `ir_config_parameter` makes later runs a
+ * single query.
  */
 
 export interface SeedReport {
@@ -26,10 +29,16 @@ export interface SeedReport {
   skipped: Record<string, number>;
   unresolved: string[];
   ignoredFields: string[];
+  /** True when the seed marker was present and nothing was loaded. */
+  alreadyLoaded: boolean;
 }
 
+const SEED_KEY = 'rodeo.seed.version';
+const SEED_VERSION = '1';
 const X2MANY = new Set(['one2many', 'many2many']);
 const AUDIT = new Set(['create_uid', 'create_date', 'write_uid', 'write_date']);
+/** Keep each statement well under the Data API's 64 KB SQL limit. */
+const CHUNK_BYTES = 40_000;
 
 interface Pending {
   model: ModelDef;
@@ -40,6 +49,50 @@ interface Pending {
 
 function nowSql(): string {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
+/** SQL literal for a seed value (seed data is ours, never user input). */
+export function literal(value: unknown, field?: FieldDef): string {
+  const sql = field ? toSql(field, value) : value;
+  if (sql === null || sql === undefined) return 'NULL';
+  if (typeof sql === 'boolean') return sql ? 'TRUE' : 'FALSE';
+  if (typeof sql === 'number') return Number.isFinite(sql) ? String(sql) : 'NULL';
+  const text = `'${String(sql).replace(/'/g, "''")}'`;
+  switch (field?.type) {
+    case 'date': return `${text}::date`;
+    case 'datetime': return `${text}::timestamp`;
+    case 'json': case 'properties': case 'properties_definition': return `${text}::jsonb`;
+    default: return text;
+  }
+}
+
+/** Run one INSERT per chunk of rows; rows are pre-rendered `(…)` tuples. */
+async function insertRows(cr: Queryable, table: string, columns: string[], tuples: string[], suffix = ''): Promise<void> {
+  if (tuples.length === 0) return;
+  const head = `INSERT INTO ${quoteIdent(table)} (${columns.map(quoteIdent).join(', ')}) VALUES `;
+  let batch: string[] = [];
+  let size = head.length;
+  const flush = async () => {
+    if (batch.length) await cr.query(`${head}${batch.join(', ')}${suffix}`);
+    batch = [];
+    size = head.length;
+  };
+  for (const tuple of tuples) {
+    if (size + tuple.length + 2 > CHUNK_BYTES && batch.length) await flush();
+    batch.push(tuple);
+    size += tuple.length + 2;
+  }
+  await flush();
+}
+
+/** `UPDATE t SET col = v.value FROM (VALUES …) v(id, value) WHERE t.id = v.id`, chunked. */
+async function updateColumn(cr: Queryable, table: string, column: string, pairs: [number, number][]): Promise<void> {
+  for (let i = 0; i < pairs.length; i += 500) {
+    const chunk = pairs.slice(i, i + 500);
+    await cr.query(
+      `UPDATE ${quoteIdent(table)} t SET ${quoteIdent(column)} = v.value FROM (VALUES ${chunk.map(([id, value]) => `(${id}, ${value})`).join(', ')}) AS v(id, value) WHERE t."id" = v.id`,
+    );
+  }
 }
 
 /** Resolve a display-name reference to an id on the comodel. */
@@ -60,11 +113,11 @@ async function resolveReference(cr: Queryable, comodel: ModelDef, value: string,
   if (has('icon') && has('name')) candidates.push(`(coalesce("icon", '') || ' ' || coalesce("name", '')) = $1`);
 
   let found: number | null = null;
-  for (const condition of candidates) {
+  if (candidates.length) {
     const result = await cr.query<{ id: number }>(
-      `SELECT "id" FROM ${quoteIdent(comodel.table)} WHERE ${condition} ORDER BY "id" LIMIT 1`, [value],
+      `SELECT "id" FROM ${quoteIdent(comodel.table)} WHERE ${candidates.join(' OR ')} ORDER BY "id" LIMIT 1`, [value],
     );
-    if (result.rows.length) { found = Number(result.rows[0].id); break; }
+    if (result.rows.length) found = Number(result.rows[0].id);
   }
   // A comodel that needs nothing but a name (paper formats, template
   // categories) is created on the fly, as Odoo's data files would have.
@@ -81,18 +134,22 @@ async function resolveReference(cr: Queryable, comodel: ModelDef, value: string,
   return found;
 }
 
-export async function loadSeed(db: Database, registry: Registry, options: { uid?: number } = {}): Promise<SeedReport> {
+export async function loadSeed(db: Database, registry: Registry, options: { uid?: number; force?: boolean } = {}): Promise<SeedReport> {
   const uid = options.uid ?? 1;
-  const report: SeedReport = { inserted: {}, skipped: {}, unresolved: [], ignoredFields: [] };
+  const report: SeedReport = { inserted: {}, skipped: {}, unresolved: [], ignoredFields: [], alreadyLoaded: false };
+  if (!options.force && (await getParameter(db, SEED_KEY)) === SEED_VERSION) {
+    report.alreadyLoaded = true;
+    return report;
+  }
   const ignored = new Set<string>();
 
   await db.transaction(async (cr) => {
     await cr.query('SET CONSTRAINTS ALL DEFERRED');
     const pending: Pending[] = [];
-    const translations: { model: string; id: number; field: string; value: string }[] = [];
+    const translations: { model: ModelDef; id: number; field: string; value: string }[] = [];
     const now = nowSql();
 
-    // Pass 1: scalar values.
+    // Pass 1: scalar values, one multi-row INSERT per model (chunked).
     for (const [modelName, records] of Object.entries(registry.seed)) {
       const model = registry.models[modelName];
       if (!model) { ignored.add(`${modelName} (model not in registry)`); continue; }
@@ -103,64 +160,60 @@ export async function loadSeed(db: Database, registry: Registry, options: { uid?
         (await cr.query<{ id: number }>(`SELECT "id" FROM ${quoteIdent(model.table)}`)).rows.map((row) => Number(row.id)),
       );
 
+      // Column set = union of scalar columns used by any record of the model.
+      const columns = new Set<string>();
+      const prepared: { id: number; values: Record<string, string> }[] = [];
       for (const record of records) {
         const id = Number(record.id);
         if (!id || existing.has(id)) { report.skipped[modelName] += 1; continue; }
-
-        const columns: string[] = ['id', 'create_uid', 'create_date', 'write_uid', 'write_date'];
-        const params: unknown[] = [id, uid, now, uid, now];
-        const placeholders = ['$1', '$2', '$3::timestamp', '$4', '$5::timestamp'];
-
+        const values: Record<string, string> = {};
         for (const [key, value] of Object.entries(record)) {
           if (key === 'id' || AUDIT.has(key)) continue;
           if (key.endsWith('_ar')) {
             const base = key.slice(0, -3);
-            if (typeof value === 'string' && value && model.fields[base]) translations.push({ model: modelName, id, field: base, value });
+            if (typeof value === 'string' && value && model.fields[base]) translations.push({ model, id, field: base, value });
             continue;
           }
           const field = model.fields[key];
           if (!field) { ignored.add(`${modelName}.${key}`); continue; }
           if (field.name === 'display_name') continue;
-
           if (X2MANY.has(field.type)) {
             if (Array.isArray(value) && value.length) pending.push({ model, id, field, value });
             continue;
           }
-          if (field.type === 'many2one' && typeof value === 'string' && value) {
-            pending.push({ model, id, field, value });
-            continue;
-          }
-          if (field.type === 'many2one' && Array.isArray(value)) {
-            // [id, name] form
-            columns.push(key); params.push(Number(value[0])); placeholders.push(`$${params.length}`);
-            continue;
-          }
-          columns.push(key);
-          params.push(toSql(field, value));
-          placeholders.push(paramExpr(field, `$${params.length}`));
+          if (field.type === 'many2one' && typeof value === 'string' && value) { pending.push({ model, id, field, value }); continue; }
+          if (field.type === 'many2one' && Array.isArray(value)) { values[key] = String(Number(value[0])); columns.add(key); continue; }
+          values[key] = literal(value, field);
+          columns.add(key);
         }
-
-        await cr.query(
-          `INSERT INTO ${quoteIdent(model.table)} (${columns.map(quoteIdent).join(', ')}) VALUES (${placeholders.join(', ')})`,
-          params,
-        );
+        prepared.push({ id, values });
         existing.add(id);
         report.inserted[modelName] += 1;
       }
+
+      const columnList = ['id', 'create_uid', 'create_date', 'write_uid', 'write_date', ...columns];
+      const tuples = prepared.map(({ id, values }) =>
+        `(${[String(id), String(uid), `'${now}'::timestamp`, String(uid), `'${now}'::timestamp`, ...[...columns].map((column) => values[column] ?? 'NULL')].join(', ')})`);
+      await insertRows(cr, model.table, columnList, tuples);
     }
 
-    // Pass 2: references and links.
+    // Pass 2: references and links, grouped into batched statements.
     const cache = new Map<string, number | null>();
     const seeded = new Set(Object.keys(registry.seed));
-    for (const item of pending) {
-      const { model, id, field, value } = item;
+    const columnUpdates = new Map<string, { table: string; column: string; pairs: [number, number][] }>();
+    const m2mRows = new Map<string, { table: string; c1: string; c2: string; rows: [number, number][] }>();
+    const o2mUpdates = new Map<string, { table: string; column: string; pairs: [number, number][]; polymorphic?: string }>();
+
+    for (const { model, id, field, value } of pending) {
       const comodel = field.relation ? registry.models[field.relation] : undefined;
       if (!comodel) continue;
 
       if (field.type === 'many2one') {
         const target = await resolveReference(cr, comodel, String(value), cache, seeded);
         if (target === null) { report.unresolved.push(`${model.name}#${id}.${field.name} = ${JSON.stringify(value)}`); continue; }
-        await cr.query(`UPDATE ${quoteIdent(model.table)} SET ${quoteIdent(field.name)} = $1 WHERE "id" = $2`, [target, id]);
+        const key = `${model.table}.${field.name}`;
+        if (!columnUpdates.has(key)) columnUpdates.set(key, { table: model.table, column: field.name, pairs: [] });
+        columnUpdates.get(key)!.pairs.push([id, target]);
         continue;
       }
 
@@ -174,35 +227,38 @@ export async function loadSeed(db: Database, registry: Registry, options: { uid?
         }
       }
       if (field.type === 'many2many' && field.m2mTable && field.m2mColumn1 && field.m2mColumn2) {
-        for (const target of targets) {
-          await cr.query(
-            `INSERT INTO ${quoteIdent(field.m2mTable)} (${quoteIdent(field.m2mColumn1)}, ${quoteIdent(field.m2mColumn2)}) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-            [id, target],
-          );
-        }
+        // Both ends of a symmetric pair share a table with swapped columns.
+        const key = `${field.m2mTable}:${field.m2mColumn1}:${field.m2mColumn2}`;
+        if (!m2mRows.has(key)) m2mRows.set(key, { table: field.m2mTable, c1: field.m2mColumn1, c2: field.m2mColumn2, rows: [] });
+        for (const target of targets) m2mRows.get(key)!.rows.push([id, target]);
       } else if (field.type === 'one2many' && field.inverse && targets.length) {
-        if (field.inverse === 'res_id') {
-          await cr.query(`UPDATE ${quoteIdent(comodel.table)} SET "res_id" = $1, "res_model" = $2 WHERE "id" = ANY($3)`, [id, model.name, targets]);
-        } else {
-          await cr.query(`UPDATE ${quoteIdent(comodel.table)} SET ${quoteIdent(field.inverse)} = $1 WHERE "id" = ANY($2)`, [id, targets]);
-        }
+        const key = `${comodel.table}.${field.inverse}`;
+        if (!o2mUpdates.has(key)) o2mUpdates.set(key, { table: comodel.table, column: field.inverse, pairs: [], polymorphic: field.inverse === 'res_id' ? model.name : undefined });
+        for (const target of targets) o2mUpdates.get(key)!.pairs.push([target, id]);
       }
     }
 
-    // Translations.
-    if (registry.models['ir.translation']) {
-      for (const translation of translations) {
-        const exists = await cr.query<{ id: number }>(
-          `SELECT "id" FROM ir_translation WHERE res_model = $1 AND res_id = $2 AND field_name = $3 AND lang = 'ar_001'`,
-          [translation.model, translation.id, translation.field],
-        );
-        if (exists.rows.length) continue;
-        await cr.query(
-          `INSERT INTO ir_translation (res_model, res_id, field_name, lang, value, create_uid, create_date, write_uid, write_date)
-           VALUES ($1, $2, $3, 'ar_001', $4, $5, $6::timestamp, $5, $6::timestamp)`,
-          [translation.model, translation.id, translation.field, translation.value, uid, now],
-        );
+    for (const update of columnUpdates.values()) await updateColumn(cr, update.table, update.column, update.pairs);
+    for (const link of m2mRows.values()) {
+      await insertRows(cr, link.table, [link.c1, link.c2], link.rows.map(([a, b]) => `(${a}, ${b})`), ' ON CONFLICT DO NOTHING');
+    }
+    for (const update of o2mUpdates.values()) {
+      await updateColumn(cr, update.table, update.column, update.pairs);
+      if (update.polymorphic) {
+        await cr.query(`UPDATE ${quoteIdent(update.table)} SET "res_model" = $1 WHERE "id" = ANY($2)`, [update.polymorphic, update.pairs.map(([id]) => id)]);
       }
+    }
+
+    // Translations (idempotent per model/field/lang).
+    if (registry.models['ir.translation'] && translations.length) {
+      const present = await cr.query<{ res_model: string; res_id: number; field_name: string }>(
+        `SELECT res_model, res_id, field_name FROM ir_translation WHERE lang = 'ar_001'`,
+      );
+      const known = new Set(present.rows.map((row) => `${row.res_model}#${row.res_id}.${row.field_name}`));
+      const tuples = translations
+        .filter((item) => !known.has(`${item.model.name}#${item.id}.${item.field}`))
+        .map((item) => `(${literal(item.model.name)}, ${item.id}, ${literal(item.field)}, 'ar_001', ${literal(item.value)}, ${uid}, '${now}'::timestamp, ${uid}, '${now}'::timestamp)`);
+      await insertRows(cr, 'ir_translation', ['res_model', 'res_id', 'field_name', 'lang', 'value', 'create_uid', 'create_date', 'write_uid', 'write_date'], tuples);
     }
 
     // A record that lists companies but names no current one gets the first.
@@ -216,15 +272,14 @@ export async function loadSeed(db: Database, registry: Registry, options: { uid?
       );
     }
 
-    // Identity sequences must continue past the explicit ids.
-    for (const modelName of Object.keys(registry.seed)) {
-      const model = registry.models[modelName];
-      if (!model) continue;
-      await cr.query(
-        `SELECT setval(pg_get_serial_sequence($1, 'id'), GREATEST((SELECT coalesce(max("id"), 0) FROM ${quoteIdent(model.table)}), 1))`,
-        [model.table],
-      );
-    }
+    // Identity sequences must continue past the explicit ids — one statement.
+    const seededTables = Object.keys(registry.seed).map((name) => registry.models[name]?.table).filter((table): table is string => Boolean(table));
+    await cr.query(
+      `DO $seq$ BEGIN ${seededTables.map((table) =>
+        `PERFORM setval(pg_get_serial_sequence('${table}', 'id'), GREATEST((SELECT coalesce(max("id"), 0) FROM ${quoteIdent(table)}), 1));`).join(' ')} END $seq$`,
+    );
+
+    await setParameter(cr, SEED_KEY, SEED_VERSION);
   });
 
   report.ignoredFields = [...ignored].sort();

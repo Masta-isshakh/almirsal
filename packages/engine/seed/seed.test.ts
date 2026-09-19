@@ -64,9 +64,12 @@ describe('seed', () => {
     expect(id).toBeGreaterThan(Number(max.rows[0].m));
   });
 
-  it('is idempotent', async () => {
+  it('is idempotent and skips entirely once the marker is set', async () => {
     const again = await loadSeed(db, registry);
-    expect(Object.values(again.inserted).reduce((a, b) => a + b, 0)).toBe(0);
+    expect(again.alreadyLoaded).toBe(true);
+    const forced = await loadSeed(db, registry, { force: true });
+    expect(forced.alreadyLoaded).toBe(false);
+    expect(Object.values(forced.inserted).reduce((a, b) => a + b, 0)).toBe(0);
   }, 120_000);
 
   it('creates name-only comodels on demand and reports the rest', async () => {

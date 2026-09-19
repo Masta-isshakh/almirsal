@@ -47,9 +47,11 @@ describe('schema', () => {
       expect(first.foreignKeysAdded).toBeGreaterThan(500);
 
       const second = await syncSchema(db, registry);
-      expect(second.tablesCreated).toEqual([]);
-      expect(second.columnsAdded).toEqual([]);
-      expect(second.foreignKeysAdded).toBe(0);
+      expect(second.skipped).toBe(true);
+      const forced = await syncSchema(db, registry, { force: true });
+      expect(forced.tablesCreated).toEqual([]);
+      expect(forced.columnsAdded).toEqual([]);
+      expect(forced.foreignKeysAdded).toBe(0);
 
       const count = await db.query<{ n: string }>(
         `SELECT count(*)::text AS n FROM information_schema.tables WHERE table_schema = current_schema()`,

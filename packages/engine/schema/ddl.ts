@@ -216,6 +216,22 @@ export interface SyncReport {
   columnsAdded: string[];
   indexesCreated: number;
   foreignKeysAdded: number;
+  /** True when the stored schema hash matched and nothing was checked. */
+  skipped: boolean;
+}
+
+/**
+ * Run many DDL statements as a few PL/pgSQL blocks. The Aurora Data API
+ * refuses multi-statement SQL, but one `DO $$ … $$` block is a single
+ * statement, so 1,600 round-trips become ~40 (and it is just as valid on
+ * PGlite and node-postgres).
+ */
+export async function runDdlBatch(db: Queryable, statements: string[], perBlock = 40): Promise<void> {
+  for (let i = 0; i < statements.length; i += perBlock) {
+    const chunk = statements.slice(i, i + perBlock);
+    if (chunk.length === 1) { await db.query(chunk[0]); continue; }
+    await db.query(`DO $ddl$ BEGIN ${chunk.map((statement) => `${statement};`).join(' ')} END $ddl$`);
+  }
 }
 
 async function existingColumns(db: Queryable): Promise<Map<string, Set<string>>> {
@@ -237,47 +253,92 @@ async function existingConstraints(db: Queryable): Promise<Set<string>> {
   return new Set(result.rows.map((row) => row.conname));
 }
 
+/** Cheap fingerprint of the generated DDL, stored after a successful sync. */
+export function schemaHash(registry: Registry): string {
+  const text = generateDdl(registry);
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  return `${text.length}-${hash.toString(36)}`;
+}
+
+const SCHEMA_KEY = 'rodeo.schema.hash';
+
+/** The stored fingerprint, or null when the parameter table does not exist yet. */
+export async function storedSchemaHash(db: Queryable): Promise<string | null> {
+  return getParameter(db, SCHEMA_KEY);
+}
+
 /**
  * Bring the database up to the registry. Safe to run on every deploy and on
- * every dev start: it only ever adds.
+ * every cold start: when the stored fingerprint matches it costs one query;
+ * otherwise it only ever adds.
  */
-export async function syncSchema(db: Database, registry: Registry): Promise<SyncReport> {
-  const report: SyncReport = { tablesCreated: [], columnsAdded: [], indexesCreated: 0, foreignKeysAdded: 0 };
-  const tables = allTables(registry);
+export async function syncSchema(db: Database, registry: Registry, options: { force?: boolean } = {}): Promise<SyncReport> {
+  const report: SyncReport = { tablesCreated: [], columnsAdded: [], indexesCreated: 0, foreignKeysAdded: 0, skipped: false };
+  const hash = schemaHash(registry);
+  if (!options.force && (await storedSchemaHash(db)) === hash) {
+    report.skipped = true;
+    return report;
+  }
 
+  const tables = allTables(registry);
   const columns = await existingColumns(db);
+  const statements: string[] = [];
   for (const table of tables) {
     const present = columns.get(table.name);
     if (!present) {
-      await db.query(createTableDdl(table));
+      statements.push(createTableDdl(table));
       report.tablesCreated.push(table.name);
       continue;
     }
     for (const column of table.columns) {
       if (present.has(column.name)) continue;
-      await db.query(`ALTER TABLE ${quoteIdent(table.name)} ADD COLUMN IF NOT EXISTS ${columnDdl(column)}`);
+      statements.push(`ALTER TABLE ${quoteIdent(table.name)} ADD COLUMN IF NOT EXISTS ${columnDdl(column)}`);
       report.columnsAdded.push(`${table.name}.${column.name}`);
     }
   }
+  await runDdlBatch(db, statements);
 
+  const indexStatements: string[] = [];
   for (const table of tables) {
     for (const index of table.indexes) {
-      await db.query(indexDdl(table, index));
+      // Only build indexes for new tables or new columns; existing ones are kept.
+      const isNew = report.tablesCreated.includes(table.name) || index.columns.some((column) => report.columnsAdded.includes(`${table.name}.${column}`));
+      if (!isNew && columns.size > 0) continue;
+      indexStatements.push(indexDdl(table, index));
       report.indexesCreated += 1;
     }
   }
+  await runDdlBatch(db, indexStatements);
 
   const constraints = await existingConstraints(db);
+  const fkStatements: string[] = [];
   for (const table of tables) {
     for (const column of table.columns) {
       if (!column.references || constraints.has(fkName(table.name, column.name))) continue;
       const ddl = foreignKeyDdl(table, column);
-      if (ddl) {
-        await db.query(ddl);
-        report.foreignKeysAdded += 1;
-      }
+      if (ddl) { fkStatements.push(ddl); report.foreignKeysAdded += 1; }
     }
   }
+  await runDdlBatch(db, fkStatements);
 
+  await setParameter(db, SCHEMA_KEY, hash);
   return report;
+}
+
+/** Upsert an `ir.config_parameter` value (used for the schema and seed markers). */
+export async function setParameter(db: Queryable, key: string, value: string): Promise<void> {
+  const updated = await db.query(`UPDATE ir_config_parameter SET value = $2, write_date = now() WHERE key = $1`, [key, value]);
+  if (updated.rowCount === 0) {
+    await db.query(`INSERT INTO ir_config_parameter (key, value, create_date, write_date) VALUES ($1, $2, now(), now())`, [key, value]);
+  }
+}
+
+export async function getParameter(db: Queryable, key: string): Promise<string | null> {
+  try {
+    const result = await db.query<{ value: string }>(`SELECT value FROM ir_config_parameter WHERE key = $1`, [key]);
+    return result.rows[0]?.value ?? null;
+  } catch {
+    return null;
+  }
 }

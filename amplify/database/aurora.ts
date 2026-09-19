@@ -38,7 +38,10 @@ export class AuroraDatabase extends Construct {
     });
 
     this.cluster = new rds.DatabaseCluster(this, 'Cluster', {
-      engine: rds.DatabaseClusterEngine.auroraPostgres({ version: rds.AuroraPostgresEngineVersion.VER_16_6 }),
+      // Minor versions get retired region by region (16.6 no longer exists in
+      // ap-south-1 / eu-west-1); 16.13 is offered in every region we use and
+      // supports scale-to-zero (>= 16.3). Instances auto-upgrade minors.
+      engine: rds.DatabaseClusterEngine.auroraPostgres({ version: rds.AuroraPostgresEngineVersion.VER_16_13 }),
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       writer: rds.ClusterInstance.serverlessV2('writer', { publiclyAccessible: false }),

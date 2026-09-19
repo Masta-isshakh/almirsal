@@ -15,9 +15,9 @@ import { registerApps } from '@/packages/apps/index';
  *  3. nothing                                       → PGlite in `.pglite/`
  *     (local `npm run dev`, no server to install)
  *
- * On first use the schema is synced and Part I seed loaded. Both are
- * idempotent, so a cold start on an already-initialised database costs one
- * information_schema query.
+ * The migration Lambda initialises the database at deploy time; the sync
+ * and seed calls here are the local-dev path and a self-heal. On an
+ * initialised database they cost two marker lookups.
  */
 let instance: Promise<Database> | undefined;
 

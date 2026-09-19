@@ -1,8 +1,11 @@
 import { defineBackend } from '@aws-amplify/backend';
-import { Stack } from 'aws-cdk-lib';
+import { Duration, Stack } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { Trigger } from 'aws-cdk-lib/triggers';
 import { auth } from './auth/resource.js';
 import { storage } from './storage/resource.js';
+import { migrate } from './functions/migrate/resource.js';
 import { AuroraDatabase } from './database/aurora.js';
 
 /**
@@ -20,7 +23,7 @@ import { AuroraDatabase } from './database/aurora.js';
  * DB secret; the policy is emitted as an output so it can be attached to the
  * app's service role (Amplify console → App settings → IAM roles).
  */
-const backend = defineBackend({ auth, storage });
+const backend = defineBackend({ auth, storage, migrate });
 
 // Invitation-only, like Odoo: users are created from Settings › Users.
 const { cfnUserPool } = backend.auth.resources.cfnResources;
@@ -61,6 +64,27 @@ const computeRole = new iam.Role(dbStack, 'ComputeRole', {
   description: 'Rodeo ERP: assumed by Amplify Hosting SSR compute (select it under App settings > IAM roles)',
   assumedBy: new iam.ServicePrincipal('amplify.amazonaws.com'),
   managedPolicies: [dataApiPolicy],
+});
+
+/**
+ * Database initialisation at deploy time (A-6 "seed on first deploy"): the
+ * migrate function runs once the cluster exists and again whenever its code
+ * changes. It is what keeps the first user request under the 30 s SSR limit.
+ */
+const migrateFn = backend.migrate.resources.lambda as lambda.Function;
+backend.migrate.addEnvironment('DB_CLUSTER_ARN', database.cluster.clusterArn);
+backend.migrate.addEnvironment('DB_SECRET_ARN', database.cluster.secret!.secretArn);
+backend.migrate.addEnvironment('DB_NAME', database.databaseName);
+migrateFn.role?.addManagedPolicy(dataApiPolicy);
+
+// Its own stack: the function stack depends on the database (env vars), so
+// the trigger — which depends on both — must not live in either.
+const migrationStack = backend.createStack('migration');
+new Trigger(migrationStack, 'RunMigration', {
+  handler: migrateFn,
+  executeAfter: [database.cluster],
+  executeOnHandlerChange: true,
+  timeout: Duration.minutes(15),
 });
 
 backend.addOutput({

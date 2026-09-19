@@ -72,5 +72,8 @@ dominated by Aurora compute hours.
    carries the Data API + secret permissions.
 3. Set `RODEO_SESSION_SECRET` (any long random string) in **App settings →
    Environment variables** so local sessions are signed with a private key.
-4. The first request syncs the schema and loads the seed; both are
-   idempotent. Aurora takes ~15 s to resume from a pause on that first hit.
+4. The database is initialised during the deployment itself by the
+   `rodeo-migrate` Lambda (a CloudFormation trigger runs it after the cluster
+   is created and whenever the migration code changes; ~1 minute on a fresh
+   cluster, ~6 s afterwards). The first user request only pays Aurora's ~15 s
+   resume when the cluster was paused.
