@@ -1,0 +1,26 @@
+[
+ {
+  "id": 1,
+  "name": "General",
+  "channel_type": "channel",
+  "description": "A place to connect and exchange news with colleagues across the company.",
+  "group_public_id": "Role / User",
+  "member_count": 1
+ },
+ {
+  "id": 2,
+  "name": "Administrators",
+  "channel_type": "channel",
+  "description": "General channel for administrators.",
+  "group_public_id": "Role / Administrator",
+  "member_count": 1
+ },
+ {
+  "id": 3,
+  "name": "OdooBot, masta",
+  "channel_type": "chat",
+  "description": false,
+  "group_public_id": false,
+  "member_count": 2
+ }
+]

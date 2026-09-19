@@ -1,0 +1,142 @@
+[
+ {
+  "id": 8,
+  "name": "Sales",
+  "category_id": "Sales",
+  "sequence": 1,
+  "name_ar": "المبيعات"
+ },
+ {
+  "id": 12,
+  "name": "Project",
+  "category_id": "Services",
+  "sequence": 3,
+  "name_ar": "المشروع"
+ },
+ {
+  "id": 5,
+  "name": "Accounting",
+  "category_id": "Accounting",
+  "sequence": 7,
+  "name_ar": "المحاسبة"
+ },
+ {
+  "id": 19,
+  "name": "Purchase",
+  "category_id": "Supply Chain",
+  "sequence": 8,
+  "name_ar": "الشراء"
+ },
+ {
+  "id": 17,
+  "name": "Approvals",
+  "category_id": "Human Resources",
+  "sequence": 9,
+  "name_ar": "الموافقات"
+ },
+ {
+  "id": 11,
+  "name": "Employees",
+  "category_id": "Human Resources",
+  "sequence": 9,
+  "name_ar": "الموظفون"
+ },
+ {
+  "id": 4,
+  "name": "Products",
+  "category_id": "Master Data",
+  "sequence": 9,
+  "name_ar": "المنتجات"
+ },
+ {
+  "id": 18,
+  "name": "Attendances",
+  "category_id": "Human Resources",
+  "sequence": 14,
+  "name_ar": "الحضور"
+ },
+ {
+  "id": 15,
+  "name": "Fleet",
+  "category_id": "Human Resources",
+  "sequence": 17,
+  "name_ar": "الأسطول"
+ },
+ {
+  "id": 20,
+  "name": "Documents",
+  "category_id": "Productivity",
+  "sequence": 20,
+  "name_ar": "المستندات"
+ },
+ {
+  "id": 13,
+  "name": "Surveys",
+  "category_id": "Marketing",
+  "sequence": 20,
+  "name_ar": "الاستطلاعات"
+ },
+ {
+  "id": 7,
+  "name": "Dashboard",
+  "category_id": "Productivity",
+  "sequence": 30,
+  "name_ar": "لوحة البيانات"
+ },
+ {
+  "id": 6,
+  "name": "Bank",
+  "category_id": "Accounting",
+  "sequence": 50,
+  "name_ar": "البنك"
+ },
+ {
+  "id": 10,
+  "name": "Appointment",
+  "category_id": "Services",
+  "sequence": 100,
+  "name_ar": "الموعد"
+ },
+ {
+  "id": 3,
+  "name": "Canned Responses",
+  "category_id": "Marketing",
+  "sequence": 100,
+  "name_ar": "الردود الجاهزة"
+ },
+ {
+  "id": 2,
+  "name": "Contact",
+  "category_id": "Master Data",
+  "sequence": 100,
+  "name_ar": "جهة الاتصال"
+ },
+ {
+  "id": 1,
+  "name": "Export",
+  "category_id": "Master Data",
+  "sequence": 100,
+  "name_ar": "تصدير"
+ },
+ {
+  "id": 16,
+  "name": "Helpdesk",
+  "category_id": "Services",
+  "sequence": 100,
+  "name_ar": "مكتب المساعدة"
+ },
+ {
+  "id": 14,
+  "name": "Planning",
+  "category_id": "Human Resources",
+  "sequence": 100,
+  "name_ar": "التخطيط"
+ },
+ {
+  "id": 9,
+  "name": "Sign",
+  "category_id": "Productivity",
+  "sequence": 100,
+  "name_ar": "توقيع"
+ }
+]

@@ -1,0 +1,79 @@
+[
+ {
+  "id": 1,
+  "name": "A1",
+  "level_progress": 10,
+  "skill_type_id": "Languages",
+  "default_level": true
+ },
+ {
+  "id": 7,
+  "name": "Beginner",
+  "level_progress": 15,
+  "skill_type_id": "Soft Skills",
+  "default_level": true
+ },
+ {
+  "id": 8,
+  "name": "Elementary",
+  "level_progress": 25,
+  "skill_type_id": "Soft Skills",
+  "default_level": false
+ },
+ {
+  "id": 2,
+  "name": "A2",
+  "level_progress": 40,
+  "skill_type_id": "Languages",
+  "default_level": false
+ },
+ {
+  "id": 9,
+  "name": "Intermediate",
+  "level_progress": 50,
+  "skill_type_id": "Soft Skills",
+  "default_level": false
+ },
+ {
+  "id": 3,
+  "name": "B1",
+  "level_progress": 60,
+  "skill_type_id": "Languages",
+  "default_level": false
+ },
+ {
+  "id": 4,
+  "name": "B2",
+  "level_progress": 75,
+  "skill_type_id": "Languages",
+  "default_level": false
+ },
+ {
+  "id": 10,
+  "name": "Advanced",
+  "level_progress": 80,
+  "skill_type_id": "Soft Skills",
+  "default_level": false
+ },
+ {
+  "id": 5,
+  "name": "C1",
+  "level_progress": 85,
+  "skill_type_id": "Languages",
+  "default_level": false
+ },
+ {
+  "id": 11,
+  "name": "Expert",
+  "level_progress": 100,
+  "skill_type_id": "Soft Skills",
+  "default_level": false
+ },
+ {
+  "id": 6,
+  "name": "C2",
+  "level_progress": 100,
+  "skill_type_id": "Languages",
+  "default_level": false
+ }
+]

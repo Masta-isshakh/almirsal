@@ -1,0 +1,62 @@
+[
+ {
+  "id": 2,
+  "name": "Group Payments Number Sequence",
+  "code": false,
+  "prefix": "GROUP/%(range_year)s/",
+  "padding": 5,
+  "number_next_actual": 1,
+  "use_date_range": true,
+  "implementation": "no_gap"
+ },
+ {
+  "id": 4,
+  "name": "Helpdesk Ticket",
+  "code": "helpdesk.ticket",
+  "prefix": false,
+  "padding": 5,
+  "number_next_actual": 1,
+  "use_date_range": false,
+  "implementation": "standard"
+ },
+ {
+  "id": 1,
+  "name": "Payment",
+  "code": "account.payment",
+  "prefix": "PAY",
+  "padding": 5,
+  "number_next_actual": 1,
+  "use_date_range": false,
+  "implementation": "standard"
+ },
+ {
+  "id": 5,
+  "name": "Purchase Order",
+  "code": "purchase.order",
+  "prefix": "P",
+  "padding": 5,
+  "number_next_actual": 1,
+  "use_date_range": false,
+  "implementation": "standard"
+ },
+ {
+  "id": 3,
+  "name": "Sales Order",
+  "code": "sale.order",
+  "prefix": "S",
+  "padding": 5,
+  "number_next_actual": 1,
+  "use_date_range": false,
+  "implementation": "standard"
+ },
+ {
+  "id": 6,
+  "name": "Sequence APPR",
+  "code": false,
+  "prefix": "APPR",
+  "padding": 5,
+  "number_next_actual": 1,
+  "use_date_range": false,
+  "implementation": "standard"
+ }
+]

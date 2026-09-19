@@ -1,0 +1,66 @@
+[
+ {
+  "id": 1,
+  "name": "Notification - 15 Minutes",
+  "alarm_type": "notification",
+  "duration": 15,
+  "interval": "minutes",
+  "name_ar": "إشعار - 15 دقيقة"
+ },
+ {
+  "id": 2,
+  "name": "Notification - 30 Minutes",
+  "alarm_type": "notification",
+  "duration": 30,
+  "interval": "minutes",
+  "name_ar": "إشعار - 30 دقيقة"
+ },
+ {
+  "id": 3,
+  "name": "Notification - 1 Hours",
+  "alarm_type": "notification",
+  "duration": 1,
+  "interval": "hours",
+  "name_ar": "إشعار - 1 ساعة"
+ },
+ {
+  "id": 4,
+  "name": "Notification - 2 Hours",
+  "alarm_type": "notification",
+  "duration": 2,
+  "interval": "hours",
+  "name_ar": "إشعار - 2 ساعتان"
+ },
+ {
+  "id": 5,
+  "name": "Notification - 1 Days",
+  "alarm_type": "notification",
+  "duration": 1,
+  "interval": "days",
+  "name_ar": "إشعار - 1 يوم"
+ },
+ {
+  "id": 6,
+  "name": "Email - 3 Hours",
+  "alarm_type": "email",
+  "duration": 3,
+  "interval": "hours",
+  "name_ar": "البريد الإلكتروني - 3 ساعات"
+ },
+ {
+  "id": 7,
+  "name": "Email - 6 Hours",
+  "alarm_type": "email",
+  "duration": 6,
+  "interval": "hours",
+  "name_ar": "البريد الإلكتروني - 6 ساعات"
+ },
+ {
+  "id": 8,
+  "name": "SMS Text Message - 1 Hours",
+  "alarm_type": "sms",
+  "duration": 1,
+  "interval": "hours",
+  "name_ar": "رسالة نصية قصيرة - ساعة 1"
+ }
+]

@@ -1,0 +1,28 @@
+[
+ {
+  "id": 1,
+  "name": "Complete your Profile",
+  "period": "once",
+  "visibility_mode": "personal",
+  "state": "inprogress",
+  "challenge_category": "other",
+  "line_ids": [
+   1
+  ],
+  "name_ar": "إكمال ملفك الشخصي"
+ },
+ {
+  "id": 2,
+  "name": "Setup your Company",
+  "period": "once",
+  "visibility_mode": "personal",
+  "state": "inprogress",
+  "challenge_category": "other",
+  "line_ids": [
+   2,
+   3,
+   4
+  ],
+  "name_ar": "قم بإعداد شركتك"
+ }
+]

@@ -1,0 +1,68 @@
+[
+ {
+  "id": 1,
+  "name": "EX WORKS",
+  "code": "EXW",
+  "name_ar": "تسليم المصنع"
+ },
+ {
+  "id": 2,
+  "name": "FREE CARRIER",
+  "code": "FCA",
+  "name_ar": "نقل مجاني"
+ },
+ {
+  "id": 3,
+  "name": "FREE ALONGSIDE SHIP",
+  "code": "FAS",
+  "name_ar": "شحن جانبي مجانًا"
+ },
+ {
+  "id": 4,
+  "name": "FREE ON BOARD",
+  "code": "FOB",
+  "name_ar": "مجانًا عند الشحن"
+ },
+ {
+  "id": 5,
+  "name": "COST AND FREIGHT",
+  "code": "CFR",
+  "name_ar": "التكلفة والشحن"
+ },
+ {
+  "id": 6,
+  "name": "COST, INSURANCE AND FREIGHT",
+  "code": "CIF",
+  "name_ar": "التكلفة والتأمين والشحن"
+ },
+ {
+  "id": 7,
+  "name": "CARRIAGE PAID TO",
+  "code": "CPT",
+  "name_ar": "يتم دفع التكلفة لـ"
+ },
+ {
+  "id": 8,
+  "name": "CARRIAGE AND INSURANCE PAID TO",
+  "code": "CIP",
+  "name_ar": "يتم دفع التكلفة والتأمين لـ"
+ },
+ {
+  "id": 9,
+  "name": "DELIVERED AT PLACE UNLOADED",
+  "code": "DPU",
+  "name_ar": "سلمت في المكان دون تحميل"
+ },
+ {
+  "id": 10,
+  "name": "DELIVERED AT PLACE",
+  "code": "DAP",
+  "name_ar": "التوصيل إلى المكان المتفق عليه"
+ },
+ {
+  "id": 11,
+  "name": "DELIVERED DUTY PAID",
+  "code": "DDP",
+  "name_ar": "تسليم خالص التكاليف"
+ }
+]

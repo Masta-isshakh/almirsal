@@ -1,0 +1,134 @@
+[
+ {
+  "menuId": 72,
+  "name": "Discuss",
+  "icon": "mail,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 262,
+  "name": "Calendar",
+  "icon": "calendar,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 289,
+  "name": "Appointments",
+  "icon": "appointment,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 390,
+  "name": "To-do",
+  "icon": "project_todo,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 324,
+  "name": "Knowledge",
+  "icon": "knowledge,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 225,
+  "name": "Sales",
+  "icon": "sale_management,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 179,
+  "name": "Dashboards",
+  "icon": "spreadsheet_dashboard,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 493,
+  "name": "Rental",
+  "icon": "sale_renting,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 391,
+  "name": "Accounting",
+  "icon": "accountant,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 509,
+  "name": "Documents",
+  "icon": "documents,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 336,
+  "name": "Project",
+  "icon": "project,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 375,
+  "name": "Planning",
+  "icon": "planning,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 433,
+  "name": "Helpdesk",
+  "icon": "helpdesk,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 356,
+  "name": "Surveys",
+  "icon": "survey,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 473,
+  "name": "Purchase",
+  "icon": "purchase,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 278,
+  "name": "Sign",
+  "icon": "sign,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 305,
+  "name": "Employees",
+  "icon": "hr,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 460,
+  "name": "Attendances",
+  "icon": "hr_attendance,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 410,
+  "name": "Fleet",
+  "icon": "fleet,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 449,
+  "name": "Approvals",
+  "icon": "approvals,static/description/icon.png",
+  "hasData": true
+ },
+ {
+  "menuId": 1,
+  "name": "Apps",
+  "icon": "base,static/description/modules.png",
+  "hasData": true
+ },
+ {
+  "menuId": 9,
+  "name": "Settings",
+  "icon": "base,static/description/settings.png",
+  "hasData": true
+ }
+]

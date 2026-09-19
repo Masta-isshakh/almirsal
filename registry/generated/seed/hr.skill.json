@@ -1,0 +1,201 @@
+[
+ {
+  "id": 1,
+  "name": "French",
+  "skill_type_id": "Languages",
+  "name_ar": "فرنسي"
+ },
+ {
+  "id": 2,
+  "name": "Spanish",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 3,
+  "name": "English",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 4,
+  "name": "German",
+  "skill_type_id": "Languages",
+  "name_ar": "ألماني"
+ },
+ {
+  "id": 5,
+  "name": "Filipino",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 6,
+  "name": "Arabic",
+  "skill_type_id": "Languages",
+  "name_ar": "اللغة العربية"
+ },
+ {
+  "id": 7,
+  "name": "Bengali",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 8,
+  "name": "Mandarin Chinese",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 9,
+  "name": "Wu Chinese",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 10,
+  "name": "Hindi",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 11,
+  "name": "Russian",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 12,
+  "name": "Portuguese",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 13,
+  "name": "Indonesian",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 14,
+  "name": "Urdu",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 15,
+  "name": "Japanese",
+  "skill_type_id": "Languages",
+  "name_ar": "اليابانية"
+ },
+ {
+  "id": 16,
+  "name": "Punjabi",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 17,
+  "name": "Javanese",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 18,
+  "name": "Telugu",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 19,
+  "name": "Turkish",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 20,
+  "name": "Korean",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 21,
+  "name": "Marathi",
+  "skill_type_id": "Languages"
+ },
+ {
+  "id": 22,
+  "name": "Communication",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "التواصل"
+ },
+ {
+  "id": 23,
+  "name": "Teamwork",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "العمل الجماعي"
+ },
+ {
+  "id": 24,
+  "name": "Problem-Solving",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "حلّ المشكلات"
+ },
+ {
+  "id": 25,
+  "name": "Time Management",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "إدارة الوقت"
+ },
+ {
+  "id": 26,
+  "name": "Critical Thinking",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "التفكير النقدي"
+ },
+ {
+  "id": 27,
+  "name": "Decision-Making",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "صناعة القرار"
+ },
+ {
+  "id": 28,
+  "name": "Organizational",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "المهارات التنظيمية"
+ },
+ {
+  "id": 29,
+  "name": "Stress management",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "التعامل مع الضغوط"
+ },
+ {
+  "id": 30,
+  "name": "Adaptability",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "قابلية التكيف"
+ },
+ {
+  "id": 31,
+  "name": "Conflict Management",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "إدارة النزاعات"
+ },
+ {
+  "id": 32,
+  "name": "Leadership",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "القيادة"
+ },
+ {
+  "id": 33,
+  "name": "Creativity",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "الإبداع"
+ },
+ {
+  "id": 34,
+  "name": "Resourcefulness",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "سعة الحيلة"
+ },
+ {
+  "id": 35,
+  "name": "Persuasion",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "الإقناع"
+ },
+ {
+  "id": 36,
+  "name": "Openness to criticism",
+  "skill_type_id": "Soft Skills",
+  "name_ar": "تقبل النقد"
+ }
+]

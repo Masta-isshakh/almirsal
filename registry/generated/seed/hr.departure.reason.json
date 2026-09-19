@@ -1,0 +1,25 @@
+[
+ {
+  "id": 1,
+  "name": "Fired",
+  "sequence": 0,
+  "name_ar": "مطرود"
+ },
+ {
+  "id": 2,
+  "name": "Resigned",
+  "sequence": 1,
+  "name_ar": "استقال"
+ },
+ {
+  "id": 3,
+  "name": "Retired",
+  "sequence": 2,
+  "name_ar": "تقاعد"
+ },
+ {
+  "id": 4,
+  "name": "Dead",
+  "sequence": 3
+ }
+]

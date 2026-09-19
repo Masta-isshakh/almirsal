@@ -1,0 +1,102 @@
+[
+ {
+  "id": 1,
+  "name": "Immediate Payment",
+  "note": "<p>Payment terms: Immediate Payment</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "الدفع الفوري"
+ },
+ {
+  "id": 2,
+  "name": "15 Days",
+  "note": "<p>Payment terms: 15 Days</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "15 يوماً"
+ },
+ {
+  "id": 3,
+  "name": "21 Days",
+  "note": "<p>Payment terms: 21 Days</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "21 يوماً"
+ },
+ {
+  "id": 4,
+  "name": "30 Days",
+  "note": "<p>Payment terms: 30 Days</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "30 يوماً"
+ },
+ {
+  "id": 5,
+  "name": "45 Days",
+  "note": "<p>Payment terms: 45 Days</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "45 يوماً"
+ },
+ {
+  "id": 6,
+  "name": "End of Following Month",
+  "note": "<p>Payment terms: End of Following Month</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "نهاية الشهر التالي"
+ },
+ {
+  "id": 7,
+  "name": "10 Days after End of Next Month",
+  "note": "<p>Payment terms: 10 Days after End of Next Month</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "10 أيام بعد نهاية الشهر التالي"
+ },
+ {
+  "id": 8,
+  "name": "30% Now, Balance 60 Days",
+  "note": "<p>Payment terms: 30% Now, Balance 60 Days</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "30% الآن، الرصيد في 60 يوماً"
+ },
+ {
+  "id": 9,
+  "name": "2/7 Net 30",
+  "note": "<p>Payment terms: 30 Days, 2% Early Payment Discount under 7 days</p>",
+  "early_discount": true,
+  "discount_percentage": 2,
+  "discount_days": 7,
+  "display_on_invoice": true,
+  "name_ar": "2/7 صافي 30"
+ },
+ {
+  "id": 10,
+  "name": "90 days, on the 10th",
+  "note": "<p>Payment terms: 90 days, on the 10th</p>",
+  "early_discount": false,
+  "discount_percentage": 2,
+  "discount_days": 10,
+  "display_on_invoice": true,
+  "name_ar": "90 يوم، بتاريخ 10"
+ }
+]

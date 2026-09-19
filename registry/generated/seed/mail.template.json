@@ -1,0 +1,415 @@
+[
+ {
+  "id": 40,
+  "name": "Appointment: Appointment Booked",
+  "model": "calendar.event",
+  "subject": "{{ 'Appointment Requested: ' if not object.appointment_type_id.is_always_confirm and object.appointment_status == 'request' else 'Appointment Booked: ' }}{{ object.appointment_type_id.name }}",
+  "description": "Sent to followers of an appointment type when a meeting is booked"
+ },
+ {
+  "id": 41,
+  "name": "Appointment: Appointment Canceled",
+  "model": "calendar.event",
+  "subject": "Appointment Canceled: {{ object.appointment_type_id.name }}",
+  "description": "Sent to all attendees when an appointment is cancelled"
+ },
+ {
+  "id": 42,
+  "name": "Appointment: Attendee Invitation",
+  "model": "calendar.attendee",
+  "subject": "Invitation to {{ object.event_id.name }}",
+  "description": "Invitation email to new attendees of an appointment"
+ },
+ {
+  "id": 15,
+  "name": "Bank connection expiration reminder",
+  "model": "account.journal",
+  "subject": "Your bank connection is expiring soon",
+  "description": false
+ },
+ {
+  "id": 32,
+  "name": "Calendar: Date Updated",
+  "model": "calendar.attendee",
+  "subject": "{{ object.event_id.name }}: Date updated",
+  "description": "Sent to all attendees if the schedule change"
+ },
+ {
+  "id": 35,
+  "name": "Calendar: Event Deleted",
+  "model": "calendar.event",
+  "subject": "Deleted event: {{ object.name }}",
+  "description": "Used to manually notify attendees"
+ },
+ {
+  "id": 34,
+  "name": "Calendar: Event Update",
+  "model": "calendar.event",
+  "subject": "{{object.name}}: Event update",
+  "description": "Used to manually notify attendees"
+ },
+ {
+  "id": 31,
+  "name": "Calendar: Meeting Invitation",
+  "model": "calendar.attendee",
+  "subject": "Invitation to {{ object.event_id.name }}",
+  "description": "Invitation email to new attendees"
+ },
+ {
+  "id": 33,
+  "name": "Calendar: Reminder",
+  "model": "calendar.attendee",
+  "subject": "{{ object.event_id.name }} - Reminder",
+  "description": "Sent to all attendees if a reminder is set"
+ },
+ {
+  "id": 10,
+  "name": "Credit Note: Sending",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Credit Note (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to customers with the credit note in attachment"
+ },
+ {
+  "id": 16,
+  "name": "Customer Statement",
+  "model": "res.partner",
+  "subject": "{{ (object.company_id or object._get_followup_responsible().company_id).name }} Statement - {{ object.parent_name }}",
+  "description": false
+ },
+ {
+  "id": 58,
+  "name": "Document Request: Reminder",
+  "model": "documents.document",
+  "subject": "Reminder to upload your document{{ object.name and ' : ' + object.name or '' }}",
+  "description": "Set reminders in activities to notify users who didn't upload their requested document"
+ },
+ {
+  "id": 57,
+  "name": "Document: Document Request",
+  "model": "documents.document",
+  "subject": "Document Request {{ object.name != False and ': '+ object.name or '' }}",
+  "description": "Sent to partner when requesting a document from them"
+ },
+ {
+  "id": 59,
+  "name": "Document: Document Share",
+  "model": "res.partner",
+  "subject": "{{ len(ctx.get('documents', [])) }} document(s) shared with you",
+  "description": "Sent to partner when sharing a document with them"
+ },
+ {
+  "id": 18,
+  "name": "Follow Up Report",
+  "model": "res.partner",
+  "subject": "{{ (object.company_id or object._get_followup_responsible().company_id).name }} Follow Up - {{ object.commercial_company_name }}",
+  "description": false
+ },
+ {
+  "id": 36,
+  "name": "Gamification: Badge Received",
+  "model": "gamification.badge.user",
+  "subject": "New badge {{ object.badge_id.name }} granted",
+  "description": "Sent automatically to the user who received a badge"
+ },
+ {
+  "id": 38,
+  "name": "Gamification: Challenge Report",
+  "model": "gamification.challenge",
+  "subject": false,
+  "description": "Send a challenge report to all participants"
+ },
+ {
+  "id": 39,
+  "name": "Gamification: New Rank Reached",
+  "model": "res.users",
+  "subject": "New rank: {{ object.rank_id.name }}",
+  "description": "Sent automatically when user reaches a new rank"
+ },
+ {
+  "id": 37,
+  "name": "Gamification: Reminder For Goal Update",
+  "model": "gamification.goal",
+  "subject": false,
+  "description": "Sent automatically to participant who haven't updated their goal"
+ },
+ {
+  "id": 52,
+  "name": "Helpdesk: Auto-Close Reminder",
+  "model": "helpdesk.ticket",
+  "subject": "Your support ticket will be closed soon",
+  "description": "Reminder sent to customers before their ticket is closed due to inactivity"
+ },
+ {
+  "id": 51,
+  "name": "Helpdesk: Ticket Closed",
+  "model": "helpdesk.ticket",
+  "subject": "Ticket Closed - Reference {{ object.ticket_ref if object.ticket_ref else 15 }}",
+  "description": "Set this template on a project's stage to automate email when tasks reach stages"
+ },
+ {
+  "id": 53,
+  "name": "Helpdesk: Ticket Rating Request",
+  "model": "helpdesk.ticket",
+  "subject": "{{ object.company_id.name or object.user_id.company_id.name or 'Helpdesk' }}: Service Rating Request",
+  "description": "Enable \"customer ratings\" feature on the helpdesk team"
+ },
+ {
+  "id": 50,
+  "name": "Helpdesk: Ticket Received",
+  "model": "helpdesk.ticket",
+  "subject": "{{ object.name }}",
+  "description": "Send customers a confirmation email to notify them that their helpdesk ticket has been received and is currently being reviewed by the helpdesk team. Automatically send an email to customers when a ticket reaches a specific stage in a helpdesk team by setting this template on that stage."
+ },
+ {
+  "id": 7,
+  "name": "IAP Extract Notification",
+  "model": "iap.account",
+  "subject": "IAP Extract Notification",
+  "description": false
+ },
+ {
+  "id": 8,
+  "name": "Invoice: Sending",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Invoice (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to customers with their invoices in attachment"
+ },
+ {
+  "id": 14,
+  "name": "Journal Notification",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} - New invoice in {{ object.journal_id.display_name or 'Invoices' }} journal",
+  "description": false
+ },
+ {
+  "id": 20,
+  "name": "Kind Reminder",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Kind Reminder (Ref {{ object.name or 'n/a' }})",
+  "description": "Send a kind reminder to customers with their invoices in attachment"
+ },
+ {
+  "id": 23,
+  "name": "Kind Reminder",
+  "model": "res.partner",
+  "subject": "{{ (object.company_id or object._get_followup_responsible().company_id).name }} Payment Reminder",
+  "description": "Send a kind payment reminder to customers with their invoices in attachment"
+ },
+ {
+  "id": 22,
+  "name": "Last Reminder",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Last Reminder (Ref {{ object.name or 'n/a' }})",
+  "description": "Send a last reminder to customers with their invoices in attachment"
+ },
+ {
+  "id": 25,
+  "name": "Last Reminder",
+  "model": "res.partner",
+  "subject": "{{ (object.company_id or object._get_followup_responsible().company_id).name }} Payment Reminder",
+  "description": "Send a last payment reminder to customers with their invoices in attachment"
+ },
+ {
+  "id": 13,
+  "name": "New eInvoices Notification",
+  "model": "account.journal",
+  "subject": "New Electronic Invoices Received",
+  "description": "Notification email for newly received eInvoices"
+ },
+ {
+  "id": 26,
+  "name": "Payment Reminder before due date",
+  "model": "res.partner",
+  "subject": "{{ (object.company_id or object._get_followup_responsible().company_id).name }} Payment Reminder",
+  "description": "Send a payment reminder before the due date to customer"
+ },
+ {
+  "id": 9,
+  "name": "Payment: Payment Receipt",
+  "model": "account.payment",
+  "subject": "{{ object.company_id.name }} Payment Receipt (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent manually to customer when clicking on 'Send receipt by email' in payment action"
+ },
+ {
+  "id": 48,
+  "name": "Planning: New Schedule",
+  "model": "planning.planning",
+  "subject": "Your planning from {{ format_date(ctx.get('start_datetime')) }} to {{ format_date(ctx.get('end_datetime')) }}",
+  "description": "Email sent automatically when publishing the schedule of your employees"
+ },
+ {
+  "id": 47,
+  "name": "Planning: New Shift",
+  "model": "planning.slot",
+  "subject": "{{ ctx.get('mail_subject', '') }} {{ ctx.get('start_datetime' , '') }}",
+  "description": "Email sent automatically when publishing a shift"
+ },
+ {
+  "id": 49,
+  "name": "Planning: Shift Re-assigned",
+  "model": "planning.slot",
+  "subject": "Your shift on {{ ctx.get('start_datetime') }} was re-assigned to {{ ctx.get('new_assignee_name', 'Marc Demo') }}",
+  "description": "Email sent automatically when an employee self-assigns to the unwanted shift of another employee, notifying the person who requested to switch that the shift has been taken"
+ },
+ {
+  "id": 43,
+  "name": "Project: Request Acknowledgment",
+  "model": "project.task",
+  "subject": "Reception of {{ object.name }}",
+  "description": "Automatically send an email to customers when a task reaches a specific stage in a project by setting this template on that stage"
+ },
+ {
+  "id": 44,
+  "name": "Project: Task Rating Request",
+  "model": "project.task",
+  "subject": "{{ object.project_id.company_id.name or user.env.company.name }}: Satisfaction Survey",
+  "description": "Set this template on a project stage to request feedback from your customers. Enable the \"customer ratings\" feature on the project"
+ },
+ {
+  "id": 55,
+  "name": "Purchase: Purchase Order",
+  "model": "purchase.order",
+  "subject": "{{ object.company_id.name }} Order (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to vendor with the purchase order in attachment"
+ },
+ {
+  "id": 54,
+  "name": "Purchase: Request For Quotation",
+  "model": "purchase.order",
+  "subject": "{{ object.company_id.name }} Request for Quotation (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent manually to vendor to request a quotation"
+ },
+ {
+  "id": 56,
+  "name": "Purchase: Vendor Reminder",
+  "model": "purchase.order",
+  "subject": "{{ object.company_id.name }} Order (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to vendors before expected arrival, based on the purchase order setting"
+ },
+ {
+  "id": 29,
+  "name": "Sales: Order Confirmation",
+  "model": "sale.order",
+  "subject": "{{ object.company_id.name }} {{ (object.get_portal_last_transaction().state == 'pending') and 'Pending Order' or 'Order' }} {{ object.name or 'n/a' }} {{ object.client_order_ref and ('(' + object.client_order_ref + ')') or '' }}",
+  "description": "Sent to customers on order confirmation"
+ },
+ {
+  "id": 30,
+  "name": "Sales: Payment Done",
+  "model": "sale.order",
+  "subject": "{{ object.company_id.name }} {{ (object.get_portal_last_transaction().state == 'pending') and 'Pending Order' or 'Order' }} (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to customers when a payment is received but doesn't immediately confirm their order"
+ },
+ {
+  "id": 28,
+  "name": "Sales: Send Pro Forma",
+  "model": "sale.order",
+  "subject": "{{ object.company_id.name }} {{ object.state in ('draft', 'sent') and 'Pro Forma' or 'Order'}} (Ref {{ object.name or 'n/a' }})",
+  "description": "Used by salespeople when they send pro forma to prospects"
+ },
+ {
+  "id": 27,
+  "name": "Sales: Send Quotation",
+  "model": "sale.order",
+  "subject": "{{ object.company_id.name }} {{ object.state in ('draft', 'sent') and 'Quotation' or 'Order' }} {{ object.name or 'n/a' }} {{ object.client_order_ref and ('(' + object.client_order_ref + ')') or '' }}",
+  "description": "Used by salespeople when they send quotations or proforma to prospects"
+ },
+ {
+  "id": 21,
+  "name": "Second Reminder",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Second Reminder (Ref {{ object.name or 'n/a' }})",
+  "description": "Send a second reminder to customers with their invoices in attachment"
+ },
+ {
+  "id": 24,
+  "name": "Second Reminder",
+  "model": "res.partner",
+  "subject": "{{ (object.company_id or object._get_followup_responsible().company_id).name }} Payment Reminder",
+  "description": "Send a second payment reminder to customers with their invoices in attachment"
+ },
+ {
+  "id": 12,
+  "name": "Self-billing credit note: Sending",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Self-billing credit note (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to customers with the self-billing credit note in attachment"
+ },
+ {
+  "id": 11,
+  "name": "Self-billing invoice: Sending",
+  "model": "account.move",
+  "subject": "{{ object.company_id.name }} Self-billing invoice (Ref {{ object.name or 'n/a' }})",
+  "description": "Sent to customers with their self-billing invoices in attachment"
+ },
+ {
+  "id": 5,
+  "name": "Settings: 2Fa Invitation",
+  "model": "res.users",
+  "subject": "Invitation to activate two-factor authentication on your Odoo account",
+  "description": false
+ },
+ {
+  "id": 6,
+  "name": "Settings: 2Fa New Login",
+  "model": "res.users",
+  "subject": "Your two-factor authentication code",
+  "description": false
+ },
+ {
+  "id": 3,
+  "name": "Settings: New Portal Sign Up",
+  "model": "res.users",
+  "subject": "Welcome to {{ object.company_id.name }}!",
+  "description": "Sent to portal user who registered themselves"
+ },
+ {
+  "id": 4,
+  "name": "Settings: New Portal User Invite",
+  "model": "res.users",
+  "subject": "Your account at {{ object.company_id.name }}",
+  "description": "Sent to new portal user after you invited them"
+ },
+ {
+  "id": 1,
+  "name": "Settings: New User Invite",
+  "model": "res.users",
+  "subject": "{{ object.create_uid.name }} from {{ object.company_id.name }} invites you to connect to Odoo",
+  "description": "Sent to new user after you invited them"
+ },
+ {
+  "id": 2,
+  "name": "Settings: Unregistered User Reminder",
+  "model": "res.users",
+  "subject": "Reminder for unregistered users",
+  "description": "Sent automatically to admin if new user haven't responded to the invitation"
+ },
+ {
+  "id": 46,
+  "name": "Survey: Certification Success",
+  "model": "survey.user_input",
+  "subject": "Certification: {{ object.survey_id.display_name }}",
+  "description": "Sent to participant if they succeeded the certification"
+ },
+ {
+  "id": 45,
+  "name": "Survey: Invite",
+  "model": "survey.user_input",
+  "subject": "Participate to {{ object.survey_id.display_name }} survey",
+  "description": "Sent to participant when you share a survey"
+ },
+ {
+  "id": 19,
+  "name": "Tax Return Deadline",
+  "model": "account.return",
+  "subject": "Reminder: Upcoming {{ object.name }} Deadline - Action Required",
+  "description": false
+ },
+ {
+  "id": 17,
+  "name": "Tax payment",
+  "model": "account.return",
+  "subject": "Tax return payment instructions",
+  "description": false
+ }
+]

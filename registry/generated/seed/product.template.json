@@ -1,0 +1,16 @@
+[
+ {
+  "id": 1,
+  "name": "Booking Fees",
+  "type": "service",
+  "list_price": 50,
+  "standard_price": 0,
+  "sale_ok": true,
+  "purchase_ok": false,
+  "categ_id": "Services",
+  "default_code": false,
+  "invoice_policy": "order",
+  "service_tracking": "no",
+  "name_ar": "رسوم الحجز"
+ }
+]

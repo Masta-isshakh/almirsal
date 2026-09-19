@@ -1,0 +1,40 @@
+[
+ {
+  "id": 7,
+  "name": "Employee",
+  "name_ar": "الموظف"
+ },
+ {
+  "id": 8,
+  "name": "Company Executive"
+ },
+ {
+  "id": 4,
+  "name": "Student",
+  "name_ar": "طالب"
+ },
+ {
+  "id": 3,
+  "name": "Intern",
+  "name_ar": "متدرب"
+ },
+ {
+  "id": 1,
+  "name": "Interim",
+  "name_ar": "انتقالي"
+ },
+ {
+  "id": 5,
+  "name": "Apprenticeship",
+  "name_ar": "التدريب العملي"
+ },
+ {
+  "id": 2,
+  "name": "Occasional / Seasonal"
+ },
+ {
+  "id": 6,
+  "name": "Thesis",
+  "name_ar": "الأطروحة"
+ }
+]

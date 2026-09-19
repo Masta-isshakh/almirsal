@@ -1,0 +1,57 @@
+[
+ {
+  "id": 1,
+  "name": "New",
+  "sequence": 0,
+  "fold": false,
+  "team_ids": [
+   1
+  ],
+  "template_id": "Helpdesk: Ticket Received",
+  "name_ar": "جديد"
+ },
+ {
+  "id": 2,
+  "name": "In Progress",
+  "sequence": 1,
+  "fold": false,
+  "team_ids": [
+   1
+  ],
+  "template_id": false,
+  "name_ar": "قيد التنفيذ"
+ },
+ {
+  "id": 3,
+  "name": "On Hold",
+  "sequence": 2,
+  "fold": false,
+  "team_ids": [
+   1
+  ],
+  "template_id": false,
+  "name_ar": "قيد الانتظار"
+ },
+ {
+  "id": 4,
+  "name": "Solved",
+  "sequence": 3,
+  "fold": true,
+  "team_ids": [
+   1
+  ],
+  "template_id": false,
+  "name_ar": "تم حلّها"
+ },
+ {
+  "id": 5,
+  "name": "Cancelled",
+  "sequence": 4,
+  "fold": true,
+  "team_ids": [
+   1
+  ],
+  "template_id": false,
+  "name_ar": "تم الإلغاء"
+ }
+]

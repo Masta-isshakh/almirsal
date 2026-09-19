@@ -1,0 +1,780 @@
+{
+ "1": {
+  "id": 1,
+  "name": {
+   "en": "Role / User",
+   "ar": "الدور / المستخدم"
+  },
+  "fullName": "Role / User",
+  "comment": "Access to the home menu"
+ },
+ "2": {
+  "id": 2,
+  "name": {
+   "en": "Access Rights",
+   "ar": "صلاحيات الوصول"
+  },
+  "fullName": "Access Rights"
+ },
+ "3": {
+  "id": 3,
+  "name": {
+   "en": "Bypass HTML Field Sanitize",
+   "ar": "Bypass HTML Field Sanitize"
+  },
+  "fullName": "Bypass HTML Field Sanitize"
+ },
+ "4": {
+  "id": 4,
+  "name": {
+   "en": "Role / Administrator",
+   "ar": "المنصب / المدير"
+  },
+  "fullName": "Role / Administrator",
+  "comment": "Access to the settings to configure the apps"
+ },
+ "5": {
+  "id": 5,
+  "name": {
+   "en": "Multi Companies",
+   "ar": "تعدد المؤسسات"
+  },
+  "fullName": "Multi Companies"
+ },
+ "6": {
+  "id": 6,
+  "name": {
+   "en": "Multi Currencies",
+   "ar": "تعدد العملات"
+  },
+  "fullName": "Multi Currencies"
+ },
+ "7": {
+  "id": 7,
+  "name": {
+   "en": "Technical Features",
+   "ar": "الخصائص التقنية"
+  },
+  "fullName": "Technical Features"
+ },
+ "8": {
+  "id": 8,
+  "name": {
+   "en": "Allowed",
+   "ar": "مسموح به"
+  },
+  "fullName": "Export / Allowed",
+  "privilege": "Export"
+ },
+ "9": {
+  "id": 9,
+  "name": {
+   "en": "Creation",
+   "ar": "إنشاء"
+  },
+  "fullName": "Contact / Creation",
+  "privilege": "Contact"
+ },
+ "10": {
+  "id": 10,
+  "name": {
+   "en": "Role / Portal",
+   "ar": "المنصب / بوابة"
+  },
+  "fullName": "Role / Portal",
+  "comment": "Portal members have specific access rights (such as record rules and restricted menus).\n                They usually do not belong to the usual Odoo groups."
+ },
+ "11": {
+  "id": 11,
+  "name": {
+   "en": "Role / Public",
+   "ar": "المنصب / عام"
+  },
+  "fullName": "Role / Public",
+  "comment": "Public users have specific access rights (such as record rules and restricted menus).\n                They usually do not belong to the usual Odoo groups.\n                This makes group restrictions more convenient."
+ },
+ "12": {
+  "id": 12,
+  "name": {
+   "en": "Role / Everyone",
+   "ar": "Role / Everyone"
+  },
+  "fullName": "Role / Everyone",
+  "comment": "Includes all users. This makes group restrictions more convenient."
+ },
+ "13": {
+  "id": 13,
+  "name": {
+   "en": "Default access for new users",
+   "ar": "صلاحيات الوصول الافتراضية للمستخدمين الجدد"
+  },
+  "fullName": "Default access for new users"
+ },
+ "14": {
+  "id": 14,
+  "name": {
+   "en": "Technical Documentation",
+   "ar": "الوثائق التقنية"
+  },
+  "fullName": "Technical Documentation"
+ },
+ "15": {
+  "id": 15,
+  "name": {
+   "en": "Canned Response Administrator",
+   "ar": "مدير الردود الجاهزة"
+  },
+  "fullName": "Canned Responses / Canned Response Administrator",
+  "privilege": "Canned Responses"
+ },
+ "16": {
+  "id": 16,
+  "name": {
+   "en": "Mail Template Editor",
+   "ar": "محرر قالب البريد"
+  },
+  "fullName": "Mail Template Editor"
+ },
+ "17": {
+  "id": 17,
+  "name": {
+   "en": "Receive notifications in Odoo",
+   "ar": "تلقي الإشعارات في أودو"
+  },
+  "fullName": "Receive notifications in Odoo"
+ },
+ "18": {
+  "id": 18,
+  "name": {
+   "en": "Manage Multiple Units of Measure",
+   "ar": "إدارة وحدات قياس متعددة"
+  },
+  "fullName": "Manage Multiple Units of Measure"
+ },
+ "19": {
+  "id": 19,
+  "name": {
+   "en": "Analytic Accounting",
+   "ar": "المحاسبة التحليلية"
+  },
+  "fullName": "Analytic Accounting"
+ },
+ "20": {
+  "id": 20,
+  "name": {
+   "en": "Basic Pricelists",
+   "ar": "قوائم الأسعار الأساسية"
+  },
+  "fullName": "Basic Pricelists"
+ },
+ "21": {
+  "id": 21,
+  "name": {
+   "en": "Manage Product Variants",
+   "ar": "إدارة متغيرات المنتج"
+  },
+  "fullName": "Manage Product Variants"
+ },
+ "22": {
+  "id": 22,
+  "name": {
+   "en": "Create",
+   "ar": "إنشاء"
+  },
+  "fullName": "Products / Create",
+  "privilege": "Products"
+ },
+ "23": {
+  "id": 23,
+  "name": {
+   "en": "UOM price display",
+   "ar": "UOM price display"
+  },
+  "fullName": "UOM price display"
+ },
+ "24": {
+  "id": 24,
+  "name": {
+   "en": "Delivery Address",
+   "ar": "عنوان التوصيل"
+  },
+  "fullName": "Delivery Address"
+ },
+ "25": {
+  "id": 25,
+  "name": {
+   "en": "Read-only",
+   "ar": "إظهار الخصائص المحاسبية - للقراءة فقط"
+  },
+  "fullName": "Accounting / Read-only",
+  "privilege": "Accounting",
+  "comment": "access to all the accounting data but in readonly mode, no actions allowed."
+ },
+ "26": {
+  "id": 26,
+  "name": {
+   "en": "Invoicing",
+   "ar": "الفوترة"
+  },
+  "fullName": "Accounting / Invoicing",
+  "privilege": "Accounting",
+  "comment": "Invoices, payments and basic invoice reporting."
+ },
+ "27": {
+  "id": 27,
+  "name": {
+   "en": "Invoicing & Banks",
+   "ar": "الأساسي"
+  },
+  "fullName": "Accounting / Invoicing & Banks",
+  "privilege": "Accounting",
+  "comment": "adds the accounting dashboard, bank management and follow-up reports."
+ },
+ "28": {
+  "id": 28,
+  "name": {
+   "en": "Bookkeeper",
+   "ar": "عرض كافة الخصائص المحاسبية"
+  },
+  "fullName": "Accounting / Bookkeeper",
+  "privilege": "Accounting",
+  "comment": "access to all Accounting features, including reporting, asset management, analytic accounting, without configuration rights."
+ },
+ "29": {
+  "id": 29,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Accounting / Administrator",
+  "privilege": "Accounting",
+  "comment": "Full access, including configuration rights."
+ },
+ "30": {
+  "id": 30,
+  "name": {
+   "en": "Show Inalterability Features",
+   "ar": "إظهار خصائص عدم قابلية التغيير"
+  },
+  "fullName": "Show Inalterability Features"
+ },
+ "31": {
+  "id": 31,
+  "name": {
+   "en": "Allow the cash rounding management",
+   "ar": "السماح بإدارة التقريب في المعاملات المالية"
+  },
+  "fullName": "Allow the cash rounding management"
+ },
+ "32": {
+  "id": 32,
+  "name": {
+   "en": "Partial Purchase Deductibility",
+   "ar": "الخصم الجزئي للمشتريات"
+  },
+  "fullName": "Partial Purchase Deductibility"
+ },
+ "33": {
+  "id": 33,
+  "name": {
+   "en": "Validate bank account",
+   "ar": "تصديق الحساب البنكي"
+  },
+  "fullName": "Bank / Validate bank account",
+  "privilege": "Bank"
+ },
+ "34": {
+  "id": 34,
+  "name": {
+   "en": "Admin",
+   "ar": "مدير"
+  },
+  "fullName": "Dashboard / Admin",
+  "privilege": "Dashboard"
+ },
+ "35": {
+  "id": 35,
+  "name": {
+   "en": "Allow to define fiscal years of more or less than a year",
+   "ar": "السماح بإنشاء سنوات مالية أطول أو أقصر من عام"
+  },
+  "fullName": "Allow to define fiscal years of more or less than a year"
+ },
+ "36": {
+  "id": 36,
+  "name": {
+   "en": "User: Own Documents Only",
+   "ar": "المستخدم: مستنداته فقط"
+  },
+  "fullName": "Sales / User: Own Documents Only",
+  "privilege": "Sales",
+  "comment": "the user will have access to his own data in the sales application."
+ },
+ "37": {
+  "id": 37,
+  "name": {
+   "en": "User: All Documents",
+   "ar": "المستخدم: كافة المستندات"
+  },
+  "fullName": "Sales / User: All Documents",
+  "privilege": "Sales",
+  "comment": "the user will have access to all records of everyone in the sales application."
+ },
+ "38": {
+  "id": 38,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Sales / Administrator",
+  "privilege": "Sales",
+  "comment": "the user will have an access to the sales configuration as well as statistic reports."
+ },
+ "39": {
+  "id": 39,
+  "name": {
+   "en": "Lock Confirmed Sales",
+   "ar": "قفل المبيعات المؤكدة"
+  },
+  "fullName": "Lock Confirmed Sales"
+ },
+ "40": {
+  "id": 40,
+  "name": {
+   "en": "Discount on lines",
+   "ar": "خصم على البنود"
+  },
+  "fullName": "Discount on lines"
+ },
+ "41": {
+  "id": 41,
+  "name": {
+   "en": "A warning can be set on a product or a customer (Sale)",
+   "ar": "يمكن تعيين تحذير على منتج أو عميل معين (المبيعات)"
+  },
+  "fullName": "A warning can be set on a product or a customer (Sale)"
+ },
+ "42": {
+  "id": 42,
+  "name": {
+   "en": "Pro Forma Invoices",
+   "ar": "الفواتير الشكلية"
+  },
+  "fullName": "Pro Forma Invoices"
+ },
+ "43": {
+  "id": 43,
+  "name": {
+   "en": "Enable Services and Materials in Sales",
+   "ar": "Enable Services and Materials in Sales"
+  },
+  "fullName": "Enable Services and Materials in Sales"
+ },
+ "44": {
+  "id": 44,
+  "name": {
+   "en": "Manage template access",
+   "ar": "إدارة الوصول إلى القالب"
+  },
+  "fullName": "Manage template access"
+ },
+ "45": {
+  "id": 45,
+  "name": {
+   "en": "User: Own Templates",
+   "ar": "المستخدم: القوالب الخاصة بالمستخدم"
+  },
+  "fullName": "Sign / User: Own Templates",
+  "privilege": "Sign"
+ },
+ "46": {
+  "id": 46,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Sign / Administrator",
+  "privilege": "Sign"
+ },
+ "47": {
+  "id": 47,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Appointment / User",
+  "privilege": "Appointment"
+ },
+ "48": {
+  "id": 48,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Appointment / Administrator",
+  "privilege": "Appointment"
+ },
+ "49": {
+  "id": 49,
+  "name": {
+   "en": "Officer: Manage all employees",
+   "ar": "المسؤول: إدارة كافة الموظفين"
+  },
+  "fullName": "Employees / Officer: Manage all employees",
+  "privilege": "Employees",
+  "comment": "The user will be able to create and edit employees."
+ },
+ "50": {
+  "id": 50,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Employees / Administrator",
+  "privilege": "Employees",
+  "comment": "The user will have access to the human resources configuration as well as statistic reports."
+ },
+ "51": {
+  "id": 51,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Project / User",
+  "privilege": "Project",
+  "comment": "User: Can manage tasks in projects shared with them."
+ },
+ "52": {
+  "id": 52,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Project / Administrator",
+  "privilege": "Project",
+  "comment": "Administrator: Can manage projects and stages, with access to reporting and configuration."
+ },
+ "53": {
+  "id": 53,
+  "name": {
+   "en": "Use Stages on Project",
+   "ar": "استخدام المراحل في المشروع"
+  },
+  "fullName": "Use Stages on Project"
+ },
+ "54": {
+  "id": 54,
+  "name": {
+   "en": "Use Recurring Tasks",
+   "ar": "استخدام المهام المتكررة"
+  },
+  "fullName": "Use Recurring Tasks"
+ },
+ "55": {
+  "id": 55,
+  "name": {
+   "en": "Use Task Dependencies",
+   "ar": "استخدام تبعيات المهام"
+  },
+  "fullName": "Use Task Dependencies"
+ },
+ "56": {
+  "id": 56,
+  "name": {
+   "en": "Use Milestones",
+   "ar": "استخدم مؤشرات التقدم"
+  },
+  "fullName": "Use Milestones"
+ },
+ "57": {
+  "id": 57,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Surveys / User",
+  "privilege": "Surveys"
+ },
+ "58": {
+  "id": 58,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Surveys / Administrator",
+  "privilege": "Surveys"
+ },
+ "59": {
+  "id": 59,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Planning / User",
+  "privilege": "Planning"
+ },
+ "60": {
+  "id": 60,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Planning / Administrator",
+  "privilege": "Planning"
+ },
+ "61": {
+  "id": 61,
+  "name": {
+   "en": "Field Service Geolocation",
+   "ar": "Field Service Geolocation"
+  },
+  "fullName": "Field Service Geolocation"
+ },
+ "62": {
+  "id": 62,
+  "name": {
+   "en": "Field Service: Allow Customer Report",
+   "ar": "Field Service: Allow Customer Report"
+  },
+  "fullName": "Field Service: Allow Customer Report"
+ },
+ "63": {
+  "id": 63,
+  "name": {
+   "en": "Field Service: Allow material on interventions",
+   "ar": "Field Service: Allow material on interventions"
+  },
+  "fullName": "Field Service: Allow material on interventions"
+ },
+ "64": {
+  "id": 64,
+  "name": {
+   "en": "Field Service: Hide Price",
+   "ar": "Field Service: Hide Price"
+  },
+  "fullName": "Field Service: Hide Price"
+ },
+ "65": {
+  "id": 65,
+  "name": {
+   "en": "Field Service Extra Quotations",
+   "ar": "Field Service Extra Quotations"
+  },
+  "fullName": "Field Service Extra Quotations"
+ },
+ "66": {
+  "id": 66,
+  "name": {
+   "en": "Field Service: Allow Customer Ratings",
+   "ar": "Field Service: Allow Customer Ratings"
+  },
+  "fullName": "Field Service: Allow Customer Ratings"
+ },
+ "67": {
+  "id": 67,
+  "name": {
+   "en": "Field Service: Allow Equipment Tracking",
+   "ar": "Field Service: Allow Equipment Tracking"
+  },
+  "fullName": "Field Service: Allow Equipment Tracking"
+ },
+ "68": {
+  "id": 68,
+  "name": {
+   "en": "Officer: Manage all vehicles",
+   "ar": "المسؤول: إدارة كافة المركبات"
+  },
+  "fullName": "Fleet / Officer: Manage all vehicles",
+  "privilege": "Fleet"
+ },
+ "69": {
+  "id": 69,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Fleet / Administrator",
+  "privilege": "Fleet"
+ },
+ "70": {
+  "id": 70,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Helpdesk / User",
+  "privilege": "Helpdesk"
+ },
+ "71": {
+  "id": 71,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Helpdesk / Administrator",
+  "privilege": "Helpdesk"
+ },
+ "72": {
+  "id": 72,
+  "name": {
+   "en": "Show SLA Policies",
+   "ar": "عرض سياسات اتفاقية مستوى الخدمة"
+  },
+  "fullName": "Show SLA Policies"
+ },
+ "73": {
+  "id": 73,
+  "name": {
+   "en": "Show Customer Ratings",
+   "ar": "إظهار تقييمات العملاء"
+  },
+  "fullName": "Show Customer Ratings"
+ },
+ "74": {
+  "id": 74,
+  "name": {
+   "en": "Auto Assignment",
+   "ar": "التعيين التلقائي"
+  },
+  "fullName": "Auto Assignment"
+ },
+ "75": {
+  "id": 75,
+  "name": {
+   "en": "Officer: Approve all requests",
+   "ar": "المسؤول: الموافقة على كافة الطلبات"
+  },
+  "fullName": "Approvals / Officer: Approve all requests",
+  "privilege": "Approvals",
+  "comment": "The user will be able to access all requests and approve/refuse them."
+ },
+ "76": {
+  "id": 76,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Approvals / Administrator",
+  "privilege": "Approvals",
+  "comment": "The user will have access to the approvals configuration."
+ },
+ "77": {
+  "id": 77,
+  "name": {
+   "en": "User: Read his own attendances",
+   "ar": "المستخدم: يمكنه قراءة سجلات حضوره"
+  },
+  "fullName": "User: Read his own attendances",
+  "comment": "The user will have access to his own attendances on his user / employee profile"
+ },
+ "78": {
+  "id": 78,
+  "name": {
+   "en": "Self Attendance Edit",
+   "ar": "تحرير الحضور الذاتي"
+  },
+  "fullName": "Attendances / Self Attendance Edit",
+  "privilege": "Attendances",
+  "comment": "Grants users permission to modify their own attendance entries that are pending approval."
+ },
+ "79": {
+  "id": 79,
+  "name": {
+   "en": "Officer: Manage attendances",
+   "ar": "المسؤول: إدارة الحضور"
+  },
+  "fullName": "Officer: Manage attendances",
+  "comment": "The user will have access to the attendance records and reporting of employees where he's set as an attendance manager"
+ },
+ "80": {
+  "id": 80,
+  "name": {
+   "en": "Officer: Manage all attendances",
+   "ar": "المسؤول: إدارة كافة الحضور "
+  },
+  "fullName": "Attendances / Officer: Manage all attendances",
+  "privilege": "Attendances",
+  "comment": "The user will have access to all attendance records and reports for all employees."
+ },
+ "81": {
+  "id": 81,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Attendances / Administrator",
+  "privilege": "Attendances"
+ },
+ "82": {
+  "id": 82,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Purchase / User",
+  "privilege": "Purchase"
+ },
+ "83": {
+  "id": 83,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Purchase / Administrator",
+  "privilege": "Purchase"
+ },
+ "84": {
+  "id": 84,
+  "name": {
+   "en": "A warning can be set on a product or a customer (Purchase)",
+   "ar": "يمكن تعيين تحذير على منتج أو عميل معين (الشراء)"
+  },
+  "fullName": "A warning can be set on a product or a customer (Purchase)"
+ },
+ "85": {
+  "id": 85,
+  "name": {
+   "en": "Send an automatic reminder email to confirm delivery",
+   "ar": "إرسال بريد إلكتروني تلقائي للتذكير لتأكيد التوصيل"
+  },
+  "fullName": "Send an automatic reminder email to confirm delivery"
+ },
+ "86": {
+  "id": 86,
+  "name": {
+   "en": "Use Time Billing",
+   "ar": "استخدام فوترة الوقت"
+  },
+  "fullName": "Use Time Billing"
+ },
+ "87": {
+  "id": 87,
+  "name": {
+   "en": "User",
+   "ar": "المستخدم"
+  },
+  "fullName": "Documents / User",
+  "privilege": "Documents",
+  "comment": "Can embed actions on folders, insert in Spreadsheet, and import in Sign."
+ },
+ "88": {
+  "id": 88,
+  "name": {
+   "en": "Administrator",
+   "ar": "المدير"
+  },
+  "fullName": "Documents / Administrator",
+  "privilege": "Documents",
+  "comment": "Can configure folders, manage access rights, and oversee all documents within their areas."
+ },
+ "89": {
+  "id": 89,
+  "name": {
+   "en": "System Administrator",
+   "ar": "مدير النظام"
+  },
+  "fullName": "Documents / System Administrator",
+  "privilege": "Documents",
+  "comment": "Has full control over all document settings, folders, and user rights across the application."
+ }
+}

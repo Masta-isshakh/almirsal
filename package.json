@@ -1,31 +1,42 @@
 {
-  "name": "aws-amplify-gen2",
+  "name": "rodeo-erp",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sandbox": "ampx sandbox",
+    "generate:registry": "tsx scripts/generate-registry.ts"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^6.5.5",
-    "aws-amplify": "^6.6.6",
-    "next": "14.2.10",
-    "react": "^18",
-    "react-dom": "^18"
+    "@electric-sql/pglite": "^0.5.8",
+    "aws-amplify": "^6.15.7",
+    "bootstrap": "^5.3.8",
+    "next": "^15.5.4",
+    "next-intl": "^3.26.5",
+    "pg": "^8.23.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@aws-amplify/backend": "^1.5.1",
-    "@aws-amplify/backend-cli": "^1.3.0",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@aws-amplify/backend": "^1.16.1",
+    "@aws-amplify/backend-cli": "^1.8.0",
+    "@types/node": "^22",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "aws-cdk": "^2",
     "aws-cdk-lib": "^2",
     "constructs": "^10.3.0",
-    "esbuild": "^0.23.1",
-    "tsx": "^4.19.0",
-    "typescript": "^5.6.2"
+    "esbuild": "^0.25.0",
+    "sass": "^1.83.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
   }
 }

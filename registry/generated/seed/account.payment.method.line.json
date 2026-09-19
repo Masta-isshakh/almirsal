@@ -1,0 +1,16 @@
+[
+ {
+  "id": 3,
+  "name": "Manual Payment",
+  "code": "manual",
+  "journal_id": "Bank",
+  "payment_type": "inbound"
+ },
+ {
+  "id": 4,
+  "name": "Manual Payment",
+  "code": "manual",
+  "journal_id": "Bank",
+  "payment_type": "outbound"
+ }
+]

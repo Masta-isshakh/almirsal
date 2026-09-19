@@ -1,0 +1,23 @@
+[
+ {
+  "id": 1,
+  "name": "masta",
+  "currency_id": "QAR",
+  "country_id": "Qatar",
+  "city": "",
+  "street": "",
+  "phone": "",
+  "email": "mastaisshakh@gmail.com",
+  "website": false,
+  "vat": false,
+  "primary_color": false,
+  "secondary_color": false,
+  "font": "Lato",
+  "external_report_layout_id": false,
+  "tax_calculation_rounding_method": "round_globally",
+  "fiscalyear_last_day": 31,
+  "fiscalyear_last_month": "12",
+  "account_fiscal_country_id": "Qatar",
+  "quick_edit_mode": "out_and_in_invoices"
+ }
+]

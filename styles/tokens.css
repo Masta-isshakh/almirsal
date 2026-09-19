@@ -1,0 +1,330 @@
+/*
+ * RODEO ERP — design tokens (PART B).
+ *
+ * Every value here is a literal computed style measured on the live Odoo 19.4
+ * instance, light theme. Do not "round" or "tidy" these numbers: the 0.6667px
+ * borders, the 40.67px list rows and the 16.1px empty-state paragraph are what
+ * make the clone pixel-match at 1280x609 and 1920x1080.
+ *
+ * Sections: B-1 colors, B-2 typography, B-3 spacing/radius/shadow/heights,
+ * B-4 component tokens, B-5 app icon geometry.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- *
+   * B-1 — Color palette
+   * ---------------------------------------------------------------- */
+
+  /* Brand */
+  --o-brand-primary: #714b67;              /* Odoo purple */
+  --o-brand-primary-rgb: 113, 75, 103;
+  --o-brand-primary-hover: #5f3f57;
+  --o-brand-secondary: #017e84;            /* teal — links */
+  --o-brand-secondary-rgb: 1, 126, 132;
+  --o-brand-lightsecondary: #e6f2f3;       /* active view switcher / stage */
+
+  /* Surfaces */
+  --o-body-bg: #f9fafb;
+  --o-white: #ffffff;
+  --o-gray-100: #f3f4f6;                   /* row hover, dropdown hover */
+  --o-gray-200: #e7e9ed;                   /* secondary buttons, facets */
+  --o-border: #d8dadd;
+  --o-border-width: 0.6667px;              /* renders as a 1px hairline */
+
+  /* Text */
+  --o-text: #111827;
+  --o-text-heading: #000000;
+  --o-text-muted: rgba(55, 65, 81, 0.76);
+
+  /* Semantic */
+  --o-success: #28a745;
+  --o-info: #17a2b8;
+  --o-warning: #ffc107;
+  --o-warning-bg: #fff3cd;
+  --o-warning-text: #5d3f00;
+  --o-danger: #dc3545;
+  --o-info-bg: #d1ecf1;
+
+  /* Misc surfaces called out in the spec */
+  --o-purple-light: #ede9f0;               /* sample-data blur background */
+  --o-discuss-bubble: #e8f6f8;             /* received message bubble */
+  --o-settings-active-text: var(--o-brand-secondary);
+  --o-settings-active-bg: var(--o-brand-lightsecondary);
+
+  /* Kanban / tag / calendar color swatches (index 0 = none) */
+  --o-color-0: #ffffff;
+  --o-color-1: #f06050;                    /* red */
+  --o-color-2: #f4a460;                    /* orange */
+  --o-color-3: #f7cd1f;                    /* yellow */
+  --o-color-4: #6cc1ed;                    /* light blue */
+  --o-color-5: #814968;                    /* dark purple */
+  --o-color-6: #eb7e7f;                    /* salmon */
+  --o-color-7: #2c8397;                    /* teal */
+  --o-color-8: #475577;                    /* dark blue */
+  --o-color-9: #d6145f;                    /* fuchsia */
+  --o-color-10: #30c381;                   /* green */
+  --o-color-11: #9365b8;                   /* purple */
+
+  /* Chart.js palette (D3 category20) */
+  --o-chart-1: #1f77b4;  --o-chart-2: #ff7f0e;
+  --o-chart-3: #aec7e8;  --o-chart-4: #ffbb78;
+  --o-chart-5: #2ca02c;  --o-chart-6: #98df8a;
+  --o-chart-7: #d62728;  --o-chart-8: #ff9896;
+  --o-chart-9: #9467bd;  --o-chart-10: #c5b0d5;
+  --o-chart-11: #8c564b; --o-chart-12: #c49c94;
+  --o-chart-13: #e377c2; --o-chart-14: #f7b6d2;
+  --o-chart-15: #7f7f7f; --o-chart-16: #c7c7c7;
+  --o-chart-17: #bcbd22; --o-chart-18: #dbdb8d;
+  --o-chart-19: #17becf; --o-chart-20: #9edae5;
+  --o-chart-alpha: 0.8;                    /* dashboards render at 80% */
+
+  /* Home menu / login background */
+  --o-home-bg: #e7e9ed;
+  --o-home-gradient-from: #e9e8f0;
+  --o-home-gradient-to: #dedce8;
+
+  /* Avatar generator */
+  --o-avatar-saturation: 68%;
+  --o-avatar-lightness: 52%;
+  --o-presence-online: var(--o-success);
+  --o-presence-dot-size: 8px;
+
+  /* ---------------------------------------------------------------- *
+   * B-2 — Typography
+   * ---------------------------------------------------------------- */
+
+  --o-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Ubuntu, "Noto Sans", Arial, "Odoo Unicode Support Noto",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+  --o-font-family-heading: "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, "Noto Sans", Arial, sans-serif;
+  --o-font-family-arabic: "Noto Sans Arabic", var(--o-font-family);
+
+  --o-font-size-base: 14px;
+  --o-line-height-base: 1.5;               /* 21px */
+
+  --o-font-size-navbar-app: 16.8px;        /* 1.2rem */
+  --o-line-height-navbar-app: 26px;
+  --o-font-size-breadcrumb-current: 16.8px;
+  --o-line-height-breadcrumb-current: 25.2px;
+  --o-font-size-breadcrumb-parent: 13px;
+  --o-line-height-breadcrumb-parent: 16.25px;
+  --o-font-weight-breadcrumb-parent: 500;
+
+  --o-font-size-record-title: 33.6px;      /* form h1, 2.4rem */
+  --o-line-height-record-title: 40.32px;
+  --o-font-weight-record-title: 500;
+
+  --o-font-size-empty-title: 21px;         /* empty-state h2 */
+  --o-line-height-empty-title: 25.2px;
+  --o-font-size-empty-body: 16.1px;
+  --o-line-height-empty-body: 24.15px;
+
+  --o-font-size-small: 12.25px;            /* .small, 0.875em */
+  --o-font-size-badge: 11.9px;
+  --o-font-size-badge-systray: 9.8px;
+  --o-font-size-kanban-title: 17.5px;      /* .fs-5 */
+  --o-font-size-dialog-title: 19.6px;
+  --o-font-size-kpi: 32px;
+  --o-font-weight-kpi: 300;
+  --o-font-size-dashboard-section: 20px;
+  --o-color-dashboard-section: #1f5f8b;
+  --o-font-size-sidebar-section: 12px;     /* uppercase bold */
+
+  --o-font-weight-label: 500;
+  --o-font-weight-button: 500;
+
+  /* ---------------------------------------------------------------- *
+   * B-3 — Spacing, radius, shadows, heights
+   * ---------------------------------------------------------------- */
+
+  --o-space: 4px;                          /* base unit */
+  --o-space-2: 8px;
+  --o-space-3: 12px;
+  --o-space-4: 16px;
+  --o-space-6: 24px;
+
+  --o-control-panel-padding: 8px 16px 16px;
+  --o-control-panel-gap: 16px;
+  --o-sheet-padding: 24px;
+  --o-kanban-renderer-padding: 8px;
+  --o-kanban-card-padding: 8px;
+  --o-kanban-card-margin: 4px 8px;
+  --o-list-cell-padding: 8px 4.8px 8px 16px;
+  --o-list-cell-padding-embedded: 8px 4.8px 8px 24px;
+  --o-settings-block-padding: 16px 24px;
+
+  --o-radius: 4px;                         /* buttons, inputs, cards, sheet */
+  --o-radius-app-tile: 6px;
+  --o-radius-panel: 8px;                   /* dropdowns, dialogs */
+  --o-radius-bottom-sheet: 12px;
+  --o-radius-pill: 800px;
+  --o-radius-checkbox: 3.5px;
+  --o-radius-avatar-navbar: 4px;
+
+  --o-shadow-app-icon:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 2px 2px rgba(0, 0, 0, 0.02),
+    0 4px 4px rgba(0, 0, 0, 0.02),
+    0 8px 8px rgba(0, 0, 0, 0.02),
+    0 16px 16px rgba(0, 0, 0, 0.02);
+  --o-shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --o-shadow-card-hover: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --o-shadow-sticky-header: 0 1px 0 var(--o-border);
+
+  --o-height-navbar: 46px;
+  --o-navbar-padding-y: 10px;
+  --o-height-control-panel: 61px;
+  --o-height-button: 36px;
+  --o-button-padding: 7px 14px;
+  --o-height-searchbar: 36px;
+  --o-width-searchbar: 376px;
+  --o-height-list-header: 40px;
+  --o-height-list-row: 40.67px;
+  --o-height-list-footer: 37px;
+  --o-height-stage-chip: 33px;
+  --o-height-notebook-tab: 38px;
+  --o-height-chatter-topbar: 52px;
+  --o-height-facet: 23px;
+
+  --o-width-discuss-sidebar: 300px;
+  --o-width-documents-sidebar: 300px;
+  --o-width-knowledge-sidebar: 300px;
+  --o-width-dashboards-sidebar: 200px;
+  --o-width-settings-sidebar: 150px;
+  --o-width-search-panel: 215px;
+  --o-width-form-sheet-max: 1400px;
+  --o-width-empty-state-max: 800px;
+
+  /* Chatter moves beside the form at this width, below it under it. */
+  --o-breakpoint-chatter-side: 1500px;
+
+  /* ---------------------------------------------------------------- *
+   * B-4 — Component tokens
+   * ---------------------------------------------------------------- */
+
+  --o-checkbox-size: 14px;
+  --o-toggle-width: 30px;
+  --o-toggle-height: 16px;
+  --o-avatar-navbar-size: 26px;
+  --o-avatar-kanban-size: 20px;
+  --o-avatar-chatter-size: 36px;
+  --o-smart-button-height: 36px;
+  --o-kanban-color-stripe-width: 3px;
+  --o-onboarding-video-width: 400px;
+  --o-onboarding-video-height: 225px;
+  --o-onboarding-video-radius: 16px;
+  --o-disabled-opacity: 0.65;
+  --o-sample-data-opacity: 0.06;
+  --o-scrollbar-width: 8px;
+  --o-toast-duration: 4000ms;
+
+  --o-row-selected-bg: var(--o-brand-lightsecondary);
+  --o-row-hover-bg: var(--o-gray-100);
+  --o-note-bg: #fcf8e3;                    /* chatter log notes */
+  --o-gantt-unavailability: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.05),
+    rgba(0, 0, 0, 0.05) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+
+  /* Dialog widths */
+  --o-dialog-sm: 500px;
+  --o-dialog-md: 800px;
+  --o-dialog-lg: 1000px;
+  --o-dialog-xl: 1140px;
+  --o-dialog-backdrop: rgba(0, 0, 0, 0.5);
+
+  /* ---------------------------------------------------------------- *
+   * B-5 — App icon geometry
+   * ---------------------------------------------------------------- */
+
+  --o-app-tile-width: 115px;
+  --o-app-tile-height: 141.67px;
+  --o-app-icon-size: 70px;
+  --o-app-icon-padding: 10px;
+}
+
+/* -------------------------------------------------------------------- *
+ * Base element styling that follows directly from the tokens.
+ * -------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--o-body-bg);
+  color: var(--o-text);
+  font-family: var(--o-font-family);
+  font-size: var(--o-font-size-base);
+  font-weight: 400;
+  line-height: var(--o-line-height-base);
+}
+
+h1, h2, h3 {
+  font-family: var(--o-font-family-heading);
+  color: var(--o-text-heading);
+  margin: 0;
+}
+
+a {
+  color: var(--o-brand-secondary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.text-muted {
+  color: var(--o-text-muted);
+}
+
+/* -------------------------------------------------------------------- *
+ * RTL (rule 3): the layout mirrors completely for Arabic. Logical
+ * properties handle most of it; `rtlcss` generates the rest at build time.
+ * Amounts keep Latin digits and LTR direction even inside Arabic text.
+ * -------------------------------------------------------------------- */
+
+[dir="rtl"] body {
+  font-family: var(--o-font-family-arabic);
+}
+
+[dir="rtl"] .o_amount,
+[dir="rtl"] .o_field_monetary,
+[dir="rtl"] .o_field_float,
+[dir="rtl"] .o_field_integer {
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: right;
+}
+
+/* -------------------------------------------------------------------- *
+ * Utility: the 12 kanban swatches as ready-made classes, matching Odoo's
+ * `o_color_N` naming so view arch `color` fields map straight through.
+ * -------------------------------------------------------------------- */
+
+.o_color_0 { --o-current-color: var(--o-color-0); }
+.o_color_1 { --o-current-color: var(--o-color-1); }
+.o_color_2 { --o-current-color: var(--o-color-2); }
+.o_color_3 { --o-current-color: var(--o-color-3); }
+.o_color_4 { --o-current-color: var(--o-color-4); }
+.o_color_5 { --o-current-color: var(--o-color-5); }
+.o_color_6 { --o-current-color: var(--o-color-6); }
+.o_color_7 { --o-current-color: var(--o-color-7); }
+.o_color_8 { --o-current-color: var(--o-color-8); }
+.o_color_9 { --o-current-color: var(--o-color-9); }
+.o_color_10 { --o-current-color: var(--o-color-10); }
+.o_color_11 { --o-current-color: var(--o-color-11); }

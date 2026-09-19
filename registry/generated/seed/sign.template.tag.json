@@ -1,0 +1,17 @@
+[
+ {
+  "id": 1,
+  "name": "HR",
+  "color": 2
+ },
+ {
+  "id": 2,
+  "name": "NDA",
+  "color": 3
+ },
+ {
+  "id": 3,
+  "name": "Sales",
+  "color": 4
+ }
+]

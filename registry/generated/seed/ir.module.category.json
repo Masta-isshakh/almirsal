@@ -1,0 +1,1227 @@
+[
+ {
+  "id": 134,
+  "name": "Master Data",
+  "parent_id": false,
+  "sequence": 1,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "البيانات الرئيسية"
+ },
+ {
+  "id": 2,
+  "name": "Invoicing",
+  "parent_id": "Accounting",
+  "sequence": 4,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الفوترة"
+ },
+ {
+  "id": 23,
+  "name": "Sales",
+  "parent_id": false,
+  "sequence": 5,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المبيعات"
+ },
+ {
+  "id": 28,
+  "name": "Website",
+  "parent_id": false,
+  "sequence": 10,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموقع الإلكتروني"
+ },
+ {
+  "id": 51,
+  "name": "Referrals",
+  "parent_id": "Human Resources",
+  "sequence": 11,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإحالات"
+ },
+ {
+  "id": 30,
+  "name": "Helpdesk",
+  "parent_id": "Services",
+  "sequence": 14,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "مكتب المساعدة"
+ },
+ {
+  "id": 44,
+  "name": "Appraisals",
+  "parent_id": "Human Resources",
+  "sequence": 15,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التقييمات"
+ },
+ {
+  "id": 14,
+  "name": "Services",
+  "parent_id": false,
+  "sequence": 15,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الخدمات"
+ },
+ {
+  "id": 1,
+  "name": "Accounting",
+  "parent_id": false,
+  "sequence": 20,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المحاسبة"
+ },
+ {
+  "id": 107,
+  "name": "Sign",
+  "parent_id": "Sales",
+  "sequence": 25,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "توقيع"
+ },
+ {
+  "id": 3,
+  "name": "Supply Chain",
+  "parent_id": false,
+  "sequence": 25,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "سلسلة توريد"
+ },
+ {
+  "id": 5,
+  "name": "Productivity",
+  "parent_id": false,
+  "sequence": 30,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإنتاجية"
+ },
+ {
+  "id": 12,
+  "name": "Marketing",
+  "parent_id": false,
+  "sequence": 40,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التسويق"
+ },
+ {
+  "id": 17,
+  "name": "Human Resources",
+  "parent_id": false,
+  "sequence": 45,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموارد البشرية"
+ },
+ {
+  "id": 34,
+  "name": "Shipping Connectors",
+  "parent_id": false,
+  "sequence": 50,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "موصلو الشحن"
+ },
+ {
+  "id": 112,
+  "name": "Theme",
+  "parent_id": false,
+  "sequence": 50,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "السمة"
+ },
+ {
+  "id": 38,
+  "name": "ESG",
+  "parent_id": false,
+  "sequence": 52,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 127,
+  "name": "Customizations",
+  "parent_id": false,
+  "sequence": 55,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التخصيصات"
+ },
+ {
+  "id": 136,
+  "name": "Internet of Things (IoT)",
+  "parent_id": false,
+  "sequence": 60,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إنترنت الأشياء (IoT)"
+ },
+ {
+  "id": 57,
+  "name": "Localization",
+  "parent_id": "Accounting",
+  "sequence": 65,
+  "visible": false,
+  "exclusive": false,
+  "name_ar": "الأقلمة"
+ },
+ {
+  "id": 9,
+  "name": "Technical",
+  "parent_id": false,
+  "sequence": 70,
+  "visible": false,
+  "exclusive": false,
+  "name_ar": "تقني"
+ },
+ {
+  "id": 54,
+  "name": "Administration",
+  "parent_id": false,
+  "sequence": 100,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإدارة"
+ },
+ {
+  "id": 138,
+  "name": "Other Extra Rights",
+  "parent_id": false,
+  "sequence": 102,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "صلاحيات أخرى إضافية"
+ },
+ {
+  "id": 10,
+  "name": "AI",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الذكاء الاصطناعي"
+ },
+ {
+  "id": 58,
+  "name": "Account Charts",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": false,
+  "exclusive": false,
+  "name_ar": "شجرة الحسابات"
+ },
+ {
+  "id": 137,
+  "name": "Administration",
+  "parent_id": "Administration",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإدارة"
+ },
+ {
+  "id": 15,
+  "name": "Appointment",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموعد"
+ },
+ {
+  "id": 18,
+  "name": "Approvals",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموافقات"
+ },
+ {
+  "id": 68,
+  "name": "Assets",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "أصول"
+ },
+ {
+  "id": 45,
+  "name": "Attendances",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الحضور"
+ },
+ {
+  "id": 95,
+  "name": "Barcode",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "باركود"
+ },
+ {
+  "id": 78,
+  "name": "CIS",
+  "parent_id": "UK",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 27,
+  "name": "CRM",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إدارة علاقات العملاء"
+ },
+ {
+  "id": 83,
+  "name": "CRM in marketing automation",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إدارة علاقات العملاء في تطبيق أتمتة التسويق"
+ },
+ {
+  "id": 25,
+  "name": "Calendar",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التقويم"
+ },
+ {
+  "id": 65,
+  "name": "Check",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "فحص"
+ },
+ {
+  "id": 106,
+  "name": "Commission",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "العمولة"
+ },
+ {
+  "id": 91,
+  "name": "Commissions",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "العمولات"
+ },
+ {
+  "id": 117,
+  "name": "Corporate",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "للشركات"
+ },
+ {
+  "id": 114,
+  "name": "Creative",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إبداعي"
+ },
+ {
+  "id": 109,
+  "name": "Dashboard",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "لوحة البيانات"
+ },
+ {
+  "id": 31,
+  "name": "Data Cleaning",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "تنظيف البيانات"
+ },
+ {
+  "id": 32,
+  "name": "Databases",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 33,
+  "name": "Delivery",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التوصيل"
+ },
+ {
+  "id": 80,
+  "name": "Discuss",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المناقشة"
+ },
+ {
+  "id": 36,
+  "name": "Documents",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المستندات"
+ },
+ {
+  "id": 61,
+  "name": "EDI",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "نظام تبادل البيانات إلكترونياً (EDI)"
+ },
+ {
+  "id": 72,
+  "name": "EDI",
+  "parent_id": "Localizations",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 75,
+  "name": "EDI",
+  "parent_id": "Localizations",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "نظام تبادل البيانات إلكترونياً (EDI)"
+ },
+ {
+  "id": 115,
+  "name": "Education",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التعليم"
+ },
+ {
+  "id": 85,
+  "name": "Email Marketing",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التسويق بالبريد الإلكتروني"
+ },
+ {
+  "id": 43,
+  "name": "Employees",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموظفون"
+ },
+ {
+  "id": 122,
+  "name": "Environment",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "البيئة"
+ },
+ {
+  "id": 39,
+  "name": "Events",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الفعاليات"
+ },
+ {
+  "id": 47,
+  "name": "Expenses",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "النفقات"
+ },
+ {
+  "id": 21,
+  "name": "Extra Tools",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "أدوات إضافية"
+ },
+ {
+  "id": 94,
+  "name": "Field Service",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الخدمة الميدانية"
+ },
+ {
+  "id": 41,
+  "name": "Fleet",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الأسطول"
+ },
+ {
+  "id": 116,
+  "name": "Food",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "طعام"
+ },
+ {
+  "id": 42,
+  "name": "Frontdesk",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "مكتب الاستقبال"
+ },
+ {
+  "id": 77,
+  "name": "HMRC",
+  "parent_id": "UK",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 126,
+  "name": "Helpdesk",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "مكتب المساعدة"
+ },
+ {
+  "id": 121,
+  "name": "Hidden",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "مخفي"
+ },
+ {
+  "id": 50,
+  "name": "Integration",
+  "parent_id": "Recruitment",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الربط"
+ },
+ {
+  "id": 35,
+  "name": "Internet of Things (IoT)",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إنترنت الأشياء (IoT)"
+ },
+ {
+  "id": 22,
+  "name": "Inventory",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المخزون"
+ },
+ {
+  "id": 55,
+  "name": "IoT",
+  "parent_id": "Administration",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 56,
+  "name": "Knowledge",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المعرفة"
+ },
+ {
+  "id": 120,
+  "name": "Lifestyle",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "أسلوب الحياة"
+ },
+ {
+  "id": 53,
+  "name": "Live Chat",
+  "parent_id": "Website",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الدردشة المباشرة"
+ },
+ {
+  "id": 71,
+  "name": "Localizations",
+  "parent_id": "Point of sale",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 74,
+  "name": "Localizations",
+  "parent_id": "Website Sale",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 79,
+  "name": "Lunch",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الغداء"
+ },
+ {
+  "id": 81,
+  "name": "Maintenance",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الصيانة"
+ },
+ {
+  "id": 86,
+  "name": "Manufacturing",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التصنيع"
+ },
+ {
+  "id": 82,
+  "name": "Marketing Automation",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "أتمتة التسويق"
+ },
+ {
+  "id": 84,
+  "name": "Marketing Card",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "بطاقة التسويق"
+ },
+ {
+  "id": 90,
+  "name": "Obox",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 16,
+  "name": "Online Appointment",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "موعد عبر الإنترنت"
+ },
+ {
+  "id": 8,
+  "name": "Payment",
+  "parent_id": "Accounting",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الدفع"
+ },
+ {
+  "id": 7,
+  "name": "Payment Custom",
+  "parent_id": "Accounting",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 92,
+  "name": "Payment Providers",
+  "parent_id": "Accounting",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "مزودي الدفع"
+ },
+ {
+  "id": 37,
+  "name": "Payroll",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "كشوف المرتبات"
+ },
+ {
+  "id": 135,
+  "name": "Payroll Localization",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": false,
+  "exclusive": false,
+  "name_ar": "أقلمة كشوف المرتبات"
+ },
+ {
+  "id": 123,
+  "name": "Personal",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "شخصي"
+ },
+ {
+  "id": 125,
+  "name": "Phone",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "رقم الهاتف"
+ },
+ {
+  "id": 93,
+  "name": "Planning",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التخطيط"
+ },
+ {
+  "id": 59,
+  "name": "Point of Sale",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "نقطة البيع"
+ },
+ {
+  "id": 63,
+  "name": "Point of Sale",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "نقطة البيع"
+ },
+ {
+  "id": 70,
+  "name": "Point of sale",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "نقطة البيع"
+ },
+ {
+  "id": 87,
+  "name": "Product Lifecycle Management (PLM)",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إدارة دورة حياة المنتج (PLM)"
+ },
+ {
+  "id": 97,
+  "name": "Project",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المشروع"
+ },
+ {
+  "id": 4,
+  "name": "Purchase",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الشراء"
+ },
+ {
+  "id": 69,
+  "name": "Purchase",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الشراء"
+ },
+ {
+  "id": 88,
+  "name": "Quality",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الجودة"
+ },
+ {
+  "id": 49,
+  "name": "Recruitment",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التوظيف"
+ },
+ {
+  "id": 46,
+  "name": "Remote Work",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 89,
+  "name": "Repair",
+  "parent_id": "Supply Chain",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإصلاح"
+ },
+ {
+  "id": 60,
+  "name": "Reporting",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "إعداد التقارير"
+ },
+ {
+  "id": 113,
+  "name": "Retail",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "البيع بالتجزئة"
+ },
+ {
+  "id": 105,
+  "name": "Room",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الغرفة"
+ },
+ {
+  "id": 66,
+  "name": "Sale",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "بيع"
+ },
+ {
+  "id": 24,
+  "name": "Sales",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "المبيعات"
+ },
+ {
+  "id": 96,
+  "name": "Send sms to customer for order confirmation",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "قم بإرسال رسالة نصية قصيرة إلى العميل لتأكيد الطلب"
+ },
+ {
+  "id": 118,
+  "name": "Services",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الخدمات"
+ },
+ {
+  "id": 40,
+  "name": "Social",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التواصل الاجتماعي"
+ },
+ {
+  "id": 108,
+  "name": "Social",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التواصل الاجتماعي"
+ },
+ {
+  "id": 13,
+  "name": "Social Marketing",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التسويق على وسائل التواصل الإجتماعي"
+ },
+ {
+  "id": 124,
+  "name": "Sport",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 128,
+  "name": "Studio",
+  "parent_id": "Customizations",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الاستوديو"
+ },
+ {
+  "id": 64,
+  "name": "Subscriptions",
+  "parent_id": "Sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الاشتراكات"
+ },
+ {
+  "id": 110,
+  "name": "Surveys",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الاستطلاعات"
+ },
+ {
+  "id": 11,
+  "name": "Technical",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "تقني"
+ },
+ {
+  "id": 26,
+  "name": "Technical Settings",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإعدادات التقنية"
+ },
+ {
+  "id": 119,
+  "name": "Technology",
+  "parent_id": "Theme",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التكنولوجيا"
+ },
+ {
+  "id": 111,
+  "name": "Tests",
+  "parent_id": "Technical",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الاختبارات"
+ },
+ {
+  "id": 48,
+  "name": "Time Off",
+  "parent_id": "Human Resources",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الإجازات"
+ },
+ {
+  "id": 52,
+  "name": "Timesheets",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الجداول الزمنية"
+ },
+ {
+  "id": 104,
+  "name": "To-Do",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "قائمة المهام"
+ },
+ {
+  "id": 19,
+  "name": "Tools",
+  "parent_id": "Technical",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الأدوات"
+ },
+ {
+  "id": 20,
+  "name": "Tools",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الأدوات"
+ },
+ {
+  "id": 76,
+  "name": "UK",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 6,
+  "name": "Uncategorized",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "غير مصنف"
+ },
+ {
+  "id": 29,
+  "name": "Website",
+  "parent_id": "Website",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموقع الإلكتروني"
+ },
+ {
+  "id": 62,
+  "name": "Website",
+  "parent_id": "Localization",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموقع الإلكتروني"
+ },
+ {
+  "id": 129,
+  "name": "Website",
+  "parent_id": "Email Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الموقع الإلكتروني"
+ },
+ {
+  "id": 73,
+  "name": "Website Sale",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 131,
+  "name": "WhatsApp",
+  "parent_id": "Productivity",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 132,
+  "name": "WhatsApp",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 133,
+  "name": "WhatsApp",
+  "parent_id": "Marketing",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false
+ },
+ {
+  "id": 67,
+  "name": "account",
+  "parent_id": false,
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الحساب"
+ },
+ {
+  "id": 101,
+  "name": "account",
+  "parent_id": "payroll",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الحساب"
+ },
+ {
+  "id": 98,
+  "name": "assets",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "أصول"
+ },
+ {
+  "id": 130,
+  "name": "eLearning",
+  "parent_id": "Website",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "التعلم الإلكتروني"
+ },
+ {
+  "id": 99,
+  "name": "expenses",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "النفقات"
+ },
+ {
+  "id": 100,
+  "name": "payroll",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "كشوف المرتبات"
+ },
+ {
+  "id": 102,
+  "name": "sales",
+  "parent_id": "Services",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "مبيعات"
+ },
+ {
+  "id": 103,
+  "name": "subscriptions",
+  "parent_id": "sales",
+  "sequence": 0,
+  "visible": true,
+  "exclusive": false,
+  "name_ar": "الاشتراكات"
+ }
+]

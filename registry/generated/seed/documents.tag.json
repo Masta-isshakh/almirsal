@@ -1,0 +1,167 @@
+[
+ {
+  "id": 12,
+  "name": "Product > New",
+  "color": 11,
+  "sequence": 6,
+  "name_ar": "المنتج > جديد"
+ },
+ {
+  "id": 13,
+  "name": "Product > Plans",
+  "color": 4,
+  "sequence": 6,
+  "name_ar": "المنتج > الخطط"
+ },
+ {
+  "id": 14,
+  "name": "Product > DataSheets",
+  "color": 2,
+  "sequence": 7,
+  "name_ar": "المنتج > أوراق البيانات"
+ },
+ {
+  "id": 15,
+  "name": "Product > Specs",
+  "color": 10,
+  "sequence": 8,
+  "name_ar": "المنتج > الخصائص"
+ },
+ {
+  "id": 1,
+  "name": "HR",
+  "color": 8,
+  "sequence": 9,
+  "name_ar": "الموارد البشرية"
+ },
+ {
+  "id": 2,
+  "name": "Legal",
+  "color": 4,
+  "sequence": 9,
+  "name_ar": "قانوني"
+ },
+ {
+  "id": 16,
+  "name": "Product > MSDS",
+  "color": 1,
+  "sequence": 9,
+  "name_ar": "المنتج > ورقة بيانات سلامة المواد (MSDS)"
+ },
+ {
+  "id": 4,
+  "name": "2026",
+  "color": 4,
+  "sequence": 10
+ },
+ {
+  "id": 8,
+  "name": "Absences",
+  "color": 8,
+  "sequence": 10,
+  "name_ar": "الغيابات"
+ },
+ {
+  "id": 19,
+  "name": "Bank",
+  "color": 8,
+  "sequence": 10,
+  "name_ar": "البنك"
+ },
+ {
+  "id": 23,
+  "name": "Cash Basis Taxes",
+  "color": 10,
+  "sequence": 10,
+  "name_ar": "ضرائب بأساس نقدي"
+ },
+ {
+  "id": 3,
+  "name": "Contracts",
+  "color": 1,
+  "sequence": 10,
+  "name_ar": "العقود"
+ },
+ {
+  "id": 18,
+  "name": "Exchange Difference",
+  "color": 7,
+  "sequence": 10,
+  "name_ar": "الفرق في سعر الصرف"
+ },
+ {
+  "id": 21,
+  "name": "Miscellaneous Operations",
+  "color": 1,
+  "sequence": 10,
+  "name_ar": "عمليات متنوعة"
+ },
+ {
+  "id": 24,
+  "name": "Purchases",
+  "color": 2,
+  "sequence": 10,
+  "name_ar": "المشتريات"
+ },
+ {
+  "id": 20,
+  "name": "Sales",
+  "color": 6,
+  "sequence": 10,
+  "name_ar": "المبيعات"
+ },
+ {
+  "id": 22,
+  "name": "Tax Returns",
+  "color": 5,
+  "sequence": 10,
+  "name_ar": "الإقرارات الضريبية"
+ },
+ {
+  "id": 5,
+  "name": "2025",
+  "color": 11,
+  "sequence": 11
+ },
+ {
+  "id": 11,
+  "name": "Contracts (HR)",
+  "color": 9,
+  "sequence": 11,
+  "name_ar": "العقود (الموارد البشرية)"
+ },
+ {
+  "id": 9,
+  "name": "Employees Documents",
+  "color": 2,
+  "sequence": 12,
+  "name_ar": "مستندات الموظفين"
+ },
+ {
+  "id": 10,
+  "name": "Certifications",
+  "color": 3,
+  "sequence": 14,
+  "name_ar": "الشهادات"
+ },
+ {
+  "id": 6,
+  "name": "Fleet > Vehicles Documents",
+  "color": 4,
+  "sequence": 14,
+  "name_ar": "الأسطول > مستندات المركبات"
+ },
+ {
+  "id": 7,
+  "name": "Fleet > Fine",
+  "color": 9,
+  "sequence": 15,
+  "name_ar": "الأسطول > مخالفة"
+ },
+ {
+  "id": 17,
+  "name": "Signature Request",
+  "color": 8,
+  "sequence": 15
+ }
+]

@@ -1,0 +1,14 @@
+[
+ {
+  "id": 2,
+  "name": "Offboarding",
+  "res_model": "hr.employee",
+  "active": true
+ },
+ {
+  "id": 1,
+  "name": "Onboarding",
+  "res_model": "hr.employee",
+  "active": true
+ }
+]

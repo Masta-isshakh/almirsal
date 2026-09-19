@@ -1,0 +1,3984 @@
+[
+ {
+  "id": 72,
+  "xmlId": "mail.menu_root_discuss",
+  "name": {
+   "en": "Discuss",
+   "ar": "المناقشة"
+  },
+  "sequence": 0,
+  "actionId": 110,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 73,
+    "xmlId": "mail.main_menu_discuss",
+    "name": {
+     "en": "Discuss",
+     "ar": "المناقشة"
+    },
+    "parentId": 72,
+    "sequence": 0,
+    "actionId": 110,
+    "children": []
+   },
+   {
+    "id": 74,
+    "xmlId": "mail.menu_channel",
+    "name": {
+     "en": "Channels",
+     "ar": "القنوات"
+    },
+    "parentId": 72,
+    "sequence": 1,
+    "actionId": 108,
+    "children": []
+   },
+   {
+    "id": 75,
+    "xmlId": "mail.menu_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 72,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 76,
+      "xmlId": "mail.menu_settings",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 75,
+      "sequence": 0,
+      "actionId": 131,
+      "children": []
+     },
+     {
+      "id": 77,
+      "xmlId": "mail.menu_notification_settings",
+      "name": {
+       "en": "Notifications",
+       "ar": "الإشعارات"
+      },
+      "parentId": 75,
+      "sequence": 1,
+      "actionId": 129,
+      "children": []
+     },
+     {
+      "id": 78,
+      "xmlId": "mail.menu_call_settings",
+      "name": {
+       "en": "Voice & Video",
+       "ar": "الصوت والصورة"
+      },
+      "parentId": 75,
+      "sequence": 2,
+      "actionId": 130,
+      "children": []
+     },
+     {
+      "id": 79,
+      "xmlId": "mail.menu_discuss_category",
+      "name": {
+       "en": "Categories",
+       "ar": "Categories"
+      },
+      "parentId": 75,
+      "sequence": 3,
+      "actionId": 102,
+      "children": []
+     },
+     {
+      "id": 80,
+      "xmlId": "mail.menu_canned_responses",
+      "name": {
+       "en": "Canned Responses",
+       "ar": "الردود الجاهزة"
+      },
+      "parentId": 75,
+      "sequence": 4,
+      "actionId": 111,
+      "children": []
+     },
+     {
+      "id": 81,
+      "xmlId": "mail.menu_roles",
+      "name": {
+       "en": "Roles",
+       "ar": "الأدوار"
+      },
+      "parentId": 75,
+      "sequence": 5,
+      "actionId": 112,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 262,
+  "xmlId": "calendar.mail_menu_calendar",
+  "name": {
+   "en": "Calendar",
+   "ar": "التقويم"
+  },
+  "sequence": 1,
+  "actionId": 484,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 263,
+    "xmlId": "calendar.calendar_event_menu",
+    "name": {
+     "en": "Calendar",
+     "ar": "التقويم"
+    },
+    "parentId": 262,
+    "sequence": 0,
+    "actionId": 484,
+    "children": []
+   },
+   {
+    "id": 303,
+    "xmlId": "appointment.appointment_menu_calendar",
+    "name": {
+     "en": "Appointments",
+     "ar": "المواعيد"
+    },
+    "parentId": 262,
+    "sequence": 1,
+    "actionId": 531,
+    "children": []
+   },
+   {
+    "id": 304,
+    "xmlId": "appointment.reporting_menu_calendar",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 262,
+    "sequence": 2,
+    "actionId": 522,
+    "children": []
+   },
+   {
+    "id": 264,
+    "xmlId": "calendar.calendar_menu_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 262,
+    "sequence": 3,
+    "actionId": 484,
+    "children": [
+     {
+      "id": 265,
+      "xmlId": "calendar.menu_calendar_settings",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 264,
+      "sequence": 0,
+      "actionId": 485,
+      "children": []
+     },
+     {
+      "id": 363,
+      "xmlId": "hr_calendar.menu_hr_homeworking_location_menu",
+      "name": {
+       "en": "Work Locations",
+       "ar": "Work Locations"
+      },
+      "parentId": 264,
+      "sequence": 1,
+      "actionId": 555,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 289,
+  "xmlId": "appointment.main_menu_appointments",
+  "name": {
+   "en": "Appointments",
+   "ar": "المواعيد"
+  },
+  "sequence": 2,
+  "actionId": 531,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 293,
+    "xmlId": "appointment.appointment_type_menu",
+    "name": {
+     "en": "Appointments",
+     "ar": "المواعيد"
+    },
+    "parentId": 289,
+    "sequence": 0,
+    "actionId": 531,
+    "children": []
+   },
+   {
+    "id": 290,
+    "xmlId": "appointment.menu_appointment_schedule_resources",
+    "name": {
+     "en": "Schedule",
+     "ar": "جدولة"
+    },
+    "parentId": 289,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 291,
+      "xmlId": "appointment.menu_appointment_schedule_resource_booking",
+      "name": {
+       "en": "Resources",
+       "ar": "الموارد"
+      },
+      "parentId": 290,
+      "sequence": 0,
+      "actionId": 520,
+      "children": []
+     },
+     {
+      "id": 292,
+      "xmlId": "appointment.menu_appointment_schedule_staff_appointment",
+      "name": {
+       "en": "Staff",
+       "ar": "طاقم العمل"
+      },
+      "parentId": 290,
+      "sequence": 1,
+      "actionId": 521,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 295,
+    "xmlId": "appointment.menu_appointment_reporting",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 289,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 296,
+      "xmlId": "appointment.menu_appointment_reporting_bookings",
+      "name": {
+       "en": "Bookings",
+       "ar": "الحجوزات"
+      },
+      "parentId": 295,
+      "sequence": 0,
+      "actionId": 523,
+      "children": []
+     },
+     {
+      "id": 297,
+      "xmlId": "appointment.menu_appointment_reporting_answers",
+      "name": {
+       "en": "Answers",
+       "ar": "الإجابات"
+      },
+      "parentId": 295,
+      "sequence": 1,
+      "actionId": 524,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 298,
+    "xmlId": "appointment.appointment_menu_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 289,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 299,
+      "xmlId": "appointment.menu_appointment_questions",
+      "name": {
+       "en": "Questions",
+       "ar": "الأسئلة"
+      },
+      "parentId": 298,
+      "sequence": 0,
+      "actionId": 528,
+      "children": []
+     },
+     {
+      "id": 300,
+      "xmlId": "appointment.menu_appointment_reminders",
+      "name": {
+       "en": "Reminders",
+       "ar": "التذكيرات"
+      },
+      "parentId": 298,
+      "sequence": 1,
+      "actionId": 483,
+      "children": []
+     },
+     {
+      "id": 301,
+      "xmlId": "appointment.menu_appointment_resource",
+      "name": {
+       "en": "Resources",
+       "ar": "الموارد"
+      },
+      "parentId": 298,
+      "sequence": 2,
+      "actionId": 529,
+      "children": []
+     },
+     {
+      "id": 302,
+      "xmlId": "appointment.menu_appointment_leave",
+      "name": {
+       "en": "Closing Days",
+       "ar": "Closing Days"
+      },
+      "parentId": 298,
+      "sequence": 3,
+      "actionId": 527,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 390,
+  "xmlId": "project_todo.menu_todo_todos",
+  "name": {
+   "en": "To-do",
+   "ar": "المهام المراد تنفيذها"
+  },
+  "sequence": 3,
+  "actionId": 673,
+  "webIcon": "data",
+  "children": []
+ },
+ {
+  "id": 324,
+  "xmlId": "knowledge.knowledge_menu_root",
+  "name": {
+   "en": "Knowledge",
+   "ar": "المعرفة"
+  },
+  "sequence": 4,
+  "actionId": 561,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 325,
+    "xmlId": "knowledge.knowledge_menu_home",
+    "name": {
+     "en": "Home",
+     "ar": "الرئيسية"
+    },
+    "parentId": 324,
+    "sequence": 0,
+    "actionId": 561,
+    "children": []
+   },
+   {
+    "id": 326,
+    "xmlId": "knowledge.knowledge_menu_article",
+    "name": {
+     "en": "Articles",
+     "ar": "المقالات"
+    },
+    "parentId": 324,
+    "sequence": 1,
+    "actionId": 564,
+    "children": []
+   }
+  ]
+ },
+ {
+  "id": 225,
+  "xmlId": "sale.sale_menu_root",
+  "name": {
+   "en": "Sales",
+   "ar": "المبيعات"
+  },
+  "sequence": 5,
+  "actionId": 450,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 226,
+    "xmlId": "sale.sale_order_menu",
+    "name": {
+     "en": "Orders",
+     "ar": "الطلبات"
+    },
+    "parentId": 225,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 227,
+      "xmlId": "sale.menu_sale_quotations",
+      "name": {
+       "en": "Quotations",
+       "ar": "عروض الأسعار"
+      },
+      "parentId": 226,
+      "sequence": 0,
+      "actionId": 450,
+      "children": []
+     },
+     {
+      "id": 228,
+      "xmlId": "sale.menu_sale_order",
+      "name": {
+       "en": "Orders",
+       "ar": "الطلبات"
+      },
+      "parentId": 226,
+      "sequence": 1,
+      "actionId": 449,
+      "children": []
+     },
+     {
+      "id": 229,
+      "xmlId": "sale.report_sales_team",
+      "name": {
+       "en": "Sales Teams",
+       "ar": "فرق المبيعات"
+      },
+      "parentId": 226,
+      "sequence": 2,
+      "actionId": 426,
+      "children": []
+     },
+     {
+      "id": 230,
+      "xmlId": "sale.res_partner_menu",
+      "name": {
+       "en": "Customers",
+       "ar": "العملاء"
+      },
+      "parentId": 226,
+      "sequence": 3,
+      "actionId": 328,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 231,
+    "xmlId": "sale.menu_sale_invoicing",
+    "name": {
+     "en": "To Invoice",
+     "ar": "بانتظار الفوترة"
+    },
+    "parentId": 225,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 233,
+      "xmlId": "sale.menu_sale_order_invoice",
+      "name": {
+       "en": "Orders to Invoice",
+       "ar": "الطلبات بانتظار الفوترة"
+      },
+      "parentId": 231,
+      "sequence": 0,
+      "actionId": 452,
+      "children": []
+     },
+     {
+      "id": 234,
+      "xmlId": "sale.menu_sale_order_upselling",
+      "name": {
+       "en": "Orders to Upsell",
+       "ar": "الطلبات المراد الارتقاء بالصفقة فيها"
+      },
+      "parentId": 231,
+      "sequence": 1,
+      "actionId": 453,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 235,
+    "xmlId": "sale.product_menu_catalog",
+    "name": {
+     "en": "Products",
+     "ar": "المنتجات"
+    },
+    "parentId": 225,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 236,
+      "xmlId": "sale.menu_product_template_action",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 235,
+      "sequence": 0,
+      "actionId": 469,
+      "children": []
+     },
+     {
+      "id": 239,
+      "xmlId": "sale.menu_product_combos",
+      "name": {
+       "en": "Combo Choices",
+       "ar": "خيارات التركيبات"
+      },
+      "parentId": 235,
+      "sequence": 1,
+      "actionId": 221,
+      "children": []
+     },
+     {
+      "id": 240,
+      "xmlId": "sale.menu_product_categories",
+      "name": {
+       "en": "Categories",
+       "ar": "الفئات"
+      },
+      "parentId": 235,
+      "sequence": 2,
+      "actionId": 220,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 243,
+    "xmlId": "sale.menu_sale_report",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 225,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 244,
+      "xmlId": "sale.menu_reporting_sales",
+      "name": {
+       "en": "Sales",
+       "ar": "المبيعات"
+      },
+      "parentId": 243,
+      "sequence": 0,
+      "actionId": 434,
+      "children": []
+     },
+     {
+      "id": 245,
+      "xmlId": "sale.menu_reporting_salespeople",
+      "name": {
+       "en": "Salespersons",
+       "ar": "مندوبي المبيعات"
+      },
+      "parentId": 243,
+      "sequence": 1,
+      "actionId": 435,
+      "children": []
+     },
+     {
+      "id": 246,
+      "xmlId": "sale.menu_reporting_product",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 243,
+      "sequence": 2,
+      "actionId": 436,
+      "children": []
+     },
+     {
+      "id": 247,
+      "xmlId": "sale.menu_reporting_customer",
+      "name": {
+       "en": "Customers",
+       "ar": "العملاء"
+      },
+      "parentId": 243,
+      "sequence": 3,
+      "actionId": 437,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 248,
+    "xmlId": "sale.menu_sale_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 225,
+    "sequence": 4,
+    "children": [
+     {
+      "id": 249,
+      "xmlId": "sale.menu_sale_general_settings",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 248,
+      "sequence": 0,
+      "actionId": 447,
+      "children": []
+     },
+     {
+      "id": 250,
+      "xmlId": "sale.sales_team_config",
+      "name": {
+       "en": "Sales Teams",
+       "ar": "فرق المبيعات"
+      },
+      "parentId": 248,
+      "sequence": 1,
+      "actionId": 428,
+      "children": []
+     },
+     {
+      "id": 251,
+      "xmlId": "sale.payment_provider_menu",
+      "name": {
+       "en": "Payments",
+       "ar": "Payments"
+      },
+      "parentId": 248,
+      "sequence": 2,
+      "actionId": 250,
+      "children": []
+     },
+     {
+      "id": 252,
+      "xmlId": "sale.menu_sales_config",
+      "name": {
+       "en": "Sales Orders",
+       "ar": "أوامر البيع"
+      },
+      "parentId": 248,
+      "sequence": 3,
+      "children": [
+       {
+        "id": 259,
+        "xmlId": "sale_management.sale_order_template_menu",
+        "name": {
+         "en": "Templates",
+         "ar": "Templates"
+        },
+        "parentId": 252,
+        "sequence": 0,
+        "actionId": 473,
+        "children": []
+       },
+       {
+        "id": 260,
+        "xmlId": "sale_pdf_quote_builder.sale_menu_quotation_document_action",
+        "name": {
+         "en": "Headers/Footers",
+         "ar": "الترويسات / التذييلات"
+        },
+        "parentId": 252,
+        "sequence": 1,
+        "actionId": 477,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 253,
+      "xmlId": "sale.sale_menu_config_activities",
+      "name": {
+       "en": "Activities",
+       "ar": "الأنشطة"
+      },
+      "parentId": 248,
+      "sequence": 4,
+      "children": [
+       {
+        "id": 255,
+        "xmlId": "sale.sale_menu_config_activity_plan",
+        "name": {
+         "en": "Activity Plans",
+         "ar": "خطط النشاط"
+        },
+        "parentId": 253,
+        "sequence": 0,
+        "actionId": 468,
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 179,
+  "xmlId": "spreadsheet_dashboard.spreadsheet_dashboard_menu_root",
+  "name": {
+   "en": "Dashboards",
+   "ar": "لوحات البيانات"
+  },
+  "sequence": 6,
+  "actionId": 337,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 180,
+    "xmlId": "spreadsheet_dashboard.spreadsheet_dashboard_menu_dashboard",
+    "name": {
+     "en": "Dashboards",
+     "ar": "لوحات البيانات"
+    },
+    "parentId": 179,
+    "sequence": 0,
+    "actionId": 337,
+    "children": []
+   },
+   {
+    "id": 181,
+    "xmlId": "spreadsheet_dashboard.spreadsheet_dashboard_menu_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 179,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 182,
+      "xmlId": "spreadsheet_dashboard.spreadsheet_dashboard_menu_configuration_dashboards",
+      "name": {
+       "en": "Dashboards",
+       "ar": "لوحات البيانات"
+      },
+      "parentId": 181,
+      "sequence": 0,
+      "actionId": 338,
+      "children": []
+     },
+     {
+      "id": 183,
+      "xmlId": "spreadsheet_dashboard.spreadsheet_dashboard_group_menu_configuration_sections",
+      "name": {
+       "en": "Sections",
+       "ar": "Sections"
+      },
+      "parentId": 181,
+      "sequence": 1,
+      "actionId": 339,
+      "children": []
+     },
+     {
+      "id": 184,
+      "xmlId": "spreadsheet_dashboard.spreadsheet_dashboard_share_menu_configuration_share_links",
+      "name": {
+       "en": "Share links",
+       "ar": "Share links"
+      },
+      "parentId": 181,
+      "sequence": 2,
+      "actionId": 340,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 493,
+  "xmlId": "sale_renting.rental_menu_root",
+  "name": {
+   "en": "Rental",
+   "ar": "تأجير"
+  },
+  "sequence": 7,
+  "actionId": 804,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 494,
+    "xmlId": "sale_renting.rental_order_menu",
+    "name": {
+     "en": "Orders",
+     "ar": "الطلبات"
+    },
+    "parentId": 493,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 495,
+      "xmlId": "sale_renting.rental_orders_all",
+      "name": {
+       "en": "Orders",
+       "ar": "الطلبات"
+      },
+      "parentId": 494,
+      "sequence": 0,
+      "actionId": 804,
+      "children": []
+     },
+     {
+      "id": 496,
+      "xmlId": "sale_renting.menu_orders_customers",
+      "name": {
+       "en": "Customers",
+       "ar": "العملاء"
+      },
+      "parentId": 494,
+      "sequence": 1,
+      "actionId": 328,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 497,
+    "xmlId": "sale_renting.menu_rental_schedule",
+    "name": {
+     "en": "Schedule",
+     "ar": "جدولة"
+    },
+    "parentId": 493,
+    "sequence": 1,
+    "actionId": 806,
+    "children": []
+   },
+   {
+    "id": 498,
+    "xmlId": "sale_renting.menu_catalog",
+    "name": {
+     "en": "Products",
+     "ar": "المنتجات"
+    },
+    "parentId": 493,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 499,
+      "xmlId": "sale_renting.menu_catalog_products",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 498,
+      "sequence": 0,
+      "actionId": 803,
+      "children": []
+     },
+     {
+      "id": 501,
+      "xmlId": "sale_renting.menu_product_categories",
+      "name": {
+       "en": "Categories",
+       "ar": "Categories"
+      },
+      "parentId": 498,
+      "sequence": 1,
+      "actionId": 220,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 503,
+    "xmlId": "sale_renting.menu_rental_reporting",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 493,
+    "sequence": 3,
+    "actionId": 808,
+    "children": []
+   },
+   {
+    "id": 504,
+    "xmlId": "sale_renting.menu_rental_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 493,
+    "sequence": 4,
+    "children": [
+     {
+      "id": 505,
+      "xmlId": "sale_renting.menu_rental_settings",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 504,
+      "sequence": 0,
+      "actionId": 807,
+      "children": []
+     },
+     {
+      "id": 507,
+      "xmlId": "sale_management_renting.menu_quotation_template",
+      "name": {
+       "en": "Quotation Templates",
+       "ar": "قوالب عرض السعر"
+      },
+      "parentId": 504,
+      "sequence": 1,
+      "actionId": 810,
+      "children": []
+     },
+     {
+      "id": 508,
+      "xmlId": "sale_renting_pdf_quote_builder.sale_menu_quotation_document_action",
+      "name": {
+       "en": "Headers/Footers",
+       "ar": "Headers/Footers"
+      },
+      "parentId": 504,
+      "sequence": 2,
+      "actionId": 477,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 391,
+  "xmlId": "accountant.menu_accounting",
+  "name": {
+   "en": "Accounting",
+   "ar": "المحاسبة"
+  },
+  "sequence": 8,
+  "actionId": 330,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 127,
+    "xmlId": "account.menu_board_journal_1",
+    "name": {
+     "en": "Dashboard",
+     "ar": "لوحة البيانات"
+    },
+    "parentId": 391,
+    "sequence": 0,
+    "actionId": 330,
+    "children": []
+   },
+   {
+    "id": 128,
+    "xmlId": "account.menu_finance_receivables",
+    "name": {
+     "en": "Customers",
+     "ar": "العملاء"
+    },
+    "parentId": 391,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 129,
+      "xmlId": "account.menu_action_move_out_invoice_type",
+      "name": {
+       "en": "Invoices",
+       "ar": "فواتير العملاء"
+      },
+      "parentId": 128,
+      "sequence": 0,
+      "actionId": 291,
+      "children": []
+     },
+     {
+      "id": 130,
+      "xmlId": "account.menu_action_move_out_refund_type",
+      "name": {
+       "en": "Credit Notes",
+       "ar": "إشعارات دائنة"
+      },
+      "parentId": 128,
+      "sequence": 1,
+      "actionId": 292,
+      "children": []
+     },
+     {
+      "id": 131,
+      "xmlId": "account.menu_action_account_payments_receivable",
+      "name": {
+       "en": "Payments",
+       "ar": "الدفعات"
+      },
+      "parentId": 128,
+      "sequence": 2,
+      "actionId": 264,
+      "children": []
+     },
+     {
+      "id": 132,
+      "xmlId": "account.product_product_menu_sellable",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 128,
+      "sequence": 3,
+      "actionId": 317,
+      "children": []
+     },
+     {
+      "id": 133,
+      "xmlId": "account.menu_account_customer",
+      "name": {
+       "en": "Customers",
+       "ar": "العملاء"
+      },
+      "parentId": 128,
+      "sequence": 4,
+      "actionId": 328,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 134,
+    "xmlId": "account.menu_finance_payables",
+    "name": {
+     "en": "Vendors",
+     "ar": "الموردين"
+    },
+    "parentId": 391,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 135,
+      "xmlId": "account.menu_action_move_in_invoice_type",
+      "name": {
+       "en": "Bills",
+       "ar": "الفواتير"
+      },
+      "parentId": 134,
+      "sequence": 0,
+      "actionId": 294,
+      "children": []
+     },
+     {
+      "id": 136,
+      "xmlId": "account.menu_action_move_in_refund_type",
+      "name": {
+       "en": "Refunds",
+       "ar": "الاستردادات"
+      },
+      "parentId": 134,
+      "sequence": 1,
+      "actionId": 295,
+      "children": []
+     },
+     {
+      "id": 137,
+      "xmlId": "account.menu_action_account_payments_payable",
+      "name": {
+       "en": "Payments",
+       "ar": "الدفعات"
+      },
+      "parentId": 134,
+      "sequence": 2,
+      "actionId": 265,
+      "children": []
+     },
+     {
+      "id": 138,
+      "xmlId": "account.product_product_menu_purchasable",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 134,
+      "sequence": 3,
+      "actionId": 318,
+      "children": []
+     },
+     {
+      "id": 139,
+      "xmlId": "account.menu_account_supplier",
+      "name": {
+       "en": "Vendors",
+       "ar": "الموردين"
+      },
+      "parentId": 134,
+      "sequence": 4,
+      "actionId": 329,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 140,
+    "xmlId": "account.menu_finance_entries",
+    "name": {
+     "en": "Accounting",
+     "ar": "المحاسبة"
+    },
+    "parentId": 391,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 141,
+      "xmlId": "account.account_transactions_menu",
+      "name": {
+       "en": "Transactions",
+       "ar": "المعاملات"
+      },
+      "parentId": 140,
+      "sequence": 0,
+      "children": [
+       {
+        "id": 142,
+        "xmlId": "account.menu_action_move_journal_line_form",
+        "name": {
+         "en": "Journal Entries",
+         "ar": "قيود اليومية"
+        },
+        "parentId": 141,
+        "sequence": 0,
+        "actionId": 288,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 392,
+      "xmlId": "accountant.account_assets_liabilities_menu",
+      "name": {
+       "en": "Assets & Liabilities",
+       "ar": "الأصول والالتزامات"
+      },
+      "parentId": 140,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 401,
+        "xmlId": "account_asset.menu_action_account_asset_form",
+        "name": {
+         "en": "Assets",
+         "ar": "أصول"
+        },
+        "parentId": 392,
+        "sequence": 0,
+        "actionId": 676,
+        "children": []
+       },
+       {
+        "id": 406,
+        "xmlId": "account_loans.menu_action_loans",
+        "name": {
+         "en": "Loans",
+         "ar": "القروض"
+        },
+        "parentId": 392,
+        "sequence": 1,
+        "actionId": 693,
+        "children": []
+       },
+       {
+        "id": 506,
+        "xmlId": "accountant_fleet.menu_action_audit_inventory_fleet",
+        "name": {
+         "en": "Fleet",
+         "ar": "الأسطول"
+        },
+        "parentId": 392,
+        "sequence": 2,
+        "actionId": 702,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 144,
+      "xmlId": "account.account_closing_menu",
+      "name": {
+       "en": "Closing",
+       "ar": "جاري الإغلاق"
+      },
+      "parentId": 140,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 189,
+        "xmlId": "account_accountant.menu_account_reconcile",
+        "name": {
+         "en": "Reconcile",
+         "ar": "تسوية"
+        },
+        "parentId": 144,
+        "sequence": 0,
+        "actionId": 348,
+        "children": []
+       },
+       {
+        "id": 198,
+        "xmlId": "account_reports.menu_action_account_return",
+        "name": {
+         "en": "Tax Returns",
+         "ar": "الإقرارات الضريبية"
+        },
+        "parentId": 144,
+        "sequence": 1,
+        "actionId": 397,
+        "children": []
+       },
+       {
+        "id": 192,
+        "xmlId": "account_accountant.menu_action_change_lock_date",
+        "name": {
+         "en": "Lock Dates…",
+         "ar": "تواريخ الإقفال…"
+        },
+        "parentId": 144,
+        "sequence": 2,
+        "actionId": 356,
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": 145,
+    "xmlId": "account.account_audit_menu",
+    "name": {
+     "en": "Review",
+     "ar": "مراجعة"
+    },
+    "parentId": 391,
+    "sequence": 4,
+    "children": [
+     {
+      "id": 146,
+      "xmlId": "account.account_audit_control_menu",
+      "name": {
+       "en": "Control",
+       "ar": "التحكم"
+      },
+      "parentId": 145,
+      "sequence": 0,
+      "children": [
+       {
+        "id": 147,
+        "xmlId": "account.menu_action_account_moves_all",
+        "name": {
+         "en": "Journal Items",
+         "ar": "عناصر اليومية"
+        },
+        "parentId": 146,
+        "sequence": 0,
+        "actionId": 287,
+        "children": []
+       },
+       {
+        "id": 209,
+        "xmlId": "account_reports.menu_action_account_report_ja",
+        "name": {
+         "en": "Journal Audit",
+         "ar": "تدقيق دفتر اليومية"
+        },
+        "parentId": 146,
+        "sequence": 1,
+        "actionId": 376,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 210,
+      "xmlId": "account_reports.account_audit_working_file_menu",
+      "name": {
+       "en": "Audit",
+       "ar": "تدقيق"
+      },
+      "parentId": 145,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 211,
+        "xmlId": "account_reports.menu_action_working_files",
+        "name": {
+         "en": "Working Files",
+         "ar": "Working Files"
+        },
+        "parentId": 210,
+        "sequence": 0,
+        "actionId": 405,
+        "children": []
+       },
+       {
+        "id": 405,
+        "xmlId": "accountant_knowledge.menu_action_accountant_audit_report",
+        "name": {
+         "en": "Annual Report",
+         "ar": "التقرير السنوي"
+        },
+        "parentId": 210,
+        "sequence": 1,
+        "actionId": 684,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 212,
+      "xmlId": "account_reports.account_audit_inventory_entries_menu",
+      "name": {
+       "en": "Inventory",
+       "ar": "المخزون"
+      },
+      "parentId": 145,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 404,
+        "xmlId": "account_asset.menu_action_account_report_assets",
+        "name": {
+         "en": "Depreciation Schedule",
+         "ar": "جدول الإهلاك"
+        },
+        "parentId": 212,
+        "sequence": 0,
+        "actionId": 682,
+        "children": []
+       },
+       {
+        "id": 407,
+        "xmlId": "account_loans.menu_action_loans_analysis",
+        "name": {
+         "en": "Loans Analysis",
+         "ar": "تحليل القروض"
+        },
+        "parentId": 212,
+        "sequence": 1,
+        "actionId": 694,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 213,
+      "xmlId": "account_reports.account_audit_regularization_entries_menu",
+      "name": {
+       "en": "Regularization Entries",
+       "ar": "القيود التنظيمية"
+      },
+      "parentId": 145,
+      "sequence": 3,
+      "children": [
+       {
+        "id": 215,
+        "xmlId": "account_reports.menu_action_account_report_deferred_revenue",
+        "name": {
+         "en": "Deferred Revenues",
+         "ar": "الإيرادات المؤجلة"
+        },
+        "parentId": 213,
+        "sequence": 0,
+        "actionId": 387,
+        "children": []
+       },
+       {
+        "id": 216,
+        "xmlId": "account_reports.menu_action_account_report_deferred_expense",
+        "name": {
+         "en": "Deferred Expenses",
+         "ar": "النفقات المؤجلة"
+        },
+        "parentId": 213,
+        "sequence": 1,
+        "actionId": 386,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 490,
+      "xmlId": "purchase_accountant.purchase_accountant_accrual_menu",
+      "name": {
+       "en": "Purchases",
+       "ar": "Purchases"
+      },
+      "parentId": 145,
+      "sequence": 4,
+      "children": [
+       {
+        "id": 491,
+        "xmlId": "purchase_accountant.menu_purchase_order_line_accrual_bill_to_receives_action",
+        "name": {
+         "en": "Bill To Receive",
+         "ar": "Bill To Receive"
+        },
+        "parentId": 490,
+        "sequence": 0,
+        "actionId": 800,
+        "children": []
+       },
+       {
+        "id": 492,
+        "xmlId": "purchase_accountant.menu_purchase_order_line_accrual_prepaid_expenses_action",
+        "name": {
+         "en": "Billed Not Received",
+         "ar": "Billed Not Received"
+        },
+        "parentId": 490,
+        "sequence": 1,
+        "actionId": 801,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 256,
+      "xmlId": "sale_account_accountant.sale_accountant_accrual_menu",
+      "name": {
+       "en": "Sales",
+       "ar": "المبيعات"
+      },
+      "parentId": 145,
+      "sequence": 5,
+      "children": [
+       {
+        "id": 257,
+        "xmlId": "sale_account_accountant.menu_sale_order_line_accrual_to_bill_action",
+        "name": {
+         "en": "Invoices To Be Issued",
+         "ar": "Invoices To Be Issued"
+        },
+        "parentId": 256,
+        "sequence": 0,
+        "actionId": 471,
+        "children": []
+       },
+       {
+        "id": 258,
+        "xmlId": "sale_account_accountant.menu_sale_order_line_accrual_deferred_revenues_action",
+        "name": {
+         "en": "Invoiced Not Delivered",
+         "ar": "Invoiced Not Delivered"
+        },
+        "parentId": 256,
+        "sequence": 1,
+        "actionId": 472,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 148,
+      "xmlId": "account.account_logs_menu",
+      "name": {
+       "en": "Logs",
+       "ar": "السجلات"
+      },
+      "parentId": 145,
+      "sequence": 6,
+      "children": [
+       {
+        "id": 178,
+        "xmlId": "account.account_audit_trail_menu",
+        "name": {
+         "en": "Audit Trail",
+         "ar": "سجل المراجعة"
+        },
+        "parentId": 148,
+        "sequence": 0,
+        "actionId": 335,
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": 149,
+    "xmlId": "account.menu_finance_reports",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 391,
+    "sequence": 5,
+    "children": [
+     {
+      "id": 155,
+      "xmlId": "account.account_reports_legal_statements_menu",
+      "name": {
+       "en": "Statement Reports",
+       "ar": "تقارير كشف الحساب"
+      },
+      "parentId": 149,
+      "sequence": 0,
+      "children": [
+       {
+        "id": 393,
+        "xmlId": "accountant.menu_action_account_report_balance_sheet",
+        "name": {
+         "en": "Balance Sheet",
+         "ar": "Balance Sheet"
+        },
+        "parentId": 155,
+        "sequence": 0,
+        "actionId": 372,
+        "children": []
+       },
+       {
+        "id": 394,
+        "xmlId": "accountant.menu_action_account_report_profit_and_loss",
+        "name": {
+         "en": "Profit and Loss",
+         "ar": "Profit and Loss"
+        },
+        "parentId": 155,
+        "sequence": 1,
+        "actionId": 374,
+        "children": []
+       },
+       {
+        "id": 395,
+        "xmlId": "accountant.menu_action_account_report_cash_flow",
+        "name": {
+         "en": "Cash Flow Statement",
+         "ar": "Cash Flow Statement"
+        },
+        "parentId": 155,
+        "sequence": 2,
+        "actionId": 371,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 396,
+      "xmlId": "accountant.account_reports_audit_menu",
+      "name": {
+       "en": "Ledgers",
+       "ar": "Ledgers"
+      },
+      "parentId": 149,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 397,
+        "xmlId": "accountant.menu_action_account_report_coa",
+        "name": {
+         "en": "Trial Balance",
+         "ar": "Trial Balance"
+        },
+        "parentId": 396,
+        "sequence": 0,
+        "actionId": 381,
+        "children": []
+       },
+       {
+        "id": 398,
+        "xmlId": "accountant.menu_action_account_report_general_ledger",
+        "name": {
+         "en": "General Ledger",
+         "ar": "General Ledger"
+        },
+        "parentId": 396,
+        "sequence": 1,
+        "actionId": 377,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 150,
+      "xmlId": "account.account_reports_partners_reports_menu",
+      "name": {
+       "en": "Partner Reports",
+       "ar": "تقارير الشركاء"
+      },
+      "parentId": 149,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 200,
+        "xmlId": "account_reports.menu_action_account_report_partner_ledger",
+        "name": {
+         "en": "Partner Ledger",
+         "ar": "دفتر الأستاذ العام للشركاء"
+        },
+        "parentId": 150,
+        "sequence": 0,
+        "actionId": 382,
+        "children": []
+       },
+       {
+        "id": 201,
+        "xmlId": "account_reports.menu_action_account_report_aged_receivable",
+        "name": {
+         "en": "Aged Receivable",
+         "ar": "المتأخر المدين"
+        },
+        "parentId": 150,
+        "sequence": 1,
+        "actionId": 379,
+        "children": []
+       },
+       {
+        "id": 202,
+        "xmlId": "account_reports.menu_action_account_report_aged_payable",
+        "name": {
+         "en": "Aged Payable",
+         "ar": "حسابات دائنة مستحقة متأخرة"
+        },
+        "parentId": 150,
+        "sequence": 2,
+        "actionId": 380,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 151,
+      "xmlId": "account.account_reports_taxes_and_fiscal_menu",
+      "name": {
+       "en": "Taxes & Fiscal",
+       "ar": "الضرائب والشؤون المالية"
+      },
+      "parentId": 149,
+      "sequence": 3,
+      "children": [
+       {
+        "id": 399,
+        "xmlId": "accountant.menu_action_account_report_gt",
+        "name": {
+         "en": "Tax Report",
+         "ar": "Tax Report"
+        },
+        "parentId": 151,
+        "sequence": 0,
+        "actionId": 375,
+        "children": []
+       },
+       {
+        "id": 219,
+        "xmlId": "account_fiscal_categories.menu_action_account_fiscal_report",
+        "name": {
+         "en": "Fiscal Report",
+         "ar": "التقرير المالي"
+        },
+        "parentId": 151,
+        "sequence": 1,
+        "actionId": 411,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 152,
+      "xmlId": "account.account_reports_management_menu",
+      "name": {
+       "en": "Management",
+       "ar": "الإدارة"
+      },
+      "parentId": 149,
+      "sequence": 4,
+      "children": [
+       {
+        "id": 153,
+        "xmlId": "account.menu_action_account_invoice_report_all",
+        "name": {
+         "en": "Invoice Analysis",
+         "ar": "تحليل الفاتورة"
+        },
+        "parentId": 152,
+        "sequence": 0,
+        "actionId": 321,
+        "children": []
+       },
+       {
+        "id": 154,
+        "xmlId": "account.menu_action_analytic_reporting",
+        "name": {
+         "en": "Analytic Report",
+         "ar": "تقرير تحليلي"
+        },
+        "parentId": 152,
+        "sequence": 1,
+        "actionId": 319,
+        "children": []
+       },
+       {
+        "id": 400,
+        "xmlId": "accountant.menu_action_account_report_exec_summary",
+        "name": {
+         "en": "Executive Summary",
+         "ar": "Executive Summary"
+        },
+        "parentId": 152,
+        "sequence": 2,
+        "actionId": 373,
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": 156,
+    "xmlId": "account.menu_finance_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 391,
+    "sequence": 6,
+    "children": [
+     {
+      "id": 157,
+      "xmlId": "account.menu_account_config",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 156,
+      "sequence": 0,
+      "actionId": 325,
+      "children": []
+     },
+     {
+      "id": 158,
+      "xmlId": "account.account_account_menu",
+      "name": {
+       "en": "Accounting",
+       "ar": "المحاسبة"
+      },
+      "parentId": 156,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 159,
+        "xmlId": "account.menu_action_account_form",
+        "name": {
+         "en": "Chart of Accounts",
+         "ar": "شجرة الحسابات"
+        },
+        "parentId": 158,
+        "sequence": 0,
+        "actionId": 304,
+        "children": []
+       },
+       {
+        "id": 160,
+        "xmlId": "account.menu_action_tax_form",
+        "name": {
+         "en": "Taxes",
+         "ar": "الضرائب"
+        },
+        "parentId": 158,
+        "sequence": 1,
+        "actionId": 312,
+        "children": []
+       },
+       {
+        "id": 161,
+        "xmlId": "account.menu_action_account_journal_form",
+        "name": {
+         "en": "Journals",
+         "ar": "دفاتر اليومية"
+        },
+        "parentId": 158,
+        "sequence": 2,
+        "actionId": 306,
+        "children": []
+       },
+       {
+        "id": 163,
+        "xmlId": "account.menu_action_currency_form",
+        "name": {
+         "en": "Currencies",
+         "ar": "العملات"
+        },
+        "parentId": 158,
+        "sequence": 3,
+        "actionId": 62,
+        "children": []
+       },
+       {
+        "id": 164,
+        "xmlId": "account.menu_action_account_fiscal_position_form",
+        "name": {
+         "en": "Fiscal Positions",
+         "ar": "الأوضاع المالية"
+        },
+        "parentId": 158,
+        "sequence": 4,
+        "actionId": 327,
+        "children": []
+       },
+       {
+        "id": 165,
+        "xmlId": "account.menu_action_account_journal_group_list",
+        "name": {
+         "en": "Multi-Ledger",
+         "ar": "دفتر الأستاذ المتعدد"
+        },
+        "parentId": 158,
+        "sequence": 5,
+        "actionId": 307,
+        "children": []
+       },
+       {
+        "id": 217,
+        "xmlId": "account_reports.menu_action_return_check_templates",
+        "name": {
+         "en": "Checks",
+         "ar": "الفحوصات"
+        },
+        "parentId": 158,
+        "sequence": 6,
+        "actionId": 403,
+        "children": []
+       },
+       {
+        "id": 403,
+        "xmlId": "account_asset.menu_action_account_depreciation_model_form",
+        "name": {
+         "en": "Depreciation Models",
+         "ar": "Depreciation Models"
+        },
+        "parentId": 158,
+        "sequence": 7,
+        "actionId": 680,
+        "children": []
+       },
+       {
+        "id": 206,
+        "xmlId": "account_reports.menu_action_return_types",
+        "name": {
+         "en": "Return Types",
+         "ar": "أنواع الإقرارات"
+        },
+        "parentId": 158,
+        "sequence": 8,
+        "actionId": 402,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 168,
+      "xmlId": "account.account_invoicing_menu",
+      "name": {
+       "en": "Invoicing",
+       "ar": "الفوترة"
+      },
+      "parentId": 156,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 169,
+        "xmlId": "account.menu_action_payment_term_form",
+        "name": {
+         "en": "Payment Terms",
+         "ar": "شروط السداد"
+        },
+        "parentId": 168,
+        "sequence": 0,
+        "actionId": 314,
+        "children": []
+       },
+       {
+        "id": 171,
+        "xmlId": "account.menu_product_product_categories",
+        "name": {
+         "en": "Product Categories",
+         "ar": "فئات المنتجات"
+        },
+        "parentId": 168,
+        "sequence": 1,
+        "actionId": 220,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 172,
+      "xmlId": "account.root_payment_menu",
+      "name": {
+       "en": "Online Payments",
+       "ar": "المدفوعات عبر الإنترنت"
+      },
+      "parentId": 156,
+      "sequence": 3,
+      "children": [
+       {
+        "id": 193,
+        "xmlId": "account_payment.payment_provider_menu",
+        "name": {
+         "en": "Payment Providers",
+         "ar": "مزودي الدفع"
+        },
+        "parentId": 172,
+        "sequence": 0,
+        "actionId": 250,
+        "children": []
+       },
+       {
+        "id": 194,
+        "xmlId": "account_payment.payment_method_menu",
+        "name": {
+         "en": "Payment Methods",
+         "ar": "طرق الدفع"
+        },
+        "parentId": 172,
+        "sequence": 1,
+        "actionId": 251,
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 509,
+  "xmlId": "documents.menu_root",
+  "name": {
+   "en": "Documents",
+   "ar": "المستندات"
+  },
+  "sequence": 9,
+  "actionId": 815,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 510,
+    "xmlId": "documents.dashboard",
+    "name": {
+     "en": "Documents",
+     "ar": "المستندات"
+    },
+    "parentId": 509,
+    "sequence": 0,
+    "actionId": 815,
+    "children": []
+   },
+   {
+    "id": 511,
+    "xmlId": "documents.Config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 509,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 512,
+      "xmlId": "documents.settings_menu",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 511,
+      "sequence": 0,
+      "actionId": 813,
+      "children": []
+     },
+     {
+      "id": 518,
+      "xmlId": "documents_spreadsheet.menu_technical_spreadsheet_template",
+      "name": {
+       "en": "Spreadsheet Templates",
+       "ar": "قوالب جدول البيانات"
+      },
+      "parentId": 511,
+      "sequence": 1,
+      "actionId": 828,
+      "children": []
+     },
+     {
+      "id": 513,
+      "xmlId": "documents.category_menu",
+      "name": {
+       "en": "Tags",
+       "ar": "علامات التصنيف"
+      },
+      "parentId": 511,
+      "sequence": 2,
+      "actionId": 819,
+      "children": []
+     },
+     {
+      "id": 514,
+      "xmlId": "documents.res_group_functional_menu",
+      "name": {
+       "en": "Groups",
+       "ar": "Groups"
+      },
+      "parentId": 511,
+      "sequence": 3,
+      "actionId": 148,
+      "children": []
+     },
+     {
+      "id": 515,
+      "xmlId": "documents.mail_activities",
+      "name": {
+       "en": "Activities",
+       "ar": "الأنشطة"
+      },
+      "parentId": 511,
+      "sequence": 4,
+      "children": [
+       {
+        "id": 516,
+        "xmlId": "documents.mail_activity_type_menu",
+        "name": {
+         "en": "Activity Types",
+         "ar": "أنواع الأنشطة"
+        },
+        "parentId": 515,
+        "sequence": 0,
+        "actionId": 820,
+        "children": []
+       },
+       {
+        "id": 517,
+        "xmlId": "documents.mail_activity_plan_menu",
+        "name": {
+         "en": "Activity Plans",
+         "ar": "خطط النشاط"
+        },
+        "parentId": 515,
+        "sequence": 1,
+        "actionId": 821,
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 336,
+  "xmlId": "project.menu_main_pm",
+  "name": {
+   "en": "Project",
+   "ar": "المشروع"
+  },
+  "sequence": 10,
+  "actionId": 590,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 337,
+    "xmlId": "project.menu_projects",
+    "name": {
+     "en": "Projects",
+     "ar": "المشاريع"
+    },
+    "parentId": 336,
+    "sequence": 0,
+    "actionId": 590,
+    "children": []
+   },
+   {
+    "id": 339,
+    "xmlId": "project.menu_project_management",
+    "name": {
+     "en": "Tasks",
+     "ar": "المهام"
+    },
+    "parentId": 336,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 340,
+      "xmlId": "project.menu_project_management_my_tasks",
+      "name": {
+       "en": "My Tasks",
+       "ar": "مهامي"
+      },
+      "parentId": 339,
+      "sequence": 0,
+      "actionId": 603,
+      "children": []
+     },
+     {
+      "id": 341,
+      "xmlId": "project.menu_project_management_all_tasks",
+      "name": {
+       "en": "All Tasks",
+       "ar": "كافة المهام"
+      },
+      "parentId": 339,
+      "sequence": 1,
+      "actionId": 604,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 342,
+    "xmlId": "project.menu_project_report",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 336,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 343,
+      "xmlId": "project.menu_project_report_task_analysis",
+      "name": {
+       "en": "Tasks Analysis",
+       "ar": "تحليل المهام"
+      },
+      "parentId": 342,
+      "sequence": 0,
+      "actionId": 622,
+      "children": []
+     },
+     {
+      "id": 344,
+      "xmlId": "project.rating_rating_menu_project",
+      "name": {
+       "en": "Customer Ratings",
+       "ar": "تقييمات العميل"
+      },
+      "parentId": 342,
+      "sequence": 1,
+      "actionId": 579,
+      "children": []
+     },
+     {
+      "id": 409,
+      "xmlId": "sale_project.analytic_margins_menu_project",
+      "name": {
+       "en": "Margins",
+       "ar": "Margins"
+      },
+      "parentId": 342,
+      "sequence": 2,
+      "actionId": 697,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 345,
+    "xmlId": "project.menu_project_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 336,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 346,
+      "xmlId": "project.project_config_settings_menu_action",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 345,
+      "sequence": 0,
+      "actionId": 615,
+      "children": []
+     },
+     {
+      "id": 348,
+      "xmlId": "project.menu_projects_config",
+      "name": {
+       "en": "Projects",
+       "ar": "المشاريع"
+      },
+      "parentId": 345,
+      "sequence": 1,
+      "actionId": 592,
+      "children": []
+     },
+     {
+      "id": 349,
+      "xmlId": "project.menu_project_config_project_template",
+      "name": {
+       "en": "Project Templates",
+       "ar": "قوالب المشروع"
+      },
+      "parentId": 345,
+      "sequence": 2,
+      "actionId": 594,
+      "children": []
+     },
+     {
+      "id": 350,
+      "xmlId": "project.project_menu_config_project_roles",
+      "name": {
+       "en": "Project Roles",
+       "ar": "الأدوار في المشروع"
+      },
+      "parentId": 345,
+      "sequence": 3,
+      "actionId": 612,
+      "children": []
+     },
+     {
+      "id": 353,
+      "xmlId": "project.menu_project_tags_act",
+      "name": {
+       "en": "Tags",
+       "ar": "علامات التصنيف"
+      },
+      "parentId": 345,
+      "sequence": 4,
+      "actionId": 613,
+      "children": []
+     },
+     {
+      "id": 354,
+      "xmlId": "project.project_menu_config_activity_type",
+      "name": {
+       "en": "Activity Types",
+       "ar": "أنواع الأنشطة"
+      },
+      "parentId": 345,
+      "sequence": 5,
+      "actionId": 617,
+      "children": []
+     },
+     {
+      "id": 355,
+      "xmlId": "project.mail_activity_plan_menu_config_project",
+      "name": {
+       "en": "Activity Plans",
+       "ar": "خطط النشاط"
+      },
+      "parentId": 345,
+      "sequence": 6,
+      "actionId": 616,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 375,
+  "xmlId": "planning.planning_menu_root",
+  "name": {
+   "en": "Planning",
+   "ar": "التخطيط"
+  },
+  "sequence": 11,
+  "actionId": 656,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 379,
+    "xmlId": "planning.planning_menu_schedule",
+    "name": {
+     "en": "Schedule",
+     "ar": "جدولة"
+    },
+    "parentId": 375,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 380,
+      "xmlId": "planning.planning_menu_schedule_by_resource",
+      "name": {
+       "en": "By Resource",
+       "ar": "حسب المَورد"
+      },
+      "parentId": 379,
+      "sequence": 0,
+      "actionId": 656,
+      "children": []
+     },
+     {
+      "id": 381,
+      "xmlId": "planning.planning_menu_schedule_by_role",
+      "name": {
+       "en": "By Role",
+       "ar": "حسب الدور"
+      },
+      "parentId": 379,
+      "sequence": 1,
+      "actionId": 657,
+      "children": []
+     },
+     {
+      "id": 408,
+      "xmlId": "sale_planning.sale_planning_menu_schedule_by_sale_order",
+      "name": {
+       "en": "By Sales Order",
+       "ar": "بواسطة أمر البيع"
+      },
+      "parentId": 379,
+      "sequence": 2,
+      "actionId": 695,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 377,
+    "xmlId": "planning.planning_menu_my_planning",
+    "name": {
+     "en": "Planning",
+     "ar": "التخطيط"
+    },
+    "parentId": 375,
+    "sequence": 1,
+    "actionId": 654,
+    "children": []
+   },
+   {
+    "id": 388,
+    "xmlId": "planning.planning_menu_reporting",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 375,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 389,
+      "xmlId": "planning.planning_menu_planning_analysis",
+      "name": {
+       "en": "Planning Analysis",
+       "ar": "تحليل التخطيط"
+      },
+      "parentId": 388,
+      "sequence": 0,
+      "actionId": 667,
+      "children": []
+     },
+     {
+      "id": 489,
+      "xmlId": "planning_attendance.menu_planning_attendance_analysis_report",
+      "name": {
+       "en": "Planning / Attendance Analysis",
+       "ar": "التخطيط / تحليل الحضور"
+      },
+      "parentId": 388,
+      "sequence": 1,
+      "actionId": 797,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 382,
+    "xmlId": "planning.planning_menu_settings",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 375,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 383,
+      "xmlId": "planning.planning_menu_settings_config",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 382,
+      "sequence": 0,
+      "actionId": 658,
+      "children": []
+     },
+     {
+      "id": 384,
+      "xmlId": "planning.planning_menu_settings_employee",
+      "name": {
+       "en": "Employees",
+       "ar": "الموظفون"
+      },
+      "parentId": 382,
+      "sequence": 1,
+      "actionId": 546,
+      "children": []
+     },
+     {
+      "id": 385,
+      "xmlId": "planning.planning_menu_settings_resource",
+      "name": {
+       "en": "Materials",
+       "ar": "المواد"
+      },
+      "parentId": 382,
+      "sequence": 2,
+      "actionId": 653,
+      "children": []
+     },
+     {
+      "id": 386,
+      "xmlId": "planning.planning_menu_settings_role",
+      "name": {
+       "en": "Roles",
+       "ar": "الأدوار"
+      },
+      "parentId": 382,
+      "sequence": 3,
+      "actionId": 659,
+      "children": []
+     },
+     {
+      "id": 387,
+      "xmlId": "planning.planning_menu_settings_shift_template",
+      "name": {
+       "en": "Shift Templates",
+       "ar": "قوالب نوبة العمل"
+      },
+      "parentId": 382,
+      "sequence": 4,
+      "actionId": 660,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 433,
+  "xmlId": "helpdesk.menu_helpdesk_root",
+  "name": {
+   "en": "Helpdesk",
+   "ar": "مكتب المساعدة"
+  },
+  "sequence": 12,
+  "actionId": 747,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 434,
+    "xmlId": "helpdesk.helpdesk_menu_team_dashboard",
+    "name": {
+     "en": "Overview",
+     "ar": "نظرة عامة"
+    },
+    "parentId": 433,
+    "sequence": 0,
+    "actionId": 747,
+    "children": []
+   },
+   {
+    "id": 435,
+    "xmlId": "helpdesk.helpdesk_ticket_menu_main",
+    "name": {
+     "en": "Tickets",
+     "ar": "التذاكر"
+    },
+    "parentId": 433,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 436,
+      "xmlId": "helpdesk.helpdesk_ticket_menu_my",
+      "name": {
+       "en": "My Tickets",
+       "ar": "تذاكري"
+      },
+      "parentId": 435,
+      "sequence": 0,
+      "actionId": 718,
+      "children": []
+     },
+     {
+      "id": 437,
+      "xmlId": "helpdesk.helpdesk_ticket_menu_all",
+      "name": {
+       "en": "All Tickets",
+       "ar": "كافة التذاكر"
+      },
+      "parentId": 435,
+      "sequence": 1,
+      "actionId": 719,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 438,
+    "xmlId": "helpdesk.helpdesk_ticket_report_menu_main",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 433,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 439,
+      "xmlId": "helpdesk.helpdesk_ticket_report_menu",
+      "name": {
+       "en": "Tickets Analysis",
+       "ar": "تحليل التذاكر"
+      },
+      "parentId": 438,
+      "sequence": 0,
+      "actionId": 732,
+      "children": []
+     },
+     {
+      "id": 440,
+      "xmlId": "helpdesk.helpdesk_ticket_report_menu_sla_analysis",
+      "name": {
+       "en": "SLA Status Analysis",
+       "ar": "تحليل حالة اتفاقية مستوى الخدمة"
+      },
+      "parentId": 438,
+      "sequence": 1,
+      "actionId": 736,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 442,
+    "xmlId": "helpdesk.helpdesk_menu_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 433,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 443,
+      "xmlId": "helpdesk.helpdesk_team_menu",
+      "name": {
+       "en": "Helpdesk Teams",
+       "ar": "فرق مكتب المساعدة"
+      },
+      "parentId": 442,
+      "sequence": 0,
+      "actionId": 746,
+      "children": []
+     },
+     {
+      "id": 445,
+      "xmlId": "helpdesk.helpdesk_sla_menu_main",
+      "name": {
+       "en": "SLA Policies",
+       "ar": "سياسات اتفاقية مستوى الخدمة"
+      },
+      "parentId": 442,
+      "sequence": 1,
+      "actionId": 743,
+      "children": []
+     },
+     {
+      "id": 447,
+      "xmlId": "helpdesk.helpdesk_team_canned_response_menu",
+      "name": {
+       "en": "Canned Responses",
+       "ar": "الردود الجاهزة"
+      },
+      "parentId": 442,
+      "sequence": 2,
+      "actionId": 111,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 356,
+  "xmlId": "survey.menu_surveys",
+  "name": {
+   "en": "Surveys",
+   "ar": "الاستطلاعات"
+  },
+  "sequence": 13,
+  "actionId": 626,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 358,
+    "xmlId": "survey.menu_survey_form",
+    "name": {
+     "en": "Surveys",
+     "ar": "الاستطلاعات"
+    },
+    "parentId": 356,
+    "sequence": 0,
+    "actionId": 626,
+    "children": []
+   },
+   {
+    "id": 359,
+    "xmlId": "survey.menu_survey_type_form1",
+    "name": {
+     "en": "Participants",
+     "ar": "المشاركين"
+    },
+    "parentId": 356,
+    "sequence": 1,
+    "actionId": 627,
+    "children": []
+   },
+   {
+    "id": 357,
+    "xmlId": "survey.survey_menu_questions",
+    "name": {
+     "en": "Questions & Answers",
+     "ar": "الأسئلة والأجوبة"
+    },
+    "parentId": 356,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 360,
+      "xmlId": "survey.menu_survey_question_form1",
+      "name": {
+       "en": "Questions",
+       "ar": "الأسئلة"
+      },
+      "parentId": 357,
+      "sequence": 0,
+      "actionId": 630,
+      "children": []
+     },
+     {
+      "id": 361,
+      "xmlId": "survey.menu_survey_label_form1",
+      "name": {
+       "en": "Suggested Values",
+       "ar": "القيم المقترحة"
+      },
+      "parentId": 357,
+      "sequence": 1,
+      "actionId": 631,
+      "children": []
+     },
+     {
+      "id": 362,
+      "xmlId": "survey.menu_survey_response_line_form",
+      "name": {
+       "en": "Detailed Answers",
+       "ar": "الأجوبة المفصلة"
+      },
+      "parentId": 357,
+      "sequence": 2,
+      "actionId": 629,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 473,
+  "xmlId": "purchase.menu_purchase_root",
+  "name": {
+   "en": "Purchase",
+   "ar": "الشراء"
+  },
+  "sequence": 14,
+  "actionId": 782,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 474,
+    "xmlId": "purchase.menu_procurement_management",
+    "name": {
+     "en": "Orders",
+     "ar": "الطلبات"
+    },
+    "parentId": 473,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 484,
+      "xmlId": "purchase.menu_purchase_rfq",
+      "name": {
+       "en": "Requests for Quotation",
+       "ar": "طلبات عروض الأسعار"
+      },
+      "parentId": 474,
+      "sequence": 0,
+      "actionId": 782,
+      "children": []
+     },
+     {
+      "id": 485,
+      "xmlId": "purchase.menu_purchase_form_action",
+      "name": {
+       "en": "Purchase Orders",
+       "ar": "أوامر الشراء"
+      },
+      "parentId": 474,
+      "sequence": 1,
+      "actionId": 783,
+      "children": []
+     },
+     {
+      "id": 475,
+      "xmlId": "purchase.menu_procurement_management_supplier_name",
+      "name": {
+       "en": "Vendors",
+       "ar": "الموردين"
+      },
+      "parentId": 474,
+      "sequence": 2,
+      "actionId": 329,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 482,
+    "xmlId": "purchase.menu_purchase_products",
+    "name": {
+     "en": "Products",
+     "ar": "المنتجات"
+    },
+    "parentId": 473,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 483,
+      "xmlId": "purchase.menu_procurement_partner_contact_form",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 482,
+      "sequence": 0,
+      "actionId": 781,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 487,
+    "xmlId": "purchase.purchase_report_main",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 473,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 488,
+      "xmlId": "purchase.purchase_report",
+      "name": {
+       "en": "Purchase",
+       "ar": "الشراء"
+      },
+      "parentId": 487,
+      "sequence": 0,
+      "actionId": 796,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 476,
+    "xmlId": "purchase.menu_purchase_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 473,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 486,
+      "xmlId": "purchase.menu_purchase_general_settings",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 476,
+      "sequence": 0,
+      "actionId": 793,
+      "children": []
+     },
+     {
+      "id": 477,
+      "xmlId": "purchase.menu_product_pricelist_action2_purchase",
+      "name": {
+       "en": "Vendor Pricelists",
+       "ar": "قوائم أسعار المورد"
+      },
+      "parentId": 476,
+      "sequence": 1,
+      "actionId": 224,
+      "children": []
+     },
+     {
+      "id": 478,
+      "xmlId": "purchase.menu_product_in_config_purchase",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 476,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 480,
+        "xmlId": "purchase.menu_product_category_config_purchase",
+        "name": {
+         "en": "Categories",
+         "ar": "الفئات"
+        },
+        "parentId": 478,
+        "sequence": 0,
+        "actionId": 220,
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 278,
+  "xmlId": "sign.menu_document",
+  "name": {
+   "en": "Sign",
+   "ar": "توقيع"
+  },
+  "sequence": 15,
+  "actionId": 505,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 279,
+    "xmlId": "sign.sign_request_menu",
+    "name": {
+     "en": "Documents",
+     "ar": "المستندات"
+    },
+    "parentId": 278,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 287,
+      "xmlId": "sign.sign_request_my_documents",
+      "name": {
+       "en": "My Documents",
+       "ar": "مستنداتي"
+      },
+      "parentId": 279,
+      "sequence": 0,
+      "actionId": 505,
+      "children": []
+     },
+     {
+      "id": 288,
+      "xmlId": "sign.sign_request_documents",
+      "name": {
+       "en": "All Documents",
+       "ar": "كافة المستندات"
+      },
+      "parentId": 279,
+      "sequence": 1,
+      "actionId": 506,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 280,
+    "xmlId": "sign.sign_template_menu",
+    "name": {
+     "en": "Templates",
+     "ar": "القوالب"
+    },
+    "parentId": 278,
+    "sequence": 1,
+    "actionId": 510,
+    "children": []
+   },
+   {
+    "id": 281,
+    "xmlId": "sign.sign_reports",
+    "name": {
+     "en": "Reports",
+     "ar": "التقارير"
+    },
+    "parentId": 278,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 286,
+      "xmlId": "sign.sign_report_green_savings",
+      "name": {
+       "en": "Green Savings",
+       "ar": "المحافظات البيئية"
+      },
+      "parentId": 281,
+      "sequence": 0,
+      "actionId": 515,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 282,
+    "xmlId": "sign.menu_sign_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 278,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 283,
+      "xmlId": "sign.sign_item_settings_menu",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 282,
+      "sequence": 0,
+      "actionId": 514,
+      "children": []
+     },
+     {
+      "id": 284,
+      "xmlId": "sign.sign_item_type_menu",
+      "name": {
+       "en": "Fields",
+       "ar": "الحقول"
+      },
+      "parentId": 282,
+      "sequence": 1,
+      "actionId": 511,
+      "children": []
+     },
+     {
+      "id": 285,
+      "xmlId": "sign.sign_template_tag_menu",
+      "name": {
+       "en": "Tags",
+       "ar": "علامات التصنيف"
+      },
+      "parentId": 282,
+      "sequence": 2,
+      "actionId": 513,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 305,
+  "xmlId": "hr.menu_hr_root",
+  "name": {
+   "en": "Employees",
+   "ar": "الموظفون"
+  },
+  "sequence": 16,
+  "actionId": 546,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 307,
+    "xmlId": "hr.menu_hr_employee_payroll",
+    "name": {
+     "en": "Management",
+     "ar": "الإدارة"
+    },
+    "parentId": 305,
+    "sequence": 0,
+    "actionId": 546,
+    "children": []
+   },
+   {
+    "id": 308,
+    "xmlId": "hr.menu_hr_employee",
+    "name": {
+     "en": "Directory",
+     "ar": "الدليل"
+    },
+    "parentId": 305,
+    "sequence": 1,
+    "actionId": 543,
+    "children": []
+   },
+   {
+    "id": 310,
+    "xmlId": "hr.menu_hr_department_kanban",
+    "name": {
+     "en": "Departments",
+     "ar": "الأقسام"
+    },
+    "parentId": 305,
+    "sequence": 2,
+    "actionId": 554,
+    "children": []
+   },
+   {
+    "id": 371,
+    "xmlId": "hr_skills.hr_skill_learning_menu",
+    "name": {
+     "en": "Learning",
+     "ar": "التعلم"
+    },
+    "parentId": 305,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 372,
+      "xmlId": "hr_skills.hr_certification_menu",
+      "name": {
+       "en": "Certifications",
+       "ar": "الشهادات"
+      },
+      "parentId": 371,
+      "sequence": 0,
+      "actionId": 642,
+      "children": []
+     },
+     {
+      "id": 373,
+      "xmlId": "hr_skills.menu_learnings_training_attendances",
+      "name": {
+       "en": "Training Attendances",
+       "ar": "Training Attendances"
+      },
+      "parentId": 371,
+      "sequence": 1,
+      "actionId": 640,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 309,
+    "xmlId": "hr.hr_menu_hr_reports",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 305,
+    "sequence": 4,
+    "children": [
+     {
+      "id": 374,
+      "xmlId": "hr_skills.hr_employee_skill_inventory_report_menu",
+      "name": {
+       "en": "Skills Inventory",
+       "ar": "قائمة المهارات"
+      },
+      "parentId": 309,
+      "sequence": 0,
+      "actionId": 647,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 311,
+    "xmlId": "hr.menu_human_resources_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 305,
+    "sequence": 5,
+    "children": [
+     {
+      "id": 323,
+      "xmlId": "hr.hr_menu_configuration",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 311,
+      "sequence": 0,
+      "actionId": 556,
+      "children": []
+     },
+     {
+      "id": 312,
+      "xmlId": "hr.menu_config_employee",
+      "name": {
+       "en": "Employee",
+       "ar": "الموظف"
+      },
+      "parentId": 311,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 313,
+        "xmlId": "hr.menu_config_plan_plan",
+        "name": {
+         "en": "Onboarding / Offboarding",
+         "ar": "استقبال الموظفين / إنهاء خدماتهم"
+        },
+        "parentId": 312,
+        "sequence": 0,
+        "actionId": 533,
+        "children": []
+       },
+       {
+        "id": 314,
+        "xmlId": "hr.menu_view_hr_contract_type",
+        "name": {
+         "en": "Employee Types",
+         "ar": "Employee Types"
+        },
+        "parentId": 312,
+        "sequence": 1,
+        "actionId": 538,
+        "children": []
+       },
+       {
+        "id": 315,
+        "xmlId": "hr.menu_hr_work_location_tree",
+        "name": {
+         "en": "Work Locations",
+         "ar": "مواقع العمل"
+        },
+        "parentId": 312,
+        "sequence": 2,
+        "actionId": 555,
+        "children": []
+       },
+       {
+        "id": 316,
+        "xmlId": "hr.menu_hr_departure_reason_tree",
+        "name": {
+         "en": "Departure Reasons",
+         "ar": "أسباب المغادرة"
+        },
+        "parentId": 312,
+        "sequence": 3,
+        "actionId": 537,
+        "children": []
+       },
+       {
+        "id": 370,
+        "xmlId": "hr_skills.hr_skill_type_menu",
+        "name": {
+         "en": "Skill Types",
+         "ar": "أنواع المهارات"
+        },
+        "parentId": 312,
+        "sequence": 4,
+        "actionId": 641,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 318,
+      "xmlId": "hr.menu_config_working_times",
+      "name": {
+       "en": "Time Management",
+       "ar": "Time Management"
+      },
+      "parentId": 311,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 319,
+        "xmlId": "hr.menu_resource_calendar_view",
+        "name": {
+         "en": "Working Schedules",
+         "ar": "جداول العمل"
+        },
+        "parentId": 318,
+        "sequence": 0,
+        "actionId": 204,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 320,
+      "xmlId": "hr.menu_config_recruitment",
+      "name": {
+       "en": "Recruitment",
+       "ar": "التوظيف"
+      },
+      "parentId": 311,
+      "sequence": 3,
+      "children": [
+       {
+        "id": 321,
+        "xmlId": "hr.menu_view_hr_job",
+        "name": {
+         "en": "Job Positions",
+         "ar": "المناصب الوظيفية"
+        },
+        "parentId": 320,
+        "sequence": 0,
+        "actionId": 540,
+        "children": []
+       },
+       {
+        "id": 322,
+        "xmlId": "hr.menu_hr_employee_contract_templates",
+        "name": {
+         "en": "Contract Templates",
+         "ar": "قوالب العقود"
+        },
+        "parentId": 320,
+        "sequence": 1,
+        "actionId": 536,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 364,
+      "xmlId": "hr_gamification.menu_hr_gamification",
+      "name": {
+       "en": "Challenges",
+       "ar": "التحديات"
+      },
+      "parentId": 311,
+      "sequence": 4,
+      "children": [
+       {
+        "id": 365,
+        "xmlId": "hr_gamification.gamification_badge_menu_hr",
+        "name": {
+         "en": "Badges",
+         "ar": "الشارات"
+        },
+        "parentId": 364,
+        "sequence": 0,
+        "actionId": 492,
+        "children": []
+       },
+       {
+        "id": 366,
+        "xmlId": "hr_gamification.gamification_challenge_menu_hr",
+        "name": {
+         "en": "Challenges",
+         "ar": "التحديات"
+        },
+        "parentId": 364,
+        "sequence": 1,
+        "actionId": 637,
+        "children": []
+       },
+       {
+        "id": 367,
+        "xmlId": "hr_gamification.gamification_goal_menu_hr",
+        "name": {
+         "en": "Goals History",
+         "ar": "سجل الأهداف"
+        },
+        "parentId": 364,
+        "sequence": 2,
+        "actionId": 636,
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 460,
+  "xmlId": "hr_attendance.menu_hr_attendance_root",
+  "name": {
+   "en": "Attendances",
+   "ar": "الحضور"
+  },
+  "sequence": 17,
+  "actionId": 765,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 465,
+    "xmlId": "hr_attendance.menu_hr_attendance_overview",
+    "name": {
+     "en": "Overview",
+     "ar": "نظرة عامة"
+    },
+    "parentId": 460,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 466,
+      "xmlId": "hr_attendance.menu_hr_attendance_view_dashboard",
+      "name": {
+       "en": "Dashboard",
+       "ar": "لوحة البيانات"
+      },
+      "parentId": 465,
+      "sequence": 0,
+      "actionId": 765,
+      "children": []
+     },
+     {
+      "id": 467,
+      "xmlId": "hr_attendance.menu_hr_attendance_employee",
+      "name": {
+       "en": "Employees",
+       "ar": "الموظفون"
+      },
+      "parentId": 465,
+      "sequence": 1,
+      "actionId": 546,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 468,
+    "xmlId": "hr_attendance.menu_hr_attendance_view_attendances_management",
+    "name": {
+     "en": "Management",
+     "ar": "الإدارة"
+    },
+    "parentId": 460,
+    "sequence": 1,
+    "actionId": 767,
+    "children": []
+   },
+   {
+    "id": 461,
+    "xmlId": "hr_attendance.menu_action_open_form",
+    "name": {
+     "en": "Kiosk Mode",
+     "ar": "وضع الكشك"
+    },
+    "parentId": 460,
+    "sequence": 2,
+    "actionId": 770,
+    "children": []
+   },
+   {
+    "id": 462,
+    "xmlId": "hr_attendance.menu_hr_attendance_reporting",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 460,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 463,
+      "xmlId": "hr_attendance.menu_hr_attendance_attendance_reporting",
+      "name": {
+       "en": "Attendances",
+       "ar": "الحضور"
+      },
+      "parentId": 462,
+      "sequence": 0,
+      "actionId": 766,
+      "children": []
+     },
+     {
+      "id": 464,
+      "xmlId": "hr_attendance.menu_hr_attendance_overtime_analysis",
+      "name": {
+       "en": "Overtime Analysis",
+       "ar": "Overtime Analysis"
+      },
+      "parentId": 462,
+      "sequence": 1,
+      "actionId": 768,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 469,
+    "xmlId": "hr_attendance.menu_hr_attendance_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 460,
+    "sequence": 4,
+    "children": [
+     {
+      "id": 471,
+      "xmlId": "hr_attendance.menu_hr_attendance_settings",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 469,
+      "sequence": 0,
+      "actionId": 772,
+      "children": []
+     },
+     {
+      "id": 470,
+      "xmlId": "hr_attendance.menu_hr_attendance_onboarding",
+      "name": {
+       "en": "Onboarding",
+       "ar": "تهيئة المتقدمين"
+      },
+      "parentId": 469,
+      "sequence": 1,
+      "actionId": 763,
+      "children": []
+     },
+     {
+      "id": 472,
+      "xmlId": "hr_attendance.menu_hr_attendance_overtime_rulesets",
+      "name": {
+       "en": "Overtime Rulesets",
+       "ar": "مجموعات قواعد ساعات العمل الإضافية"
+      },
+      "parentId": 469,
+      "sequence": 2,
+      "actionId": 774,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 410,
+  "xmlId": "fleet.menu_root",
+  "name": {
+   "en": "Fleet",
+   "ar": "الأسطول"
+  },
+  "sequence": 18,
+  "actionId": 702,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 416,
+    "xmlId": "fleet.fleet_vehicles",
+    "name": {
+     "en": "Fleet",
+     "ar": "الأسطول"
+    },
+    "parentId": 410,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 417,
+      "xmlId": "fleet.fleet_vehicle_menu",
+      "name": {
+       "en": "Fleet",
+       "ar": "الأسطول"
+      },
+      "parentId": 416,
+      "sequence": 0,
+      "actionId": 702,
+      "children": []
+     },
+     {
+      "id": 426,
+      "xmlId": "fleet.fleet_vehicle_log_contract_menu",
+      "name": {
+       "en": "Contracts",
+       "ar": "العقود"
+      },
+      "parentId": 416,
+      "sequence": 1,
+      "actionId": 709,
+      "children": []
+     },
+     {
+      "id": 427,
+      "xmlId": "fleet.fleet_vehicle_log_services_menu",
+      "name": {
+       "en": "Services",
+       "ar": "الخدمات"
+      },
+      "parentId": 416,
+      "sequence": 2,
+      "actionId": 710,
+      "children": []
+     },
+     {
+      "id": 418,
+      "xmlId": "fleet.fleet_vehicle_odometer_menu",
+      "name": {
+       "en": "Odometers",
+       "ar": "عدادات السرعة"
+      },
+      "parentId": 416,
+      "sequence": 3,
+      "actionId": 703,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 428,
+    "xmlId": "fleet.menu_fleet_reporting",
+    "name": {
+     "en": "Reporting",
+     "ar": "إعداد التقارير"
+    },
+    "parentId": 410,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 429,
+      "xmlId": "fleet.menu_fleet_reporting_costs",
+      "name": {
+       "en": "Costs",
+       "ar": "التكاليف"
+      },
+      "parentId": 428,
+      "sequence": 0,
+      "actionId": 711,
+      "children": []
+     },
+     {
+      "id": 432,
+      "xmlId": "fleet.menu_fleet_odometer_reporting_odometer",
+      "name": {
+       "en": "Odometers",
+       "ar": "عدادات السرعة"
+      },
+      "parentId": 428,
+      "sequence": 1,
+      "actionId": 714,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 411,
+    "xmlId": "fleet.fleet_configuration",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 410,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 431,
+      "xmlId": "fleet.fleet_config_settings_menu",
+      "name": {
+       "en": "Settings",
+       "ar": "الإعدادات"
+      },
+      "parentId": 411,
+      "sequence": 0,
+      "actionId": 713,
+      "children": []
+     },
+     {
+      "id": 412,
+      "xmlId": "fleet.fleet_models_configuration",
+      "name": {
+       "en": "Models",
+       "ar": "النماذج"
+      },
+      "parentId": 411,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 413,
+        "xmlId": "fleet.fleet_vehicle_model_brand_menu",
+        "name": {
+         "en": "Manufacturers",
+         "ar": "المصنّعين"
+        },
+        "parentId": 412,
+        "sequence": 0,
+        "actionId": 700,
+        "children": []
+       },
+       {
+        "id": 414,
+        "xmlId": "fleet.fleet_vehicle_model_menu",
+        "name": {
+         "en": "Models",
+         "ar": "النماذج"
+        },
+        "parentId": 412,
+        "sequence": 1,
+        "actionId": 699,
+        "children": []
+       },
+       {
+        "id": 415,
+        "xmlId": "fleet.fleet_vehicle_model_category_menu",
+        "name": {
+         "en": "Categories",
+         "ar": "الفئات"
+        },
+        "parentId": 412,
+        "sequence": 2,
+        "actionId": 701,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 419,
+      "xmlId": "fleet.fleet_contracts_configuration",
+      "name": {
+       "en": "Contracts",
+       "ar": "العقود"
+      },
+      "parentId": 411,
+      "sequence": 2,
+      "children": [
+       {
+        "id": 420,
+        "xmlId": "fleet.fleet_vehicle_contract_types_menu",
+        "name": {
+         "en": "Contract Types",
+         "ar": "Contract Types"
+        },
+        "parentId": 419,
+        "sequence": 0,
+        "actionId": 704,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 421,
+      "xmlId": "fleet.fleet_services_configuration",
+      "name": {
+       "en": "Services",
+       "ar": "الخدمات"
+      },
+      "parentId": 411,
+      "sequence": 3,
+      "children": [
+       {
+        "id": 422,
+        "xmlId": "fleet.fleet_vehicle_service_types_menu",
+        "name": {
+         "en": "Service Types",
+         "ar": "أنواع الخدمات"
+        },
+        "parentId": 421,
+        "sequence": 0,
+        "actionId": 705,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 423,
+      "xmlId": "fleet.fleet_vehicles_configuration",
+      "name": {
+       "en": "Vehicle",
+       "ar": "المركبة"
+      },
+      "parentId": 411,
+      "sequence": 4,
+      "children": [
+       {
+        "id": 424,
+        "xmlId": "fleet.fleet_vehicle_state_menu",
+        "name": {
+         "en": "Status",
+         "ar": "الحالة"
+        },
+        "parentId": 423,
+        "sequence": 0,
+        "actionId": 706,
+        "children": []
+       },
+       {
+        "id": 425,
+        "xmlId": "fleet.fleet_vehicle_tag_menu",
+        "name": {
+         "en": "Tags",
+         "ar": "علامات التصنيف"
+        },
+        "parentId": 423,
+        "sequence": 1,
+        "actionId": 707,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 430,
+      "xmlId": "fleet.fleet_menu_config_activity_type",
+      "name": {
+       "en": "Activity Types",
+       "ar": "أنواع الأنشطة"
+      },
+      "parentId": 411,
+      "sequence": 5,
+      "actionId": 712,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 449,
+  "xmlId": "approvals.approvals_menu_root",
+  "name": {
+   "en": "Approvals",
+   "ar": "الموافقات"
+  },
+  "sequence": 19,
+  "actionId": 750,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 450,
+    "xmlId": "approvals.approvals_category_menu_new",
+    "name": {
+     "en": "Dashboard",
+     "ar": "لوحة البيانات"
+    },
+    "parentId": 449,
+    "sequence": 0,
+    "actionId": 750,
+    "children": []
+   },
+   {
+    "id": 451,
+    "xmlId": "approvals.approvals_approval_menu",
+    "name": {
+     "en": "My Approvals",
+     "ar": "موافقاتي"
+    },
+    "parentId": 449,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 452,
+      "xmlId": "approvals.approvals_request_menu_my",
+      "name": {
+       "en": "My Requests",
+       "ar": "طلباتي"
+      },
+      "parentId": 451,
+      "sequence": 0,
+      "actionId": 756,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 453,
+    "xmlId": "approvals.approvals_menu_manager",
+    "name": {
+     "en": "Manager",
+     "ar": "المدير"
+    },
+    "parentId": 449,
+    "sequence": 2,
+    "children": [
+     {
+      "id": 454,
+      "xmlId": "approvals.approvals_approval_menu_to_review",
+      "name": {
+       "en": "Approvals to Review",
+       "ar": "الموافقات بانتظار المراجعة"
+      },
+      "parentId": 453,
+      "sequence": 0,
+      "actionId": 757,
+      "children": []
+     },
+     {
+      "id": 455,
+      "xmlId": "approvals.approvals_approval_menu_all",
+      "name": {
+       "en": "All Approvals",
+       "ar": "كافة الموافقات"
+      },
+      "parentId": 453,
+      "sequence": 1,
+      "actionId": 758,
+      "children": []
+     }
+    ]
+   },
+   {
+    "id": 456,
+    "xmlId": "approvals.approvals_menu_config",
+    "name": {
+     "en": "Configuration",
+     "ar": "التهيئة"
+    },
+    "parentId": 449,
+    "sequence": 3,
+    "children": [
+     {
+      "id": 457,
+      "xmlId": "approvals.approvals_category_menu_config",
+      "name": {
+       "en": "Approval Categories",
+       "ar": "فئات الموافقة"
+      },
+      "parentId": 456,
+      "sequence": 0,
+      "actionId": 751,
+      "children": []
+     },
+     {
+      "id": 458,
+      "xmlId": "approvals.approvals_menu_product",
+      "name": {
+       "en": "Products",
+       "ar": "المنتجات"
+      },
+      "parentId": 456,
+      "sequence": 1,
+      "children": [
+       {
+        "id": 459,
+        "xmlId": "approvals.approvals_menu_product_template",
+        "name": {
+         "en": "Products",
+         "ar": "المنتجات"
+        },
+        "parentId": 458,
+        "sequence": 0,
+        "actionId": 754,
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 1,
+  "xmlId": "base.menu_management",
+  "name": {
+   "en": "Apps",
+   "ar": "التطبيقات"
+  },
+  "sequence": 20,
+  "actionId": 36,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 2,
+    "xmlId": "base.menu_apps",
+    "name": {
+     "en": "Apps",
+     "ar": "التطبيقات"
+    },
+    "parentId": 1,
+    "sequence": 0,
+    "children": [
+     {
+      "id": 3,
+      "xmlId": "base.menu_module_tree",
+      "name": {
+       "en": "Modules",
+       "ar": "التطبيقات الرئيسية"
+      },
+      "parentId": 2,
+      "sequence": 0,
+      "actionId": 36,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 9,
+  "xmlId": "base.menu_administration",
+  "name": {
+   "en": "Settings",
+   "ar": "الإعدادات"
+  },
+  "sequence": 21,
+  "actionId": 85,
+  "webIcon": "data",
+  "children": [
+   {
+    "id": 68,
+    "xmlId": "base_setup.menu_config",
+    "name": {
+     "en": "General Settings",
+     "ar": "الإعدادات العامة"
+    },
+    "parentId": 9,
+    "sequence": 0,
+    "actionId": 85,
+    "children": []
+   },
+   {
+    "id": 10,
+    "xmlId": "base.menu_users",
+    "name": {
+     "en": "Users & Companies",
+     "ar": "المستخدمون والشركات"
+    },
+    "parentId": 9,
+    "sequence": 1,
+    "children": [
+     {
+      "id": 11,
+      "xmlId": "base.menu_action_res_users",
+      "name": {
+       "en": "Users",
+       "ar": "المستخدمون"
+      },
+      "parentId": 10,
+      "sequence": 0,
+      "actionId": 66,
+      "children": []
+     },
+     {
+      "id": 13,
+      "xmlId": "base.menu_action_res_company_form",
+      "name": {
+       "en": "Companies",
+       "ar": "الشركات"
+      },
+      "parentId": 10,
+      "sequence": 1,
+      "actionId": 50,
+      "children": []
+     }
+    ]
+   }
+  ]
+ }
+]

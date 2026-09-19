@@ -1,0 +1,20 @@
+[
+ {
+  "id": 1,
+  "name": "Home",
+  "location_type": "home",
+  "address_id": "masta"
+ },
+ {
+  "id": 2,
+  "name": "Office",
+  "location_type": "office",
+  "address_id": "masta"
+ },
+ {
+  "id": 3,
+  "name": "Other",
+  "location_type": "other",
+  "address_id": "masta"
+ }
+]

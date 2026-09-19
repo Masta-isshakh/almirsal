@@ -1,0 +1,10 @@
+[
+ {
+  "id": 1,
+  "source": "hello",
+  "substitution": "Hello, how may I help you?",
+  "group_ids": [
+   1
+  ]
+ }
+]

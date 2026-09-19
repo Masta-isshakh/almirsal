@@ -1,0 +1,28 @@
+[
+ {
+  "id": 3,
+  "name": "Arabic / الْعَرَبيّة",
+  "code": "ar_001",
+  "direction": "rtl",
+  "date_format": "%d/%m/%Y",
+  "time_format": "%I:%M:%S %p",
+  "decimal_point": ".",
+  "thousands_sep": ",",
+  "grouping": "[3,0]",
+  "week_start": "6",
+  "active": true
+ },
+ {
+  "id": 1,
+  "name": "English (US)",
+  "code": "en_US",
+  "direction": "ltr",
+  "date_format": "%m/%d/%Y",
+  "time_format": "%I:%M:%S %p",
+  "decimal_point": ".",
+  "thousands_sep": ",",
+  "grouping": "[3,0]",
+  "week_start": "7",
+  "active": true
+ }
+]

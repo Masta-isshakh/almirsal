@@ -1,0 +1,155 @@
+[
+ {
+  "id": 1,
+  "name": "Signature",
+  "item_type": "signature",
+  "tip": "Sign it",
+  "placeholder": "Signature",
+  "auto_field": false,
+  "default_width": 0.2,
+  "default_height": 0.05,
+  "name_ar": "التوقيع"
+ },
+ {
+  "id": 2,
+  "name": "Initials",
+  "item_type": "initial",
+  "tip": "Mark it",
+  "placeholder": "Initials",
+  "auto_field": false,
+  "default_width": 0.085,
+  "default_height": 0.03,
+  "name_ar": "أحرف الاسم الأولى"
+ },
+ {
+  "id": 3,
+  "name": "Name",
+  "item_type": "text",
+  "tip": "Fill in",
+  "placeholder": "Name",
+  "auto_field": "name",
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "الاسم"
+ },
+ {
+  "id": 4,
+  "name": "Email",
+  "item_type": "text",
+  "tip": "Fill in",
+  "placeholder": "Email",
+  "auto_field": "email",
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "البريد الإلكتروني"
+ },
+ {
+  "id": 5,
+  "name": "Phone",
+  "item_type": "text",
+  "tip": "Fill in",
+  "placeholder": "Phone",
+  "auto_field": "phone",
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "رقم الهاتف"
+ },
+ {
+  "id": 6,
+  "name": "Company",
+  "item_type": "text",
+  "tip": "Fill in",
+  "placeholder": "Company",
+  "auto_field": false,
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "الشركة"
+ },
+ {
+  "id": 7,
+  "name": "Text",
+  "item_type": "text",
+  "tip": "Fill in",
+  "placeholder": "Text",
+  "auto_field": false,
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "النص"
+ },
+ {
+  "id": 8,
+  "name": "Multiline",
+  "item_type": "textarea",
+  "tip": "Fill in",
+  "placeholder": "Multiline",
+  "auto_field": false,
+  "default_width": 0.2,
+  "default_height": 0.05,
+  "name_ar": "متعدد الأسطر"
+ },
+ {
+  "id": 9,
+  "name": "Checkbox",
+  "item_type": "checkbox",
+  "tip": "Fill in",
+  "placeholder": "☑",
+  "auto_field": false,
+  "default_width": 0.02,
+  "default_height": 0.018,
+  "name_ar": "صندوق الاختيار"
+ },
+ {
+  "id": 10,
+  "name": "Radio",
+  "item_type": "radio",
+  "tip": "Fill in",
+  "placeholder": "◉",
+  "auto_field": false,
+  "default_width": 0.02,
+  "default_height": 0.018,
+  "name_ar": "راديو"
+ },
+ {
+  "id": 11,
+  "name": "Selection",
+  "item_type": "selection",
+  "tip": "Select an option",
+  "placeholder": "Selection",
+  "auto_field": false,
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "قائمة خيارات"
+ },
+ {
+  "id": 12,
+  "name": "Date",
+  "item_type": "date",
+  "tip": "Fill in",
+  "placeholder": "Date",
+  "auto_field": false,
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "التاريخ"
+ },
+ {
+  "id": 13,
+  "name": "Strikethrough",
+  "item_type": "strikethrough",
+  "tip": "Strikethrough the highlighted area",
+  "placeholder": "Strikethrough",
+  "auto_field": false,
+  "default_width": 0.18,
+  "default_height": 0.015,
+  "name_ar": "نص يتوسطه خط"
+ },
+ {
+  "id": 14,
+  "name": "Stamp",
+  "item_type": "stamp",
+  "tip": "Stamp it",
+  "placeholder": "Company Name\nCompany Address\nCompany Phone",
+  "auto_field": "stamp",
+  "default_width": 0.298,
+  "default_height": 0.092
+ }
+]

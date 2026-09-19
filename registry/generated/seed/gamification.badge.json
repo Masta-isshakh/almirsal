@@ -1,0 +1,23 @@
+[
+ {
+  "id": 1,
+  "name": "Good Job",
+  "description": "<p>You did great at your job.</p>",
+  "level": "bronze",
+  "name_ar": "عمل رائع"
+ },
+ {
+  "id": 2,
+  "name": "Problem Solver",
+  "description": "<p>No one can solve challenges like you do.</p>",
+  "level": "bronze",
+  "name_ar": "حلّال مشاكل"
+ },
+ {
+  "id": 4,
+  "name": "Brilliant",
+  "description": "<p>With your brilliant ideas, you are an inspiration to others.</p>",
+  "level": "bronze",
+  "name_ar": "مذهل"
+ }
+]

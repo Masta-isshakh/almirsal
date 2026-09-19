@@ -1,0 +1,20 @@
+[
+ {
+  "id": 1,
+  "name": "Annual Closing: Corporate Tax",
+  "category": "account_return",
+  "default_deadline_periodicity": "fiscalyear",
+  "default_deadline_start_date": false,
+  "report_id": false,
+  "country_id": false
+ },
+ {
+  "id": 2,
+  "name": "Audit",
+  "category": "audit",
+  "default_deadline_periodicity": "fiscalyear",
+  "default_deadline_start_date": false,
+  "report_id": false,
+  "country_id": false
+ }
+]

@@ -1,0 +1,28 @@
+[
+ {
+  "id": 3,
+  "name": "masta",
+  "is_company": false,
+  "email": "mastaisshakh@gmail.com",
+  "phone": false,
+  "city": false,
+  "country_id": false,
+  "customer_rank": 0,
+  "supplier_rank": 0,
+  "user_ids": [
+   2
+  ]
+ },
+ {
+  "id": 1,
+  "name": "masta",
+  "is_company": false,
+  "email": "mastaisshakh@gmail.com",
+  "phone": "",
+  "city": "",
+  "country_id": "Qatar",
+  "customer_rank": 0,
+  "supplier_rank": 0,
+  "user_ids": []
+ }
+]

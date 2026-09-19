@@ -1,0 +1,26 @@
+[
+ {
+  "id": 1,
+  "name": "New Request",
+  "sequence": 4,
+  "name_ar": "طلب جديد"
+ },
+ {
+  "id": 2,
+  "name": "To Order",
+  "sequence": 5,
+  "name_ar": "بحاجة إلى الطلب"
+ },
+ {
+  "id": 3,
+  "name": "Registered",
+  "sequence": 7,
+  "name_ar": "مُسجل"
+ },
+ {
+  "id": 4,
+  "name": "Downgraded",
+  "sequence": 8,
+  "name_ar": "خفض الرتبة"
+ }
+]

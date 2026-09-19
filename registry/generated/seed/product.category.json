@@ -1,0 +1,22 @@
+[
+ {
+  "id": 2,
+  "name": "Expenses",
+  "parent_id": false,
+  "complete_name": "Expenses"
+ },
+ {
+  "id": 1,
+  "name": "Goods",
+  "parent_id": false,
+  "complete_name": "Goods",
+  "name_ar": "البضائع"
+ },
+ {
+  "id": 3,
+  "name": "Services",
+  "parent_id": false,
+  "complete_name": "Services",
+  "name_ar": "الخدمات"
+ }
+]

@@ -1,0 +1,38 @@
+[
+ {
+  "id": 1,
+  "name": "Set your Timezone",
+  "computation_mode": "count",
+  "display_mode": "boolean",
+  "suffix": false,
+  "monetary": false,
+  "name_ar": "تعيين منطقتك الزمنية"
+ },
+ {
+  "id": 2,
+  "name": "Set your Company Data",
+  "computation_mode": "count",
+  "display_mode": "boolean",
+  "suffix": false,
+  "monetary": false,
+  "name_ar": "تعيين بيانات مؤسستك"
+ },
+ {
+  "id": 3,
+  "name": "Set your Company Logo",
+  "computation_mode": "count",
+  "display_mode": "boolean",
+  "suffix": false,
+  "monetary": false,
+  "name_ar": "تعيين شعار مؤسستك"
+ },
+ {
+  "id": 4,
+  "name": "Invite new Users",
+  "computation_mode": "count",
+  "display_mode": "boolean",
+  "suffix": false,
+  "monetary": false,
+  "name_ar": "دعوة مستخدمين جدد"
+ }
+]

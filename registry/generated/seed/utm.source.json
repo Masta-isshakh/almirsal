@@ -1,0 +1,58 @@
+[
+ {
+  "id": 1,
+  "name": "Google"
+ },
+ {
+  "id": 2,
+  "name": "Mass Mailing"
+ },
+ {
+  "id": 3,
+  "name": "Newsletter"
+ },
+ {
+  "id": 4,
+  "name": "Monster"
+ },
+ {
+  "id": 5,
+  "name": "Glassdoor"
+ },
+ {
+  "id": 6,
+  "name": "Craigslist"
+ },
+ {
+  "id": 7,
+  "name": "Survey"
+ },
+ {
+  "id": 8,
+  "name": "Referral"
+ },
+ {
+  "id": 9,
+  "name": "Livechat"
+ },
+ {
+  "id": 10,
+  "name": "Facebook"
+ },
+ {
+  "id": 11,
+  "name": "X"
+ },
+ {
+  "id": 12,
+  "name": "LinkedIn"
+ },
+ {
+  "id": 13,
+  "name": "Instagram"
+ },
+ {
+  "id": 14,
+  "name": "YouTube"
+ }
+]

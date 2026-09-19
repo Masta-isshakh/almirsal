@@ -1,0 +1,27 @@
+[
+ {
+  "id": 1,
+  "name": "Customer Care",
+  "alias_name": "customer-care",
+  "use_sla": true,
+  "use_helpdesk_timesheet": false,
+  "use_helpdesk_sale_timesheet": false,
+  "use_website_helpdesk_form": false,
+  "use_website_helpdesk_livechat": false,
+  "use_website_helpdesk_forum": false,
+  "use_website_helpdesk_knowledge": false,
+  "use_rating": false,
+  "use_alias": true,
+  "assign_method": "randomly",
+  "privacy_visibility": "portal",
+  "stage_ids": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "description": false,
+  "name_ar": "خدمة العملاء"
+ }
+]

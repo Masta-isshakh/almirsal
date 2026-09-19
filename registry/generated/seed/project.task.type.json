@@ -1,0 +1,58 @@
+[
+ {
+  "id": 1,
+  "name": "Inbox",
+  "sequence": 1,
+  "fold": false,
+  "project_ids": [],
+  "rating_template_id": false
+ },
+ {
+  "id": 2,
+  "name": "Today",
+  "sequence": 2,
+  "fold": false,
+  "project_ids": [],
+  "rating_template_id": false
+ },
+ {
+  "id": 3,
+  "name": "This Week",
+  "sequence": 3,
+  "fold": false,
+  "project_ids": [],
+  "rating_template_id": false
+ },
+ {
+  "id": 4,
+  "name": "This Month",
+  "sequence": 4,
+  "fold": false,
+  "project_ids": [],
+  "rating_template_id": false
+ },
+ {
+  "id": 5,
+  "name": "Later",
+  "sequence": 5,
+  "fold": false,
+  "project_ids": [],
+  "rating_template_id": false
+ },
+ {
+  "id": 6,
+  "name": "Done",
+  "sequence": 6,
+  "fold": true,
+  "project_ids": [],
+  "rating_template_id": false
+ },
+ {
+  "id": 7,
+  "name": "Cancelled",
+  "sequence": 7,
+  "fold": true,
+  "project_ids": [],
+  "rating_template_id": false
+ }
+]

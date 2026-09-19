@@ -1,0 +1,20 @@
+[
+ {
+  "id": 2,
+  "name": "Leasing",
+  "category": "contract",
+  "name_ar": "إيجار"
+ },
+ {
+  "id": 1,
+  "name": "Omnium",
+  "category": "contract",
+  "name_ar": "أومنيوم"
+ },
+ {
+  "id": 3,
+  "name": "Vendor Bill",
+  "category": "service",
+  "name_ar": "فاتورة المورد"
+ }
+]

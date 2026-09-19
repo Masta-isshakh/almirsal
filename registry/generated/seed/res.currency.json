@@ -1,0 +1,1702 @@
+[
+ {
+  "id": 156,
+  "name": "QAR",
+  "symbol": "QR",
+  "position": "after",
+  "decimal_places": 2,
+  "active": true,
+  "currency_unit_label": "Riyal",
+  "currency_subunit_label": "Dirham"
+ },
+ {
+  "id": 129,
+  "name": "AED",
+  "symbol": "AED",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dirham",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 47,
+  "name": "AFN",
+  "symbol": "Afs",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Afghani",
+  "currency_subunit_label": "Puls"
+ },
+ {
+  "id": 119,
+  "name": "ALL",
+  "symbol": "L",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lek",
+  "currency_subunit_label": "Qindarke"
+ },
+ {
+  "id": 50,
+  "name": "AMD",
+  "symbol": "դր.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dram",
+  "currency_subunit_label": "Luma"
+ },
+ {
+  "id": 71,
+  "name": "ANG",
+  "symbol": "ƒ",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Guilder",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 48,
+  "name": "AOA",
+  "symbol": "Kz",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kwanza",
+  "currency_subunit_label": "Centimos"
+ },
+ {
+  "id": 19,
+  "name": "ARS",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 21,
+  "name": "AUD",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 51,
+  "name": "AWG",
+  "symbol": "Afl.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Guilder",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 52,
+  "name": "AZN",
+  "symbol": "₼",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Manat",
+  "currency_subunit_label": "Qapik"
+ },
+ {
+  "id": 63,
+  "name": "BAM",
+  "symbol": "KM",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Mark",
+  "currency_subunit_label": "Fening"
+ },
+ {
+  "id": 56,
+  "name": "BBD",
+  "symbol": "Bds$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 55,
+  "name": "BDT",
+  "symbol": "৳",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Taka",
+  "currency_subunit_label": "Paisa"
+ },
+ {
+  "id": 26,
+  "name": "BGN",
+  "symbol": "лв",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lev",
+  "currency_subunit_label": "Stotinki"
+ },
+ {
+  "id": 54,
+  "name": "BHD",
+  "symbol": "BD",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 65,
+  "name": "BIF",
+  "symbol": "FBu",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centime"
+ },
+ {
+  "id": 60,
+  "name": "BMD",
+  "symbol": "BD$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 111,
+  "name": "BND",
+  "symbol": "B$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 62,
+  "name": "BOB",
+  "symbol": "Bs.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Boliviano",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 5,
+  "name": "BRL",
+  "symbol": "R$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Real",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 53,
+  "name": "BSD",
+  "symbol": "B$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 61,
+  "name": "BTN",
+  "symbol": "Nu.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Ngultrum",
+  "currency_subunit_label": "Chhertum"
+ },
+ {
+  "id": 64,
+  "name": "BWP",
+  "symbol": "P",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pula",
+  "currency_subunit_label": "Thebe"
+ },
+ {
+  "id": 58,
+  "name": "BYN",
+  "symbol": "Br",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rubles",
+  "currency_subunit_label": "Kopeks"
+ },
+ {
+  "id": 57,
+  "name": "BYR",
+  "symbol": "BR",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Ruble BYR",
+  "currency_subunit_label": "Kapeyka"
+ },
+ {
+  "id": 59,
+  "name": "BZD",
+  "symbol": "BZ$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 3,
+  "name": "CAD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 69,
+  "name": "CDF",
+  "symbol": "Fr",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centime"
+ },
+ {
+  "id": 4,
+  "name": "CHF",
+  "symbol": "CHF",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centimes"
+ },
+ {
+  "id": 164,
+  "name": "CLF",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 4,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 45,
+  "name": "CLP",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 7,
+  "name": "CNH",
+  "symbol": "¥",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Yuan",
+  "currency_subunit_label": "Fen"
+ },
+ {
+  "id": 6,
+  "name": "CNY",
+  "symbol": "¥",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Yuan",
+  "currency_subunit_label": "Fen"
+ },
+ {
+  "id": 8,
+  "name": "COP",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 163,
+  "name": "COU",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "centavo"
+ },
+ {
+  "id": 39,
+  "name": "CRC",
+  "symbol": "₡",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Colon",
+  "currency_subunit_label": "Centimos"
+ },
+ {
+  "id": 165,
+  "name": "CUC",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Cuban convertible peso",
+  "currency_subunit_label": false
+ },
+ {
+  "id": 70,
+  "name": "CUP",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 162,
+  "name": "CVE",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Escudo",
+  "currency_subunit_label": "Centavo"
+ },
+ {
+  "id": 9,
+  "name": "CZK",
+  "symbol": "Kč",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Koruna",
+  "currency_subunit_label": "Halers"
+ },
+ {
+  "id": 73,
+  "name": "DJF",
+  "symbol": "Fdj",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centime"
+ },
+ {
+  "id": 10,
+  "name": "DKK",
+  "symbol": "kr",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Krone",
+  "currency_subunit_label": "Ore"
+ },
+ {
+  "id": 74,
+  "name": "DOP",
+  "symbol": "RD$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pesos",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 112,
+  "name": "DZD",
+  "symbol": "DA",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Centimes"
+ },
+ {
+  "id": 75,
+  "name": "EGP",
+  "symbol": "LE",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pound",
+  "currency_subunit_label": "Piastres"
+ },
+ {
+  "id": 77,
+  "name": "ERN",
+  "symbol": "Nfk",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Nakfa",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 78,
+  "name": "ETB",
+  "symbol": "Br",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Birr",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 126,
+  "name": "EUR",
+  "symbol": "€",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Euros",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 80,
+  "name": "FJD",
+  "symbol": "FJ$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 79,
+  "name": "FKP",
+  "symbol": "£",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pound",
+  "currency_subunit_label": "Penny"
+ },
+ {
+  "id": 144,
+  "name": "GBP",
+  "symbol": "£",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Sterling",
+  "currency_subunit_label": "Penny"
+ },
+ {
+  "id": 81,
+  "name": "GEL",
+  "symbol": "ლ",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lari",
+  "currency_subunit_label": "Tetri"
+ },
+ {
+  "id": 113,
+  "name": "GHS",
+  "symbol": "GH¢",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Cedi",
+  "currency_subunit_label": "Pesewas"
+ },
+ {
+  "id": 82,
+  "name": "GIP",
+  "symbol": "£",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pound",
+  "currency_subunit_label": "Penny"
+ },
+ {
+  "id": 114,
+  "name": "GMD",
+  "symbol": "D",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dalasi",
+  "currency_subunit_label": "Butut"
+ },
+ {
+  "id": 83,
+  "name": "GNF",
+  "symbol": "FG",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centime"
+ },
+ {
+  "id": 166,
+  "name": "GTQ",
+  "symbol": "Q",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Quetzales",
+  "currency_subunit_label": "Centavo"
+ },
+ {
+  "id": 84,
+  "name": "GYD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 24,
+  "name": "HKD",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 44,
+  "name": "HNL",
+  "symbol": "L",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lempiras",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 29,
+  "name": "HRK",
+  "symbol": "kn",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kuna",
+  "currency_subunit_label": "Lipa"
+ },
+ {
+  "id": 85,
+  "name": "HTG",
+  "symbol": "G",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Gourde",
+  "currency_subunit_label": "Centime"
+ },
+ {
+  "id": 11,
+  "name": "HUF",
+  "symbol": "Ft",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Forint",
+  "currency_subunit_label": "Filler"
+ },
+ {
+  "id": 12,
+  "name": "IDR",
+  "symbol": "Rp",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupiah",
+  "currency_subunit_label": "Sen"
+ },
+ {
+  "id": 89,
+  "name": "ILS",
+  "symbol": "₪",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Shekel",
+  "currency_subunit_label": "Agorot"
+ },
+ {
+  "id": 20,
+  "name": "INR",
+  "symbol": "₹",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupees",
+  "currency_subunit_label": "Paise"
+ },
+ {
+  "id": 88,
+  "name": "IQD",
+  "symbol": " ع.د",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 87,
+  "name": "IRR",
+  "symbol": "﷼",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 86,
+  "name": "ISK",
+  "symbol": "kr",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Krona",
+  "currency_subunit_label": "Aurar"
+ },
+ {
+  "id": 90,
+  "name": "JMD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 91,
+  "name": "JOD",
+  "symbol": " د.ا ",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 25,
+  "name": "JPY",
+  "symbol": "¥",
+  "position": "before",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Yen",
+  "currency_subunit_label": "Cen"
+ },
+ {
+  "id": 93,
+  "name": "KES",
+  "symbol": "KSh",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Shilling",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 95,
+  "name": "KGS",
+  "symbol": "лв",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Som",
+  "currency_subunit_label": "Tyiyn"
+ },
+ {
+  "id": 66,
+  "name": "KHR",
+  "symbol": "៛",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Riel",
+  "currency_subunit_label": "Sen"
+ },
+ {
+  "id": 68,
+  "name": "KMF",
+  "symbol": "CF",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centime"
+ },
+ {
+  "id": 122,
+  "name": "KPW",
+  "symbol": "₩",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Won",
+  "currency_subunit_label": "Chon"
+ },
+ {
+  "id": 32,
+  "name": "KRW",
+  "symbol": "₩",
+  "position": "before",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Won",
+  "currency_subunit_label": "Chon"
+ },
+ {
+  "id": 94,
+  "name": "KWD",
+  "symbol": " د.ك ",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 67,
+  "name": "KYD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 92,
+  "name": "KZT",
+  "symbol": "₸",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Tenge",
+  "currency_subunit_label": "Tiin"
+ },
+ {
+  "id": 96,
+  "name": "LAK",
+  "symbol": "₭",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kip",
+  "currency_subunit_label": "Att"
+ },
+ {
+  "id": 97,
+  "name": "LBP",
+  "symbol": "ل.ل",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pound",
+  "currency_subunit_label": "Piastres"
+ },
+ {
+  "id": 142,
+  "name": "LKR",
+  "symbol": "Rs",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupee",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 99,
+  "name": "LRD",
+  "symbol": "L$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 98,
+  "name": "LSL",
+  "symbol": "M",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Loti",
+  "currency_subunit_label": "Sente"
+ },
+ {
+  "id": 27,
+  "name": "LTL",
+  "symbol": "Lt",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Litas",
+  "currency_subunit_label": "Centas"
+ },
+ {
+  "id": 13,
+  "name": "LVL",
+  "symbol": "Ls",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lats",
+  "currency_subunit_label": "Santims"
+ },
+ {
+  "id": 100,
+  "name": "LYD",
+  "symbol": " ل.د ",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Dirham"
+ },
+ {
+  "id": 110,
+  "name": "MAD",
+  "symbol": "DH",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dirham",
+  "currency_subunit_label": "Centimes"
+ },
+ {
+  "id": 108,
+  "name": "MDL",
+  "symbol": "L",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Leu",
+  "currency_subunit_label": "Ban"
+ },
+ {
+  "id": 103,
+  "name": "MGA",
+  "symbol": "Ar",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Ariary",
+  "currency_subunit_label": "Iraimbilanja"
+ },
+ {
+  "id": 102,
+  "name": "MKD",
+  "symbol": "ден",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Denar",
+  "currency_subunit_label": "Deni"
+ },
+ {
+  "id": 116,
+  "name": "MMK",
+  "symbol": "K",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kyat",
+  "currency_subunit_label": "Pya"
+ },
+ {
+  "id": 109,
+  "name": "MNT",
+  "symbol": "₮",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Tugrik",
+  "currency_subunit_label": "Mongo"
+ },
+ {
+  "id": 101,
+  "name": "MOP",
+  "symbol": "MOP$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pataca",
+  "currency_subunit_label": "Sin"
+ },
+ {
+  "id": 106,
+  "name": "MRO",
+  "symbol": "UM",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Ouguiya",
+  "currency_subunit_label": "Khoums"
+ },
+ {
+  "id": 107,
+  "name": "MRU",
+  "symbol": "UM",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Ouguiya",
+  "currency_subunit_label": "Khoums"
+ },
+ {
+  "id": 40,
+  "name": "MUR",
+  "symbol": "Rs",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupee",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 105,
+  "name": "MVR",
+  "symbol": "Rf",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rufiyaa",
+  "currency_subunit_label": "Laari"
+ },
+ {
+  "id": 104,
+  "name": "MWK",
+  "symbol": "MK",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kwacha",
+  "currency_subunit_label": "Tambala"
+ },
+ {
+  "id": 33,
+  "name": "MXN",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pesos",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 34,
+  "name": "MYR",
+  "symbol": "RM",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Ringgit",
+  "currency_subunit_label": "Sen"
+ },
+ {
+  "id": 115,
+  "name": "MZN",
+  "symbol": "MT",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Metical",
+  "currency_subunit_label": "Centavo"
+ },
+ {
+  "id": 117,
+  "name": "NAD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 121,
+  "name": "NGN",
+  "symbol": "₦",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Naira",
+  "currency_subunit_label": "Kobo"
+ },
+ {
+  "id": 120,
+  "name": "NIO",
+  "symbol": "C$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Cordoba",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 14,
+  "name": "NOK",
+  "symbol": "kr",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Krone",
+  "currency_subunit_label": "Ore"
+ },
+ {
+  "id": 118,
+  "name": "NPR",
+  "symbol": "₨",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupee",
+  "currency_subunit_label": "Paisa"
+ },
+ {
+  "id": 35,
+  "name": "NZD",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 161,
+  "name": "OMR",
+  "symbol": "ر.ع.",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Rial",
+  "currency_subunit_label": "Baisa"
+ },
+ {
+  "id": 16,
+  "name": "PAB",
+  "symbol": "B/.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Balboa",
+  "currency_subunit_label": "Centesimo"
+ },
+ {
+  "id": 157,
+  "name": "PEN",
+  "symbol": "S/",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Soles",
+  "currency_subunit_label": "Centimos"
+ },
+ {
+  "id": 159,
+  "name": "PGK",
+  "symbol": "K",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kina",
+  "currency_subunit_label": "Toea"
+ },
+ {
+  "id": 36,
+  "name": "PHP",
+  "symbol": "₱",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centavos"
+ },
+ {
+  "id": 160,
+  "name": "PKR",
+  "symbol": "Rs.",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupee",
+  "currency_subunit_label": "Paisa"
+ },
+ {
+  "id": 17,
+  "name": "PLN",
+  "symbol": "zł",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Zloty",
+  "currency_subunit_label": "Groszy"
+ },
+ {
+  "id": 158,
+  "name": "PYG",
+  "symbol": "₲",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Guarani",
+  "currency_subunit_label": "Centimos"
+ },
+ {
+  "id": 28,
+  "name": "RON",
+  "symbol": "lei",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Leu",
+  "currency_subunit_label": "Bani"
+ },
+ {
+  "id": 150,
+  "name": "RSD",
+  "symbol": "din.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Para"
+ },
+ {
+  "id": 30,
+  "name": "RUB",
+  "symbol": "руб",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Ruble",
+  "currency_subunit_label": "Kopek"
+ },
+ {
+  "id": 155,
+  "name": "RWF",
+  "symbol": "RF",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Santime"
+ },
+ {
+  "id": 151,
+  "name": "SAR",
+  "symbol": "SR",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Riyal",
+  "currency_subunit_label": "Halala"
+ },
+ {
+  "id": 146,
+  "name": "SBD",
+  "symbol": "SI$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 149,
+  "name": "SCR",
+  "symbol": "SR",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rupee",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 141,
+  "name": "SDG",
+  "symbol": "ج.س.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": false,
+  "currency_subunit_label": false
+ },
+ {
+  "id": 18,
+  "name": "SEK",
+  "symbol": "kr",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Krona",
+  "currency_subunit_label": "Ore"
+ },
+ {
+  "id": 37,
+  "name": "SGD",
+  "symbol": "S$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 154,
+  "name": "SHP",
+  "symbol": "£",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pound",
+  "currency_subunit_label": "Penny"
+ },
+ {
+  "id": 148,
+  "name": "SLE",
+  "symbol": "Le",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Leone",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 147,
+  "name": "SLL",
+  "symbol": "Le",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Leone",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 145,
+  "name": "SOS",
+  "symbol": "Sh.",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Shillings",
+  "currency_subunit_label": "Senti"
+ },
+ {
+  "id": 140,
+  "name": "SRD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 143,
+  "name": "SSP",
+  "symbol": "£",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pounds",
+  "currency_subunit_label": "Piasters"
+ },
+ {
+  "id": 152,
+  "name": "STD",
+  "symbol": "Db",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dobra",
+  "currency_subunit_label": "Centimo"
+ },
+ {
+  "id": 170,
+  "name": "STN",
+  "symbol": "Db",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dobra",
+  "currency_subunit_label": "cêntimo"
+ },
+ {
+  "id": 76,
+  "name": "SVC",
+  "symbol": "¢",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Colones",
+  "currency_subunit_label": "Centavo"
+ },
+ {
+  "id": 138,
+  "name": "SYP",
+  "symbol": "£",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Pound",
+  "currency_subunit_label": "Piastrp"
+ },
+ {
+  "id": 139,
+  "name": "SZL",
+  "symbol": "E",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lilangeni",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 134,
+  "name": "THB",
+  "symbol": "฿",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Baht",
+  "currency_subunit_label": "Satang"
+ },
+ {
+  "id": 136,
+  "name": "TJS",
+  "symbol": "TJS",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Somoni",
+  "currency_subunit_label": "Diram"
+ },
+ {
+  "id": 130,
+  "name": "TMT",
+  "symbol": "T",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Manat",
+  "currency_subunit_label": "Tenge"
+ },
+ {
+  "id": 131,
+  "name": "TND",
+  "symbol": "DT",
+  "position": "after",
+  "decimal_places": 3,
+  "active": false,
+  "currency_unit_label": "Dinar",
+  "currency_subunit_label": "Millimes"
+ },
+ {
+  "id": 133,
+  "name": "TOP",
+  "symbol": "T$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Paanga",
+  "currency_subunit_label": "Seniti"
+ },
+ {
+  "id": 31,
+  "name": "TRY",
+  "symbol": "₺",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Lira",
+  "currency_subunit_label": "Kurus"
+ },
+ {
+  "id": 132,
+  "name": "TTD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 137,
+  "name": "TWD",
+  "symbol": "NT$",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 135,
+  "name": "TZS",
+  "symbol": "TSh",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Shilling",
+  "currency_subunit_label": "Senti"
+ },
+ {
+  "id": 22,
+  "name": "UAH",
+  "symbol": "₴",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Hryvnia",
+  "currency_subunit_label": "Kopiyka"
+ },
+ {
+  "id": 43,
+  "name": "UGX",
+  "symbol": "USh",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Shilling",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 1,
+  "name": "USD",
+  "symbol": "$",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 169,
+  "name": "UYI",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 4,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "centésimo"
+ },
+ {
+  "id": 46,
+  "name": "UYU",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Peso",
+  "currency_subunit_label": "Centesimos"
+ },
+ {
+  "id": 168,
+  "name": "UYW",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 4,
+  "active": false,
+  "currency_unit_label": "peso",
+  "currency_subunit_label": "centésimo"
+ },
+ {
+  "id": 128,
+  "name": "UZS",
+  "symbol": "so'm",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Som",
+  "currency_subunit_label": "Tiyin"
+ },
+ {
+  "id": 2,
+  "name": "VEF",
+  "symbol": "Bs.F",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Bolivar",
+  "currency_subunit_label": "Centimos"
+ },
+ {
+  "id": 167,
+  "name": "VES",
+  "symbol": "Bs",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": false,
+  "currency_subunit_label": false
+ },
+ {
+  "id": 23,
+  "name": "VND",
+  "symbol": "₫",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Dong",
+  "currency_subunit_label": "Xu"
+ },
+ {
+  "id": 127,
+  "name": "VUV",
+  "symbol": "VT",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Vatu",
+  "currency_subunit_label": false
+ },
+ {
+  "id": 153,
+  "name": "WST",
+  "symbol": "WS$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Tala",
+  "currency_subunit_label": "Sene"
+ },
+ {
+  "id": 42,
+  "name": "XAF",
+  "symbol": "FCFA",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centimes"
+ },
+ {
+  "id": 49,
+  "name": "XCD",
+  "symbol": "$",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Dollars",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 72,
+  "name": "XCG",
+  "symbol": "Cg",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Guilder",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 41,
+  "name": "XOF",
+  "symbol": "CFA",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centimes"
+ },
+ {
+  "id": 15,
+  "name": "XPF",
+  "symbol": "XPF",
+  "position": "after",
+  "decimal_places": 0,
+  "active": false,
+  "currency_unit_label": "Franc",
+  "currency_subunit_label": "Centimes"
+ },
+ {
+  "id": 125,
+  "name": "YER",
+  "symbol": "﷼",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rial",
+  "currency_subunit_label": "Fils"
+ },
+ {
+  "id": 38,
+  "name": "ZAR",
+  "symbol": "R",
+  "position": "before",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Rand",
+  "currency_subunit_label": "Cents"
+ },
+ {
+  "id": 123,
+  "name": "ZIG",
+  "symbol": "ZiG",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "ZiGs",
+  "currency_subunit_label": false
+ },
+ {
+  "id": 124,
+  "name": "ZMW",
+  "symbol": "ZK",
+  "position": "after",
+  "decimal_places": 2,
+  "active": false,
+  "currency_unit_label": "Kwacha",
+  "currency_subunit_label": "Ngwee"
+ }
+]

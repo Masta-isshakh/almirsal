@@ -1,0 +1,37 @@
+[
+ {
+  "id": 1,
+  "name": "40 hours/week",
+  "hours_per_day": 8,
+  "full_time_required_hours": 40,
+  "attendance_ids": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ]
+ },
+ {
+  "id": 2,
+  "name": "Appointment Resource Default Calendar",
+  "hours_per_day": 24,
+  "full_time_required_hours": 40,
+  "attendance_ids": [
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ]
+ }
+]

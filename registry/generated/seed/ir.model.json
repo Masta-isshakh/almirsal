@@ -1,0 +1,2402 @@
+[
+ {
+  "id": 10,
+  "model": "ir.access",
+  "name": "Access",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2229,
+  "model": "account.account",
+  "name": "Account",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2385,
+  "model": "account.return",
+  "name": "Accounting Return",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2384,
+  "model": "account.return.type",
+  "name": "Accounting Return Type",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2128,
+  "model": "account.analytic.account",
+  "name": "Analytic Account",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3140,
+  "model": "appointment.type",
+  "name": "Appointment Type",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3899,
+  "model": "approval.request",
+  "name": "Approval Request",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3675,
+  "model": "knowledge.article.thread",
+  "name": "Article Discussion Thread",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3803,
+  "model": "account.asset",
+  "name": "Asset/Revenue Recognition",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3908,
+  "model": "hr.attendance",
+  "name": "Attendance",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 93,
+  "model": "res.partner.bank",
+  "name": "Bank Account",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2379,
+  "model": "account.online.link",
+  "name": "Bank Connection",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2251,
+  "model": "account.bank.statement",
+  "name": "Bank Statement",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2252,
+  "model": "account.bank.statement.line",
+  "name": "Bank Statement Line",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1525,
+  "model": "extract.mixin",
+  "name": "Base class to extract data from documents",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1526,
+  "model": "extract.mixin.with.words",
+  "name": "Base class to extract data from documents with OCRed words saved",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3022,
+  "model": "calendar.event",
+  "name": "Calendar Event",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 98,
+  "model": "res.company",
+  "name": "Company",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 90,
+  "model": "res.partner",
+  "name": "Contact",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3158,
+  "model": "hr.department",
+  "name": "Department",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3802,
+  "model": "account.depreciation.model",
+  "name": "Depreciation Models for Assets",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1150,
+  "model": "discuss.channel",
+  "name": "Discussion Channel",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3997,
+  "model": "documents.document",
+  "name": "Document",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1088,
+  "model": "mail.thread",
+  "name": "Email Thread",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3153,
+  "model": "hr.employee",
+  "name": "Employee",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3149,
+  "model": "hr.version",
+  "name": "Employee Record",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3042,
+  "model": "gamification.badge",
+  "name": "Gamification Badge",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3044,
+  "model": "gamification.challenge",
+  "name": "Gamification Challenge",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3043,
+  "model": "gamification.badge.user",
+  "name": "Gamification User Badge",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3873,
+  "model": "helpdesk.team",
+  "name": "Helpdesk Team",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3877,
+  "model": "helpdesk.ticket",
+  "name": "Helpdesk Ticket",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 927,
+  "model": "iap.account",
+  "name": "IAP Account",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3148,
+  "model": "hr.job",
+  "name": "Job Position",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2233,
+  "model": "account.journal",
+  "name": "Journal",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2224,
+  "model": "account.move",
+  "name": "Journal Entry",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3679,
+  "model": "knowledge.article",
+  "name": "Knowledge Article",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3822,
+  "model": "account.loan",
+  "name": "Loan",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1101,
+  "model": "mail.blacklist",
+  "name": "Mail Blacklist",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1089,
+  "model": "mail.thread.blacklist",
+  "name": "Mail Blacklist mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1090,
+  "model": "mail.thread.main.attachment",
+  "name": "Mail Main Attachment management",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1092,
+  "model": "mail.tracking.duration.mixin",
+  "name": "Mixin to compute the time a record has spent in each value a many2one field can take",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3856,
+  "model": "fleet.vehicle.model",
+  "name": "Model of a vehicle",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2248,
+  "model": "account.payment",
+  "name": "Payment",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1310,
+  "model": "phone.blacklist",
+  "name": "Phone Blacklist",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1311,
+  "model": "mail.thread.phone",
+  "name": "Phone Blacklist Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2241,
+  "model": "account.reconcile.model",
+  "name": "Preset to create journal entries during a invoices and payments matching",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2149,
+  "model": "product.pricelist",
+  "name": "Pricelist",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2137,
+  "model": "product.template",
+  "name": "Product",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2145,
+  "model": "product.category",
+  "name": "Product Category",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2138,
+  "model": "product.product",
+  "name": "Product Variant",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3694,
+  "model": "project.project",
+  "name": "Project",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3692,
+  "model": "project.milestone",
+  "name": "Project Milestone",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3693,
+  "model": "project.update",
+  "name": "Project Update",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3934,
+  "model": "purchase.order",
+  "name": "Purchase Order",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3053,
+  "model": "rating.mixin",
+  "name": "Rating Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2526,
+  "model": "sale.order",
+  "name": "Sales Order",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2513,
+  "model": "crm.team",
+  "name": "Sales Team",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2512,
+  "model": "crm.team.member",
+  "name": "Sales Team Member",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 33,
+  "model": "ir.cron",
+  "name": "Scheduled Action",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 25,
+  "model": "ir.actions.server",
+  "name": "Server Action",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3860,
+  "model": "fleet.vehicle.log.services",
+  "name": "Services for vehicles",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3108,
+  "model": "sign.request",
+  "name": "Signature Request",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2310,
+  "model": "spreadsheet.cell.thread",
+  "name": "Spreadsheet discussion thread",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3722,
+  "model": "survey.survey",
+  "name": "Survey",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3723,
+  "model": "survey.user_input",
+  "name": "Survey User Input",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3691,
+  "model": "project.task",
+  "name": "Task",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2238,
+  "model": "account.tax",
+  "name": "Tax",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1091,
+  "model": "mail.thread.subject.suggested",
+  "name": "Thread with suggested subject",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 102,
+  "model": "res.users",
+  "name": "User",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3857,
+  "model": "fleet.vehicle",
+  "name": "Vehicle",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3859,
+  "model": "fleet.vehicle.log.contract",
+  "name": "Vehicle Contract",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 251,
+  "model": "auth_totp.wizard",
+  "name": "2-Factor Setup Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2346,
+  "model": "account.edi.xml.ubl_a_nz",
+  "name": "A-NZ BIS Billing 3.0",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1635,
+  "model": "ai.agent",
+  "name": "AI Agent",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1636,
+  "model": "ai.agent.source",
+  "name": "AI Agent Source",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1654,
+  "model": "ai.attachment.vacuum",
+  "name": "AI Generated Attachments that aren't used and should be autovacuumed",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1639,
+  "model": "ai.session",
+  "name": "AI Session",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1638,
+  "model": "ai.session.event",
+  "name": "AI Session Event",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1634,
+  "model": "ai.tool",
+  "name": "AI Tool",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1650,
+  "model": "ai.composer",
+  "name": "AI model configurations (system prompts) for text drafting.",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 108,
+  "model": "res.users.apikeys.description",
+  "name": "API Key Description",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 100,
+  "model": "res.groups",
+  "name": "Access Groups",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2436,
+  "model": "account.audit.account.status",
+  "name": "Account Audit Account Status",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2261,
+  "model": "account.cash.rounding",
+  "name": "Account Cash Rounding",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2253,
+  "model": "account.chart.template",
+  "name": "Account Chart Template",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2485,
+  "model": "account.fiscal.category",
+  "name": "Account Fiscal Category",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2232,
+  "model": "account.journal.group",
+  "name": "Account Journal Group",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2236,
+  "model": "account.lock_exception",
+  "name": "Account Lock Exception",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2391,
+  "model": "account.report.annotation",
+  "name": "Account Report Annotation",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2398,
+  "model": "account.report.custom.handler",
+  "name": "Account Report Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2401,
+  "model": "account.tax.report.handler",
+  "name": "Account Report Handler for Tax Reports",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2443,
+  "model": "account.report.send",
+  "name": "Account Report Send",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2388,
+  "model": "account.return.audit.cycle",
+  "name": "Account Return Audit Cycle",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2387,
+  "model": "account.return.check.template",
+  "name": "Account Return Check Template",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2228,
+  "model": "account.account.tag",
+  "name": "Account Tag",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2327,
+  "model": "account.auto.reconcile.wizard",
+  "name": "Account automatic reconciliation wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2231,
+  "model": "account.root",
+  "name": "Account codes first 2 digits",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3818,
+  "model": "account.import.summary",
+  "name": "Account import summary view",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2295,
+  "model": "account.merge.wizard",
+  "name": "Account merge wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2296,
+  "model": "account.merge.wizard.line",
+  "name": "Account merge wizard line",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2328,
+  "model": "account.reconcile.wizard",
+  "name": "Account reconciliation wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2299,
+  "model": "report.account.report_invoice_with_payments",
+  "name": "Account report with payment lines",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2298,
+  "model": "report.account.report_invoice",
+  "name": "Account report without payment lines",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2275,
+  "model": "account.report",
+  "name": "Accounting Report",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2426,
+  "model": "account.report.budget",
+  "name": "Accounting Report Budget",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2427,
+  "model": "account.report.budget.item",
+  "name": "Accounting Report Budget Item",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2278,
+  "model": "account.report.column",
+  "name": "Accounting Report Column",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2277,
+  "model": "account.report.expression",
+  "name": "Accounting Report Expression",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2279,
+  "model": "account.report.external.value",
+  "name": "Accounting Report External Value",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2276,
+  "model": "account.report.line",
+  "name": "Accounting Report Line",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2390,
+  "model": "account.report.snapshot",
+  "name": "Accounting Report Snapshot",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2386,
+  "model": "account.return.check",
+  "name": "Accounting Return Check",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2226,
+  "model": "account.fiscal.position.account",
+  "name": "Accounts Mapping of Fiscal Position",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2294,
+  "model": "account.accrued.orders.wizard",
+  "name": "Accrued Orders Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 18,
+  "model": "ir.actions.actions",
+  "name": "Action",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 22,
+  "model": "ir.actions.act_url",
+  "name": "Action URL",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 19,
+  "model": "ir.actions.act_window",
+  "name": "Action Window",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 21,
+  "model": "ir.actions.act_window_close",
+  "name": "Action Window Close",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 20,
+  "model": "ir.actions.act_window.view",
+  "name": "Action Window View",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1098,
+  "model": "mail.activity",
+  "name": "Activity",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1082,
+  "model": "mail.activity.mixin",
+  "name": "Activity Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1099,
+  "model": "mail.activity.plan",
+  "name": "Activity Plan",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1096,
+  "model": "mail.activity.type",
+  "name": "Activity Type",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1100,
+  "model": "mail.activity.plan.template",
+  "name": "Activity plan template",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1162,
+  "model": "mail.activity.schedule",
+  "name": "Activity schedule plan Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 88,
+  "model": "format.address.mixin",
+  "name": "Address Format",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2414,
+  "model": "account.aged.partner.balance.report.handler",
+  "name": "Aged Partner Balance Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2415,
+  "model": "account.aged.payable.report.handler",
+  "name": "Aged Payable Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2416,
+  "model": "account.aged.receivable.report.handler",
+  "name": "Aged Receivable Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 79,
+  "model": "ir.profile",
+  "name": "Allow profiling only to Tech Support level",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2132,
+  "model": "account.analytic.distribution.model",
+  "name": "Analytic Distribution Model",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2130,
+  "model": "account.analytic.line",
+  "name": "Analytic Line",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2131,
+  "model": "analytic.mixin",
+  "name": "Analytic Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2126,
+  "model": "account.analytic.plan",
+  "name": "Analytic Plan",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2129,
+  "model": "analytic.plan.fields.mixin",
+  "name": "Analytic Plan Fields",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2127,
+  "model": "account.analytic.applicability",
+  "name": "Analytic Plan's Applicabilities",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3814,
+  "model": "audit.report",
+  "name": "Annual Report",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 68,
+  "model": "ir.module.category",
+  "name": "Application",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3133,
+  "model": "appointment.answer.input",
+  "name": "Appointment Answer Inputs",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3134,
+  "model": "appointment.booking.line",
+  "name": "Appointment Booking Line",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3135,
+  "model": "appointment.invite",
+  "name": "Appointment Invite",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3132,
+  "model": "appointment.answer",
+  "name": "Appointment Question Answers",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3137,
+  "model": "appointment.question",
+  "name": "Appointment Questions",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3138,
+  "model": "appointment.resource",
+  "name": "Appointment Resource",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3139,
+  "model": "appointment.slot",
+  "name": "Appointment: Time Slot",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3896,
+  "model": "approval.category",
+  "name": "Approval Category",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3897,
+  "model": "approval.category.approver",
+  "name": "Approval Category Approver",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3895,
+  "model": "approval.approver",
+  "name": "Approver",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3677,
+  "model": "knowledge.article.member",
+  "name": "Article Member",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3678,
+  "model": "knowledge.article.template.category",
+  "name": "Article Template Category",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 17,
+  "model": "ir.asset",
+  "name": "Asset",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3804,
+  "model": "account.asset.group",
+  "name": "Asset Group",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3805,
+  "model": "account.asset.report.handler",
+  "name": "Assets Report Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 30,
+  "model": "ir.attachment",
+  "name": "Attachment",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1637,
+  "model": "ai.embedding",
+  "name": "Attachment Chunks Embedding",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3909,
+  "model": "hr.attendance.overtime.line",
+  "name": "Attendance Overtime Line",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2142,
+  "model": "product.attribute.value",
+  "name": "Attribute Value",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 248,
+  "model": "auth_totp.device",
+  "name": "Authentication Device",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 41,
+  "model": "ir.autovacuum",
+  "name": "Automatic Vacuum",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2222,
+  "model": "sequence.mixin",
+  "name": "Automatic sequence",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2283,
+  "model": "account.autopost.bills.wizard",
+  "name": "Autopost Bills Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 82,
+  "model": "avatar.mixin",
+  "name": "Avatar Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2343,
+  "model": "account.edi.xml.ubl_de",
+  "name": "BIS3 DE (XRechnung)",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2428,
+  "model": "account.balance.sheet.report.handler",
+  "name": "Balance Sheet Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3173,
+  "model": "hr.bank.account.allocation.wizard.line",
+  "name": "Bank Account Allocation Line (Wizard)",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3174,
+  "model": "hr.bank.account.allocation.wizard",
+  "name": "Bank Account Allocation Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 92,
+  "model": "clearing.label",
+  "name": "Bank Account Clearing Number Label",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2330,
+  "model": "bank.rec.auto.reconcile.wizard",
+  "name": "Bank Reconciliation Auto Reconcile Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2399,
+  "model": "account.bank.reconciliation.report.handler",
+  "name": "Bank Reconciliation Report Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2289,
+  "model": "account.setup.bank.manual.config",
+  "name": "Bank setup manual config",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3847,
+  "model": "barcode.nomenclature",
+  "name": "Barcode Nomenclature",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3848,
+  "model": "barcode.rule",
+  "name": "Barcode Rule",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1,
+  "model": "base",
+  "name": "Base",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 254,
+  "model": "base_import.import",
+  "name": "Base Import",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 253,
+  "model": "base_import.mapping",
+  "name": "Base Import Mapping",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2159,
+  "model": "report.product.label.base",
+  "name": "Base Product Label Report",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2335,
+  "model": "account.edi.cii",
+  "name": "Base helpers for CII",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2334,
+  "model": "account.edi.ubl",
+  "name": "Base helpers for UBL",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3940,
+  "model": "bill.to.po.wizard",
+  "name": "Bill to Purchase Order",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3861,
+  "model": "fleet.vehicle.model.brand",
+  "name": "Brand of the vehicle",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3705,
+  "model": "project.task.burndown.chart.report",
+  "name": "Burndown Chart",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2223,
+  "model": "account.document.import.mixin",
+  "name": "Business document import mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2514,
+  "model": "crm.tag",
+  "name": "CRM Tag",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3020,
+  "model": "calendar.attendee",
+  "name": "Calendar Attendee Information",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3025,
+  "model": "calendar.filters",
+  "name": "Calendar Filter",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3033,
+  "model": "calendar.popover.delete.wizard",
+  "name": "Calendar Popover Delete Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3032,
+  "model": "calendar.provider.config",
+  "name": "Calendar Provider Configuration Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1143,
+  "model": "mail.call.artifact",
+  "name": "Call Artifact",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1633,
+  "model": "call.transcription.mixin",
+  "name": "Call Transcription Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2509,
+  "model": "utm.stage",
+  "name": "Campaign Stage",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 386,
+  "model": "bus.listener.mixin",
+  "name": "Can send messages via bus.bus",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2532,
+  "model": "sale.mass.cancel.orders",
+  "name": "Cancel multiple quotations",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1120,
+  "model": "mail.canned.response",
+  "name": "Canned Response",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2407,
+  "model": "account.cash.flow.report.handler",
+  "name": "Cash Flow Report Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3862,
+  "model": "fleet.vehicle.model.category",
+  "name": "Category of the model",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3017,
+  "model": "certificate.certificate",
+  "name": "Certificate",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3129,
+  "model": "certificate.wizard",
+  "name": "Certificate Creation Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2326,
+  "model": "account.change.lock.date",
+  "name": "Change Lock Date",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 104,
+  "model": "change.password.wizard",
+  "name": "Change Password Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1148,
+  "model": "discuss.channel.member",
+  "name": "Channel Member",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2167,
+  "model": "product.label.layout",
+  "name": "Choose the sheet layout to print the labels",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 27,
+  "model": "ir.actions.client",
+  "name": "Client Action",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3826,
+  "model": "account.loan.close.wizard",
+  "name": "Close Loan Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3136,
+  "model": "appointment.leave",
+  "name": "Closing days for appointments and their users / resources",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2308,
+  "model": "spreadsheet.revision",
+  "name": "Collaborative spreadsheet revision",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3698,
+  "model": "project.collaborator",
+  "name": "Collaborators in project shared",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2421,
+  "model": "account.ec.sales.report.handler.common",
+  "name": "Common EC Sales Report Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2333,
+  "model": "account.edi.common",
+  "name": "Common functions for EDI documents: generate the data, the constraints, etc",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 385,
+  "model": "bus.bus",
+  "name": "Communication Bus",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 135,
+  "model": "base.document.layout",
+  "name": "Company Document Layout",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3121,
+  "model": "sign.completed.document",
+  "name": "Completed Document",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 94,
+  "model": "res.config",
+  "name": "Config",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 95,
+  "model": "res.config.settings",
+  "name": "Config Settings",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 26,
+  "model": "ir.actions.todo",
+  "name": "Configuration Wizard",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3951,
+  "model": "helpdesk.ticket.convert.wizard",
+  "name": "Convert Helpdesk Tickets to Tasks",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3952,
+  "model": "project.task.convert.wizard",
+  "name": "Convert Project Tasks to Tickets",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4047,
+  "model": "documents.import.to.spreadsheet",
+  "name": "Convert XLSX and CSV files to Odoo Spreadsheet",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2305,
+  "model": "spreadsheet.dashboard.share",
+  "name": "Copy of a shared dashboard",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 83,
+  "model": "res.country",
+  "name": "Country",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 84,
+  "model": "res.country.group",
+  "name": "Country Group",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 87,
+  "model": "format.vat.label.mixin",
+  "name": "Country Specific VAT Label",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 85,
+  "model": "res.country.state",
+  "name": "Country state",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2282,
+  "model": "account.automatic.entry.wizard",
+  "name": "Create Automatic Entries",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 125,
+  "model": "wizard.ir.model.menu.create",
+  "name": "Create Menu Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 788,
+  "model": "auth.passkey.key.create",
+  "name": "Create a Passkey",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4060,
+  "model": "spreadsheet.document.to.dashboard",
+  "name": "Create a dashboard from a spreadsheet document",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1632,
+  "model": "ai.skill",
+  "name": "Create a skill that leverages instructions and tools to direct Odoo AI in assisting the user with their tasks.",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3783,
+  "model": "mail.activity.todo.create",
+  "name": "Create activity and todo at the same time",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3016,
+  "model": "certificate.key",
+  "name": "Cryptographic Key",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 96,
+  "model": "res.currency",
+  "name": "Currency",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 97,
+  "model": "res.currency.rate",
+  "name": "Currency Rate",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 14,
+  "model": "ir.ui.view.custom",
+  "name": "Custom View",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2540,
+  "model": "customer.product.reference",
+  "name": "Customer Product Reference",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2430,
+  "model": "account.customer.statement.report.handler",
+  "name": "Customer Statement Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2306,
+  "model": "spreadsheet.dashboard.favorite.filters",
+  "name": "Dashboard Favorite Filter",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 115,
+  "model": "decimal.precision",
+  "name": "Decimal Precision",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 37,
+  "model": "ir.default",
+  "name": "Default Value",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2409,
+  "model": "account.deferred.expense.report.handler",
+  "name": "Deferred Expense Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2408,
+  "model": "account.deferred.report.handler",
+  "name": "Deferred Expense Report Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2410,
+  "model": "account.deferred.revenue.report.handler",
+  "name": "Deferred Revenue Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 72,
+  "model": "ir.demo",
+  "name": "Demo",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 74,
+  "model": "ir.demo_failure.wizard",
+  "name": "Demo Failure wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 73,
+  "model": "ir.demo_failure",
+  "name": "Demo failure",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3159,
+  "model": "hr.departure.reason",
+  "name": "Departure Reason",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 113,
+  "model": "res.device",
+  "name": "Device",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 112,
+  "model": "res.device.log",
+  "name": "Device Log",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2201,
+  "model": "digest.digest",
+  "name": "Digest",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2202,
+  "model": "digest.tip",
+  "name": "Digest Tip",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2536,
+  "model": "sale.order.discount",
+  "name": "Discount Wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1147,
+  "model": "discuss.category",
+  "name": "Discussion Category",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3995,
+  "model": "documents.access",
+  "name": "Document / Partner",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3996,
+  "model": "documents.access.tracking",
+  "name": "Document Access Tracking",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1102,
+  "model": "mail.followers",
+  "name": "Document Follower",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3998,
+  "model": "documents.redirect",
+  "name": "Document Redirect",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4010,
+  "model": "documents.request_wizard",
+  "name": "Document Request",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4008,
+  "model": "documents.link_to_record_wizard",
+  "name": "Documents Link to Record",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4009,
+  "model": "documents.operation",
+  "name": "Documents Operation",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4011,
+  "model": "documents.sharing",
+  "name": "Documents Sharing",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3994,
+  "model": "documents.mixin",
+  "name": "Documents creation mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 4012,
+  "model": "documents.sharing.access",
+  "name": "Documents share access",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3993,
+  "model": "documents.unlink.mixin",
+  "name": "Documents unlink mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3858,
+  "model": "fleet.vehicle.assignation.log",
+  "name": "Drivers history on a vehicle",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2345,
+  "model": "account.edi.xml.ubl_efff",
+  "name": "E-FFF (BE)",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2423,
+  "model": "account.ec.sales.with.tags.report.handler",
+  "name": "EC Sales Report (with tags) Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2422,
+  "model": "account.ec.sales.with.taxes.report.handler",
+  "name": "EC Sales Report (with taxes) Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1079,
+  "model": "mail.alias",
+  "name": "Email Alias",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1084,
+  "model": "mail.alias.mixin",
+  "name": "Email Aliases Mixin",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1083,
+  "model": "mail.alias.mixin.optional",
+  "name": "Email Aliases Mixin (light)",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 1080,
+  "model": "mail.alias.domain",
+  "name": "Email Domain",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1118,
+  "model": "mail.template",
+  "name": "Email Template",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1164,
+  "model": "mail.template.preview",
+  "name": "Email Template Preview",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 1161,
+  "model": "mail.compose.message",
+  "name": "Email composition wizard",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 28,
+  "model": "ir.embedded.actions",
+  "name": "Embedded Action",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3155,
+  "model": "hr.employee.category",
+  "name": "Employee Category",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3156,
+  "model": "hr.employee.departure",
+  "name": "Employee Departure",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3152,
+  "model": "hr.employee.location",
+  "name": "Employee Location",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3759,
+  "model": "report.hr_skills.report_employee_cv",
+  "name": "Employee Resume",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3760,
+  "model": "hr.employee.skill.history.report",
+  "name": "Employee Skills Report",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3761,
+  "model": "hr.employee.skill.report",
+  "name": "Employee Skills Report",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3150,
+  "model": "hr.employee.type",
+  "name": "Employee Type",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2221,
+  "model": "res.currency.rate.consolidation.mixin",
+  "name": "Enable multi company consolidation",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 80,
+  "model": "base.enable.profiling.wizard",
+  "name": "Enable profiling for some time",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3023,
+  "model": "calendar.alarm",
+  "name": "Event Alarm",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3024,
+  "model": "calendar.alarm_manager",
+  "name": "Event Alarm Manager",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3026,
+  "model": "calendar.event.type",
+  "name": "Event Meeting Type",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3021,
+  "model": "calendar.recurrence",
+  "name": "Event Recurrence Rule",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2425,
+  "model": "account.executive.summary.report.handler",
+  "name": "Executive Summary Custom Handler",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 2448,
+  "model": "account_reports.export.wizard.format",
+  "name": "Export format for accounting's reports",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2447,
+  "model": "account_reports.export.wizard",
+  "name": "Export wizard for accounting's reports",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 38,
+  "model": "ir.exports",
+  "name": "Exports",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 39,
+  "model": "ir.exports.line",
+  "name": "Exports Line",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2339,
+  "model": "account.edi.xml.cii",
+  "name": "Factur-x/ZUGFeRD CII 2.2.0",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 3676,
+  "model": "knowledge.article.favorite",
+  "name": "Favorite Article",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 2200,
+  "model": "product.fetch.image.wizard",
+  "name": "Fetch product images from Barcode Lookup based on the product's barcode.",
+  "transient": true,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 4,
+  "model": "ir.model.fields",
+  "name": "Field",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 811,
+  "model": "html.field.history.mixin",
+  "name": "Field html History",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 43,
+  "model": "ir.fields.converter",
+  "name": "Fields Converter",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ },
+ {
+  "id": 6,
+  "model": "ir.model.fields.selection",
+  "name": "Fields Selection",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 3115,
+  "model": "sign.item",
+  "name": "Fields to be sign on Document",
+  "transient": false,
+  "abstract": false,
+  "state": "base"
+ },
+ {
+  "id": 32,
+  "model": "ir.binary",
+  "name": "File streaming helper model for controllers",
+  "transient": false,
+  "abstract": true,
+  "state": "base"
+ }
+]

@@ -1,0 +1,2152 @@
+[
+ {
+  "id": 1188,
+  "name": "sale_management",
+  "shortdesc": "Sales",
+  "state": "installed",
+  "application": true,
+  "category_id": "Sales",
+  "summary": "From quotations to invoices",
+  "icon": "/sale_management/static/description/icon.png"
+ },
+ {
+  "id": 1,
+  "name": "account",
+  "shortdesc": "Invoicing",
+  "state": "installed",
+  "application": true,
+  "category_id": "Invoicing",
+  "summary": "Invoices & Payments",
+  "icon": "/account/static/description/icon.png"
+ },
+ {
+  "id": 58,
+  "name": "accountant",
+  "shortdesc": "Accounting",
+  "state": "installed",
+  "application": true,
+  "category_id": "Invoicing",
+  "summary": "Manage financial and analytic accounting",
+  "icon": "/accountant/static/description/icon.png"
+ },
+ {
+  "id": 1122,
+  "name": "purchase",
+  "shortdesc": "Purchase",
+  "state": "installed",
+  "application": true,
+  "category_id": "Purchase",
+  "summary": "Purchase orders, tenders and agreements",
+  "icon": "/purchase/static/description/icon.png"
+ },
+ {
+  "id": 1089,
+  "name": "project",
+  "shortdesc": "Project",
+  "state": "installed",
+  "application": true,
+  "category_id": "Project",
+  "summary": "Manage tasks and collaborate on projects",
+  "icon": "/project/static/description/icon.png"
+ },
+ {
+  "id": 199,
+  "name": "documents",
+  "shortdesc": "Documents",
+  "state": "installed",
+  "application": true,
+  "category_id": "Documents",
+  "summary": "Collect, organize and share documents.",
+  "icon": "/documents/static/description/icon.png"
+ },
+ {
+  "id": 269,
+  "name": "hr",
+  "shortdesc": "Employees",
+  "state": "installed",
+  "application": true,
+  "category_id": "Employees",
+  "summary": "Centralize employee information",
+  "icon": "/hr/static/description/icon.png"
+ },
+ {
+  "id": 335,
+  "name": "knowledge",
+  "shortdesc": "Knowledge",
+  "state": "installed",
+  "application": true,
+  "category_id": "Knowledge",
+  "summary": "Centralize, manage, share and grow your knowledge library",
+  "icon": "/knowledge/static/description/icon.png"
+ },
+ {
+  "id": 1234,
+  "name": "sign",
+  "shortdesc": "Sign",
+  "state": "installed",
+  "application": true,
+  "category_id": "Sign",
+  "summary": "Send and request electronic signatures.",
+  "icon": "/sign/static/description/icon.png"
+ },
+ {
+  "id": 255,
+  "name": "helpdesk",
+  "shortdesc": "Helpdesk",
+  "state": "installed",
+  "application": true,
+  "category_id": "Helpdesk",
+  "summary": "Track, prioritize, and solve customer tickets",
+  "icon": "/helpdesk/static/description/icon.png"
+ },
+ {
+  "id": 982,
+  "name": "planning",
+  "shortdesc": "Planning",
+  "state": "installed",
+  "application": true,
+  "category_id": "Planning",
+  "summary": "Manage your employees' schedule",
+  "icon": "/planning/static/description/icon.png"
+ },
+ {
+  "id": 888,
+  "name": "mail",
+  "shortdesc": "Discuss",
+  "state": "installed",
+  "application": true,
+  "category_id": "Discuss",
+  "summary": "Chat, mail gateway and private channels",
+  "icon": "/mail/static/description/icon.png"
+ },
+ {
+  "id": 1208,
+  "name": "sale_renting",
+  "shortdesc": "Rental",
+  "state": "installed",
+  "application": true,
+  "category_id": "Sales",
+  "summary": "Manage rental contracts, deliveries and returns",
+  "icon": "/sale_renting/static/description/icon.png"
+ },
+ {
+  "id": 148,
+  "name": "calendar",
+  "shortdesc": "Calendar",
+  "state": "installed",
+  "application": true,
+  "category_id": "Calendar",
+  "summary": "Schedule employees' meetings",
+  "icon": "/calendar/static/description/icon.png"
+ },
+ {
+  "id": 243,
+  "name": "fleet",
+  "shortdesc": "Fleet",
+  "state": "installed",
+  "application": true,
+  "category_id": "Fleet",
+  "summary": "Manage your fleet and track car costs",
+  "icon": "/fleet/static/description/icon.png"
+ },
+ {
+  "id": 115,
+  "name": "approvals",
+  "shortdesc": "Approvals",
+  "state": "installed",
+  "application": true,
+  "category_id": "Approvals",
+  "summary": "Create and validate approvals requests",
+  "icon": "/approvals/static/description/icon.png"
+ },
+ {
+  "id": 106,
+  "name": "appointment",
+  "shortdesc": "Appointments",
+  "state": "installed",
+  "application": true,
+  "category_id": "Appointment",
+  "summary": "Allow people to book meetings in your agenda",
+  "icon": "/appointment/static/description/icon.png"
+ },
+ {
+  "id": 1313,
+  "name": "survey",
+  "shortdesc": "Surveys",
+  "state": "installed",
+  "application": true,
+  "category_id": "Surveys",
+  "summary": "Send your surveys or share them live.",
+  "icon": "/survey/static/description/icon.png"
+ },
+ {
+  "id": 274,
+  "name": "hr_attendance",
+  "shortdesc": "Attendances",
+  "state": "installed",
+  "application": true,
+  "category_id": "Attendances",
+  "summary": "Track employee attendance",
+  "icon": "/hr_attendance/static/description/icon.png"
+ },
+ {
+  "id": 1121,
+  "name": "project_todo",
+  "shortdesc": "To-Do",
+  "state": "installed",
+  "application": true,
+  "category_id": "To-Do",
+  "summary": "Organize your work with memos and to-do lists",
+  "icon": "/project_todo/static/description/icon.png"
+ },
+ {
+  "id": 317,
+  "name": "hr_skills",
+  "shortdesc": "Skills Management",
+  "state": "installed",
+  "application": true,
+  "category_id": "Employees",
+  "summary": "Manage skills, knowledge and resume of your employees",
+  "icon": "/hr_skills/static/description/icon.png"
+ },
+ {
+  "id": 3,
+  "name": "account_accountant",
+  "shortdesc": "Invoicing",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Invoices, Payments, Follow-ups & Bank synchronization (Enterprise)",
+  "icon": "/account/static/description/icon.png"
+ },
+ {
+  "id": 6,
+  "name": "account_asset",
+  "shortdesc": "Assets Management",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/account_asset/static/description/icon.png"
+ },
+ {
+  "id": 38,
+  "name": "account_loans",
+  "shortdesc": "Loans Management",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 983,
+  "name": "planning_attendance",
+  "shortdesc": "Planning and Attendances",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Compare plannings and attendances",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 5,
+  "name": "account_accountant_fleet",
+  "shortdesc": "Accounting/Fleet bridge",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Manage accounting with fleet features",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 7,
+  "name": "account_asset_fleet",
+  "shortdesc": "Assets/Fleet bridge",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Manage assets with fleets",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 12,
+  "name": "account_bank_statement_extract",
+  "shortdesc": "Account Bank Statement Extract",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Extract data from bank statement scans to fill them automatically",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 13,
+  "name": "account_bank_statement_import",
+  "shortdesc": "Account Bank Statement Import",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 14,
+  "name": "account_bank_statement_import_camt",
+  "shortdesc": "Import CAMT Bank Statement",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 15,
+  "name": "account_bank_statement_import_csv",
+  "shortdesc": "Import CSV Bank Statement",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 16,
+  "name": "account_bank_statement_import_ofx",
+  "shortdesc": "Import OFX Bank Statement",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/account_bank_statement_import_ofx/static/description/icon.png"
+ },
+ {
+  "id": 18,
+  "name": "account_base_import",
+  "shortdesc": "Accounting Import",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Improved Import in Accounting",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 26,
+  "name": "account_edi_ubl_cii",
+  "shortdesc": "Import/Export electronic invoices with UBL/CII",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 28,
+  "name": "account_extract",
+  "shortdesc": "Account Extract",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Digitise and extract data from documents.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 29,
+  "name": "account_fiscal_categories",
+  "shortdesc": "Account Fiscal Report",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Account Fiscal Report",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 30,
+  "name": "account_fiscal_categories_fleet",
+  "shortdesc": "Fiscal Categories on Fleets",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Manage fiscal categories with fleets",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 31,
+  "name": "account_fleet",
+  "shortdesc": "Accounting/Fleet bridge",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Manage accounting with fleets",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 32,
+  "name": "account_followup",
+  "shortdesc": "Payment Follow-up Management",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 35,
+  "name": "account_invoice_extract",
+  "shortdesc": "Account Invoice Extract",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Extract data from invoice scans to fill them automatically",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 36,
+  "name": "account_invoice_extract_purchase",
+  "shortdesc": "Account Invoice Extract Purchase",
+  "state": "installed",
+  "application": false,
+  "category_id": "Accounting",
+  "summary": "Automatically finds the purchase order linked to a vendor bill when using invoice extraction",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 39,
+  "name": "account_loans_extract",
+  "shortdesc": "Account Loans Extract",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Extract data from loan scans to fill them automatically",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 41,
+  "name": "account_online_synchronization",
+  "shortdesc": "Online Bank Statement Synchronization",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "This module is used for Online bank synchronization.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 42,
+  "name": "account_payment",
+  "shortdesc": "Payment - Account",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Enable customers to pay invoices on the portal and post payments when transactions are processed.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 47,
+  "name": "account_qr_code_sepa",
+  "shortdesc": "Account SEPA QR Code",
+  "state": "installed",
+  "application": false,
+  "category_id": "Payment",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 48,
+  "name": "account_reports",
+  "shortdesc": "Accounting Reports",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "View and create reports",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 49,
+  "name": "account_reports_cash_basis",
+  "shortdesc": "Cash Basis Accounting Reports",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Add cash basis functionality for reports",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 59,
+  "name": "accountant_fleet",
+  "shortdesc": "Accounting - Fleet",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 61,
+  "name": "accountant_knowledge",
+  "shortdesc": "Annual Reports",
+  "state": "installed",
+  "application": false,
+  "category_id": "Uncategorized",
+  "summary": "Create Annual Reports with Knowledge",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 62,
+  "name": "ai",
+  "shortdesc": "AI",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Base module for AI features",
+  "icon": "/ai/static/description/icon.png"
+ },
+ {
+  "id": 63,
+  "name": "ai_account",
+  "shortdesc": "AI Text Draft - Accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "AI text draft integration with accounting",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 65,
+  "name": "ai_auto_install",
+  "shortdesc": "AI Auto Install",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Auto install AI module if pgvector is available",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 66,
+  "name": "ai_calendar",
+  "shortdesc": "AI Calendar",
+  "state": "installed",
+  "application": false,
+  "category_id": "AI",
+  "summary": "Augment Calendar with AI Agents.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 73,
+  "name": "ai_documents_source",
+  "shortdesc": "AI Documents Source",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Add documents to AI agents as sources.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 75,
+  "name": "ai_fields",
+  "shortdesc": "ai_fields",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Implementation of AI computed fields",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 76,
+  "name": "ai_helpdesk",
+  "shortdesc": "AI Helpdesk",
+  "state": "installed",
+  "application": false,
+  "category_id": "AI",
+  "summary": "Augment Helpdesk with AI Agents.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 79,
+  "name": "ai_knowledge",
+  "shortdesc": "AI Text Draft - Knowledge",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "AI text draft integration with knowledge",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 82,
+  "name": "ai_mcp",
+  "shortdesc": "AI MCP Server",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Connect Odoo to any external server via the MCP",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 83,
+  "name": "ai_product",
+  "shortdesc": "AI Product",
+  "state": "installed",
+  "application": false,
+  "category_id": "AI",
+  "summary": "AI Product",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 84,
+  "name": "ai_project",
+  "shortdesc": "AI Project",
+  "state": "installed",
+  "application": false,
+  "category_id": "AI",
+  "summary": "Augment Project with AI Agents.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 85,
+  "name": "ai_purchase",
+  "shortdesc": "AI Purchase",
+  "state": "installed",
+  "application": false,
+  "category_id": "AI",
+  "summary": "Augment Purchase with AI Agents.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 86,
+  "name": "ai_sale",
+  "shortdesc": "AI Sale",
+  "state": "installed",
+  "application": false,
+  "category_id": "AI",
+  "summary": "Augment Sales with AI Agents.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 89,
+  "name": "ai_server_actions",
+  "shortdesc": "ai_server_actions",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Implementation of AI server actions",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 103,
+  "name": "analytic",
+  "shortdesc": "Analytic Accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 104,
+  "name": "analytic_enterprise",
+  "shortdesc": "Analytic Accounting Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 105,
+  "name": "api_doc",
+  "shortdesc": "API Documentation",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 107,
+  "name": "appointment_account_payment",
+  "shortdesc": "Pay to Book",
+  "state": "installed",
+  "application": false,
+  "category_id": "Online Appointment",
+  "summary": "Up-front payment on bookings",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 109,
+  "name": "appointment_google_calendar",
+  "shortdesc": "Appointment Google Calendar",
+  "state": "installed",
+  "application": false,
+  "category_id": "Productivity",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 116,
+  "name": "approvals_purchase",
+  "shortdesc": "Approvals - Purchase",
+  "state": "installed",
+  "application": false,
+  "category_id": "Approvals",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 118,
+  "name": "attachment_indexation",
+  "shortdesc": "Attachments List and Document Indexation",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 121,
+  "name": "auth_passkey",
+  "shortdesc": "Passkeys",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Log in with a Passkey",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 122,
+  "name": "auth_passkey_portal",
+  "shortdesc": "Passkeys Portal",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Passkeys for portal users",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 126,
+  "name": "auth_signup",
+  "shortdesc": "Signup",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 128,
+  "name": "auth_totp",
+  "shortdesc": "Two-Factor Authentication (TOTP)",
+  "state": "installed",
+  "application": false,
+  "category_id": "Extra Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 129,
+  "name": "auth_totp_mail",
+  "shortdesc": "2FA Invite mail",
+  "state": "installed",
+  "application": false,
+  "category_id": "Extra Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 130,
+  "name": "auth_totp_portal",
+  "shortdesc": "TOTPortal",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 131,
+  "name": "barcodes",
+  "shortdesc": "Barcode",
+  "state": "installed",
+  "application": false,
+  "category_id": "Inventory",
+  "summary": "Scan and Parse Barcodes",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 133,
+  "name": "base",
+  "shortdesc": "Base",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 137,
+  "name": "base_geolocalize",
+  "shortdesc": "Partners Geolocation",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 138,
+  "name": "base_import",
+  "shortdesc": "Base import",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 139,
+  "name": "base_import_module",
+  "shortdesc": "Base import module",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 140,
+  "name": "base_install_request",
+  "shortdesc": "Base - Module Install Request",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 142,
+  "name": "base_report_wkhtmltox",
+  "shortdesc": "Report Engine: wkhtmltopdf/wkhtmltoimage",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "wkhtmltopdf rendering engine",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 143,
+  "name": "base_setup",
+  "shortdesc": "Initial Setup Tools",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 147,
+  "name": "bus",
+  "shortdesc": "IM Bus",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 149,
+  "name": "calendar_sms",
+  "shortdesc": "Calendar - SMS",
+  "state": "installed",
+  "application": false,
+  "category_id": "Calendar",
+  "summary": "Send text messages as event reminders",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 150,
+  "name": "certificate",
+  "shortdesc": "Certificate",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Manage certificate",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 168,
+  "name": "currency_rate_live",
+  "shortdesc": "Live Currency Exchange Rate",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 197,
+  "name": "digest",
+  "shortdesc": "KPI Digests",
+  "state": "installed",
+  "application": false,
+  "category_id": "Marketing",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 198,
+  "name": "digest_enterprise",
+  "shortdesc": "Digest Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 200,
+  "name": "documents_account",
+  "shortdesc": "Documents - Accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Invoices from Documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 202,
+  "name": "documents_approvals",
+  "shortdesc": "Documents - Approvals",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Approval from documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 203,
+  "name": "documents_fleet",
+  "shortdesc": "Documents - Fleet",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Fleet from documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 204,
+  "name": "documents_hr",
+  "shortdesc": "Documents - HR",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Access documents from the employee profile",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 210,
+  "name": "documents_hr_sign",
+  "shortdesc": "Documents - Contract - Signature",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Manage employee documents requiring signature",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 211,
+  "name": "documents_hr_skills",
+  "shortdesc": "Documents - Certificates",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Hr Skills Certificates in Documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 218,
+  "name": "documents_product",
+  "shortdesc": "Documents - Product",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Products from Documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 219,
+  "name": "documents_project",
+  "shortdesc": "Documents - Projects",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Project from documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 220,
+  "name": "documents_project_sale",
+  "shortdesc": "Documents - Project - Sale",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Products Folder Templates",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 221,
+  "name": "documents_project_sign",
+  "shortdesc": "Documents Project Sign",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Sign documents attached to tasks",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 222,
+  "name": "documents_sign",
+  "shortdesc": "Documents - Signatures",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Signature templates from Documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 223,
+  "name": "documents_spreadsheet",
+  "shortdesc": "Documents Spreadsheet",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Documents Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 224,
+  "name": "documents_spreadsheet_sign",
+  "shortdesc": "Spreadsheet Sign",
+  "state": "installed",
+  "application": false,
+  "category_id": "Uncategorized",
+  "summary": "Spreadsheet integration for Sign templates",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 225,
+  "name": "documents_spreadsheet_survey",
+  "shortdesc": "Spreadsheet Survey",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Spreadsheet for Survey results",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 250,
+  "name": "google_account",
+  "shortdesc": "Google Users",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 252,
+  "name": "google_calendar",
+  "shortdesc": "Google Calendar",
+  "state": "installed",
+  "application": false,
+  "category_id": "Productivity",
+  "summary": "",
+  "icon": "/google_calendar/static/description/icon.png"
+ },
+ {
+  "id": 253,
+  "name": "google_gmail",
+  "shortdesc": "Google Gmail",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/google_gmail/static/description/icon.png"
+ },
+ {
+  "id": 262,
+  "name": "helpdesk_sale",
+  "shortdesc": "Helpdesk After Sales",
+  "state": "installed",
+  "application": false,
+  "category_id": "Helpdesk",
+  "summary": "Project, Tasks, After Sales",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 265,
+  "name": "helpdesk_sms",
+  "shortdesc": "Helpdesk - SMS",
+  "state": "installed",
+  "application": false,
+  "category_id": "Helpdesk",
+  "summary": "Send text messages when ticket stage move",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 275,
+  "name": "hr_attendance_gantt",
+  "shortdesc": "Attendance Gantt",
+  "state": "installed",
+  "application": false,
+  "category_id": "Attendances",
+  "summary": "Gantt view for Attendance",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 277,
+  "name": "hr_calendar",
+  "shortdesc": "Display Working Hours in Calendar",
+  "state": "installed",
+  "application": false,
+  "category_id": "Employees",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 278,
+  "name": "hr_calendar_google",
+  "shortdesc": "HR Calendar with Google Calendar",
+  "state": "installed",
+  "application": false,
+  "category_id": "Remote Work",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 285,
+  "name": "hr_fleet",
+  "shortdesc": "Fleet History",
+  "state": "installed",
+  "application": false,
+  "category_id": "Human Resources",
+  "summary": "Get history of driven cars by employees",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 286,
+  "name": "hr_gamification",
+  "shortdesc": "HR Gamification",
+  "state": "installed",
+  "application": false,
+  "category_id": "Human Resources",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 287,
+  "name": "hr_gantt",
+  "shortdesc": "Employees in Gantt",
+  "state": "installed",
+  "application": false,
+  "category_id": "Employees",
+  "summary": "Employees in Gantt",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 293,
+  "name": "hr_mobile",
+  "shortdesc": "Employees in Mobile",
+  "state": "installed",
+  "application": false,
+  "category_id": "Employees",
+  "summary": "Employees in Mobile",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 316,
+  "name": "hr_sign",
+  "shortdesc": "Contract - Signature",
+  "state": "installed",
+  "application": false,
+  "category_id": "Human Resources",
+  "summary": "Manage your documents to sign in contracts",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 320,
+  "name": "hr_skills_survey",
+  "shortdesc": "Skills Certification",
+  "state": "installed",
+  "application": false,
+  "category_id": "Employees",
+  "summary": "Add certification to resume of your employees",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 326,
+  "name": "html_editor",
+  "shortdesc": "HTML Editor",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "A Html Editor component and plugin system.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 328,
+  "name": "iap",
+  "shortdesc": "In-App Purchase",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Basic models and helpers to support In-App Purchase.",
+  "icon": "/iap/static/description/icon.png"
+ },
+ {
+  "id": 330,
+  "name": "iap_extract",
+  "shortdesc": "Iap Extract",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Common module for requesting data from the extract server",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 331,
+  "name": "iap_mail",
+  "shortdesc": "IAP / Mail",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Bridge between IAP and mail",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 544,
+  "name": "l10n_gcc_invoice",
+  "shortdesc": "Gulf Cooperation Council - Invoice",
+  "state": "installed",
+  "application": false,
+  "category_id": "Localization",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 770,
+  "name": "l10n_qa",
+  "shortdesc": "Qatar - Accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Account Charts",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 889,
+  "name": "mail_bot",
+  "shortdesc": "OdooBot",
+  "state": "installed",
+  "application": false,
+  "category_id": "Discuss",
+  "summary": "Add OdooBot in discussions",
+  "icon": "/mail_bot/static/description/icon.png"
+ },
+ {
+  "id": 890,
+  "name": "mail_bot_hr",
+  "shortdesc": "OdooBot - HR",
+  "state": "installed",
+  "application": false,
+  "category_id": "Discuss",
+  "summary": "Bridge module between hr and mailbot.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 891,
+  "name": "mail_enterprise",
+  "shortdesc": "Mail Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Discuss",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 893,
+  "name": "mail_mobile",
+  "shortdesc": "Mail Mobile",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Provides push notification and redirection to the mobile app.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 921,
+  "name": "microsoft_outlook",
+  "shortdesc": "Microsoft Outlook",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/microsoft_outlook/static/description/icon.png"
+ },
+ {
+  "id": 953,
+  "name": "partner_autocomplete",
+  "shortdesc": "Partner Autocomplete",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "Auto-complete partner companies' data",
+  "icon": "/partner_autocomplete/static/description/icon.png"
+ },
+ {
+  "id": 956,
+  "name": "payment",
+  "shortdesc": "Payment Engine",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "The payment engine used by payment provider modules.",
+  "icon": "/payment/static/description/icon.png"
+ },
+ {
+  "id": 995,
+  "name": "planning_hr_skills",
+  "shortdesc": "Planning - Skills",
+  "state": "installed",
+  "application": false,
+  "category_id": "Planning",
+  "summary": "Planning Skills",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1000,
+  "name": "portal_rating",
+  "shortdesc": "Portal Rating",
+  "state": "installed",
+  "application": false,
+  "category_id": "Services",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1081,
+  "name": "privacy_lookup",
+  "shortdesc": "Privacy",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1082,
+  "name": "product",
+  "shortdesc": "Products & Pricelists",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/product/static/description/icon.png"
+ },
+ {
+  "id": 1083,
+  "name": "product_barcodelookup",
+  "shortdesc": "Product Barcode Lookup",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1090,
+  "name": "project_account",
+  "shortdesc": "Project - Account",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "project profitability items computation",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1091,
+  "name": "project_account_asset",
+  "shortdesc": "Project Accounting Assets",
+  "state": "installed",
+  "application": false,
+  "category_id": "assets",
+  "summary": "Project accounting assets",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1093,
+  "name": "project_enterprise",
+  "shortdesc": "Project Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Bridge module for project and enterprise",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1094,
+  "name": "project_enterprise_hr",
+  "shortdesc": "Project Enterprise HR",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Bridge module for project_enterprise and hr",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1095,
+  "name": "project_enterprise_hr_skills",
+  "shortdesc": "Project - Skills",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Project skills",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1096,
+  "name": "project_enterprise_hr_todo",
+  "shortdesc": "Project Enterprise HR To-Do",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Bridge module for project_enterprise_hr and project_todo",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1098,
+  "name": "project_helpdesk",
+  "shortdesc": "Project Helpdesk",
+  "state": "installed",
+  "application": false,
+  "category_id": "Services",
+  "summary": "Project helpdesk",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1102,
+  "name": "project_hr_skills",
+  "shortdesc": "Project - Skills",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Project skills",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1109,
+  "name": "project_purchase",
+  "shortdesc": "Project Purchase",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Monitor purchase in project",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1113,
+  "name": "project_sms",
+  "shortdesc": "Project - SMS",
+  "state": "installed",
+  "application": false,
+  "category_id": "Project",
+  "summary": "Send text messages when project/task stage move",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1123,
+  "name": "purchase_accountant",
+  "shortdesc": "Purchase Accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Purchase",
+  "summary": "Bridge between Purchase and Accounting",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1127,
+  "name": "purchase_edi_ubl_bis3",
+  "shortdesc": "Import/Export electronic orders with UBL",
+  "state": "installed",
+  "application": false,
+  "category_id": "Purchase",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1146,
+  "name": "rating",
+  "shortdesc": "Customer Rating",
+  "state": "installed",
+  "application": false,
+  "category_id": "Productivity",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1148,
+  "name": "resource",
+  "shortdesc": "Resource",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1149,
+  "name": "resource_mail",
+  "shortdesc": "Resource Mail",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1151,
+  "name": "rpc",
+  "shortdesc": "RPC endpoints",
+  "state": "installed",
+  "application": false,
+  "category_id": "Extra Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1152,
+  "name": "saas_ai",
+  "shortdesc": "SaaS AI",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1153,
+  "name": "saas_base_import",
+  "shortdesc": "saas_base_import",
+  "state": "installed",
+  "application": false,
+  "category_id": "Uncategorized",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1154,
+  "name": "saas_dashboard_activities",
+  "shortdesc": "saas_dashboard_activities",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1155,
+  "name": "saas_geolocalize",
+  "shortdesc": "Geocolding SaaS Integration",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1156,
+  "name": "saas_google_account",
+  "shortdesc": "Saas Google Calendar",
+  "state": "installed",
+  "application": false,
+  "category_id": "Uncategorized",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1157,
+  "name": "saas_helpdesk",
+  "shortdesc": "SaaS Helpdesk Integration",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1160,
+  "name": "saas_product_barcodelookup",
+  "shortdesc": "Product Barcode Lookup Saas",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1161,
+  "name": "saas_trial",
+  "shortdesc": "saas_trial",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1162,
+  "name": "saas_unsplash",
+  "shortdesc": "Unsplash SaaS Integration",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1169,
+  "name": "sale",
+  "shortdesc": "Sales",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Sales internal machinery",
+  "icon": "/sale/static/description/icon.png"
+ },
+ {
+  "id": 1170,
+  "name": "sale_account_accountant",
+  "shortdesc": "Sale Accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Bridge between Sale and Accounting",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1177,
+  "name": "sale_edi_ubl",
+  "shortdesc": "Import electronic orders with UBL",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1178,
+  "name": "sale_enterprise",
+  "shortdesc": "Sale Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Advanced Features for Sale Management",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1189,
+  "name": "sale_management_renting",
+  "shortdesc": "Sale Management for Rental",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1194,
+  "name": "sale_pdf_quote_builder",
+  "shortdesc": "Sales PDF Quotation Builder",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1195,
+  "name": "sale_planning",
+  "shortdesc": "Sale Planning",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1197,
+  "name": "sale_project",
+  "shortdesc": "Sales - Project",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Task Generation from Sales Orders",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1198,
+  "name": "sale_project_enterprise",
+  "shortdesc": "Sale Project Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1203,
+  "name": "sale_purchase",
+  "shortdesc": "Sale Purchase",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Sale based on service outsourcing.",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1205,
+  "name": "sale_purchase_project",
+  "shortdesc": "Sale Purchase Project",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Technical Bridge",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1212,
+  "name": "sale_renting_pdf_quote_builder",
+  "shortdesc": "Rental & Sales PDF Quotation Builder",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1213,
+  "name": "sale_renting_planning",
+  "shortdesc": "Rental/Planning Bridge",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "This module Integrate Planning with Rental",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1214,
+  "name": "sale_renting_project",
+  "shortdesc": "Sale Renting Project",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Technical Bridge",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1215,
+  "name": "sale_service",
+  "shortdesc": "Sales - Service",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Interaction between Sales and services apps (project and planning)",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1217,
+  "name": "sale_sms",
+  "shortdesc": "Sale - SMS",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Ease SMS integration with sales capabilities",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1233,
+  "name": "sales_team",
+  "shortdesc": "Sales Teams",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "Sales Teams",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1235,
+  "name": "sign_ai",
+  "shortdesc": "Sign AI Integration",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Sign AI integration",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1238,
+  "name": "sms",
+  "shortdesc": "SMS gateway",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "SMS Text Messaging",
+  "icon": "/sms/static/description/icon.png"
+ },
+ {
+  "id": 1240,
+  "name": "snailmail",
+  "shortdesc": "Snail Mail",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/snailmail/static/description/icon.png"
+ },
+ {
+  "id": 1241,
+  "name": "snailmail_account",
+  "shortdesc": "Snail Mail - Account",
+  "state": "installed",
+  "application": false,
+  "category_id": "Tools",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1242,
+  "name": "snailmail_account_followup",
+  "shortdesc": "Snail Mail Follow-Up",
+  "state": "installed",
+  "application": false,
+  "category_id": "Invoicing",
+  "summary": "Extension to send follow-up documents by post",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1255,
+  "name": "spreadsheet",
+  "shortdesc": "Spreadsheet",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/spreadsheet/static/description/icon.png"
+ },
+ {
+  "id": 1256,
+  "name": "spreadsheet_account",
+  "shortdesc": "Spreadsheet Accounting Formulas",
+  "state": "installed",
+  "application": false,
+  "category_id": "Accounting",
+  "summary": "Spreadsheet Accounting formulas",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1257,
+  "name": "spreadsheet_dashboard",
+  "shortdesc": "Spreadsheet dashboard",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/spreadsheet_dashboard/static/description/icon.png"
+ },
+ {
+  "id": 1258,
+  "name": "spreadsheet_dashboard_account",
+  "shortdesc": "Spreadsheet dashboard for accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1259,
+  "name": "spreadsheet_dashboard_account_accountant",
+  "shortdesc": "Spreadsheet dashboard for accounting",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1261,
+  "name": "spreadsheet_dashboard_documents",
+  "shortdesc": "Spreadsheet Documents",
+  "state": "installed",
+  "application": false,
+  "category_id": "Documents",
+  "summary": "Spreadsheet Documents",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1262,
+  "name": "spreadsheet_dashboard_edition",
+  "shortdesc": "Spreadsheet dashboard edition",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet Dashboard edition",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1264,
+  "name": "spreadsheet_dashboard_helpdesk",
+  "shortdesc": "Spreadsheet dashboard for helpdesk",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1275,
+  "name": "spreadsheet_dashboard_sale",
+  "shortdesc": "Spreadsheet dashboard for sales",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1276,
+  "name": "spreadsheet_dashboard_sale_renting",
+  "shortdesc": "Spreadsheet dashboard for rental",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1285,
+  "name": "spreadsheet_edition",
+  "shortdesc": "Spreadsheet",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Spreadsheet",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1286,
+  "name": "spreadsheet_edition_account",
+  "shortdesc": "Spreadsheet edition account",
+  "state": "installed",
+  "application": false,
+  "category_id": "Dashboard",
+  "summary": "Enable fiscal year global filter in spreadsheet edition",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1287,
+  "name": "spreadsheet_sale_management",
+  "shortdesc": "Sale order spreadsheet",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1417,
+  "name": "uom",
+  "shortdesc": "Units of measure",
+  "state": "installed",
+  "application": false,
+  "category_id": "Sales",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1418,
+  "name": "utm",
+  "shortdesc": "UTM Trackers",
+  "state": "installed",
+  "application": false,
+  "category_id": "Marketing",
+  "summary": "",
+  "icon": "/utm/static/description/icon.png"
+ },
+ {
+  "id": 1430,
+  "name": "web",
+  "shortdesc": "Web",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1431,
+  "name": "web_cohort",
+  "shortdesc": "Cohort View",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Basic Cohort view for odoo",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1432,
+  "name": "web_enterprise",
+  "shortdesc": "Web Enterprise",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1433,
+  "name": "web_gantt",
+  "shortdesc": "Web Gantt",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1434,
+  "name": "web_grid",
+  "shortdesc": "Grid View",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Basic 2D Grid view for odoo",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1435,
+  "name": "web_hierarchy",
+  "shortdesc": "Web Hierarchy",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1436,
+  "name": "web_map",
+  "shortdesc": "Map View",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Defines the map view for odoo enterprise",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1437,
+  "name": "web_mobile",
+  "shortdesc": "Mobile",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Odoo Mobile Core module",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1440,
+  "name": "web_tour",
+  "shortdesc": "Tours",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 1441,
+  "name": "web_unsplash",
+  "shortdesc": "Unsplash Image Library",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Find free high-resolution images from Unsplash",
+  "icon": "/web_unsplash/static/description/icon.png"
+ },
+ {
+  "id": 248,
+  "name": "gamification",
+  "shortdesc": "Gamification",
+  "state": "installed",
+  "application": false,
+  "category_id": "Human Resources",
+  "summary": "",
+  "icon": "/gamification/static/description/icon.png"
+ },
+ {
+  "id": 111,
+  "name": "appointment_hr",
+  "shortdesc": "Employees on Appointments",
+  "state": "installed",
+  "application": false,
+  "category_id": "Appointment",
+  "summary": "Manage Appointments with Employees",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 114,
+  "name": "appointment_sms",
+  "shortdesc": "Appointment SMS",
+  "state": "installed",
+  "application": false,
+  "category_id": "Appointment",
+  "summary": "Use SMS reminders for appointment meetings",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 998,
+  "name": "portal",
+  "shortdesc": "Customer Portal",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Customer Portal",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 952,
+  "name": "onboarding",
+  "shortdesc": "Onboarding Toolbox",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 327,
+  "name": "http_routing",
+  "shortdesc": "Web Routing",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Web Routing",
+  "icon": "/base/static/description/icon.png"
+ },
+ {
+  "id": 981,
+  "name": "phone_validation",
+  "shortdesc": "Phone Numbers Validation",
+  "state": "installed",
+  "application": false,
+  "category_id": "Technical",
+  "summary": "Validate and format phone numbers",
+  "icon": "/base/static/description/icon.png"
+ }
+]

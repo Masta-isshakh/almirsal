@@ -1,0 +1,35 @@
+[
+ {
+  "id": 2,
+  "name": "masta",
+  "login": "mastaisshakh@gmail.com",
+  "lang": "en_US",
+  "tz": "Asia/Riyadh",
+  "notification_type": "email",
+  "share": false,
+  "company_ids": [
+   1
+  ],
+  "group_ids": [
+   38,
+   52,
+   28,
+   29,
+   83,
+   76,
+   50,
+   22,
+   81,
+   69,
+   88,
+   89,
+   58,
+   34,
+   48,
+   71,
+   60,
+   46,
+   4
+  ]
+ }
+]

@@ -1,0 +1,20 @@
+[
+ {
+  "id": 1,
+  "name": "Operating Activities",
+  "applicability": "accounts",
+  "country_id": false
+ },
+ {
+  "id": 2,
+  "name": "Financing Activities",
+  "applicability": "accounts",
+  "country_id": false
+ },
+ {
+  "id": 3,
+  "name": "Investing & Extraordinary Activities",
+  "applicability": "accounts",
+  "country_id": false
+ }
+]

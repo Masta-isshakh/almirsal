@@ -1,0 +1,128 @@
+[
+ {
+  "id": 14,
+  "name": "Administrative/Utilities",
+  "full_name": "N - ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES",
+  "name_ar": "إداري/المرافق"
+ },
+ {
+  "id": 1,
+  "name": "Agriculture",
+  "full_name": "A - AGRICULTURE, FORESTRY AND FISHING",
+  "name_ar": "الزراعة"
+ },
+ {
+  "id": 6,
+  "name": "Construction",
+  "full_name": "F - CONSTRUCTION",
+  "name_ar": "البناء"
+ },
+ {
+  "id": 16,
+  "name": "Education",
+  "full_name": "P - EDUCATION",
+  "name_ar": "التعليم"
+ },
+ {
+  "id": 4,
+  "name": "Energy supply",
+  "full_name": "D - ELECTRICITY, GAS, STEAM AND AIR CONDITIONING SUPPLY",
+  "name_ar": "مصدر الطاقة"
+ },
+ {
+  "id": 18,
+  "name": "Entertainment",
+  "full_name": "R - ARTS, ENTERTAINMENT AND RECREATION",
+  "name_ar": "الترفيه"
+ },
+ {
+  "id": 21,
+  "name": "Extraterritorial",
+  "full_name": "U - ACTIVITIES OF EXTRATERRITORIAL ORGANISATIONS AND BODIES",
+  "name_ar": "خارج الحدود الإقليمية"
+ },
+ {
+  "id": 11,
+  "name": "Finance/Insurance",
+  "full_name": "K - FINANCIAL AND INSURANCE ACTIVITIES",
+  "name_ar": "المالية/التأمين"
+ },
+ {
+  "id": 9,
+  "name": "Food/Hospitality",
+  "full_name": "I - ACCOMMODATION AND FOOD SERVICE ACTIVITIES",
+  "name_ar": "الطعام/الضيافة"
+ },
+ {
+  "id": 17,
+  "name": "Health/Social",
+  "full_name": "Q - HUMAN HEALTH AND SOCIAL WORK ACTIVITIES",
+  "name_ar": "الصحي/الاجتماعي"
+ },
+ {
+  "id": 20,
+  "name": "Households",
+  "full_name": "T - ACTIVITIES OF HOUSEHOLDS AS EMPLOYERS; UNDIFFERENTIATED GOODS- AND SERVICES-PRODUCING ACTIVITIES OF HOUSEHOLDS FOR OWN USE",
+  "name_ar": "عائلات"
+ },
+ {
+  "id": 10,
+  "name": "IT/Communication",
+  "full_name": "J - INFORMATION AND COMMUNICATION",
+  "name_ar": "تقنية المعلومات/التواصل"
+ },
+ {
+  "id": 3,
+  "name": "Manufacturing",
+  "full_name": "C - MANUFACTURING",
+  "name_ar": "التصنيع"
+ },
+ {
+  "id": 2,
+  "name": "Mining",
+  "full_name": "B - MINING AND QUARRYING",
+  "name_ar": "التعدين"
+ },
+ {
+  "id": 19,
+  "name": "Other Services",
+  "full_name": "S - OTHER SERVICE ACTIVITIES",
+  "name_ar": "خدمات أخرى"
+ },
+ {
+  "id": 15,
+  "name": "Public Administration",
+  "full_name": "O - PUBLIC ADMINISTRATION AND DEFENCE; COMPULSORY SOCIAL SECURITY",
+  "name_ar": "الإدارة العامة"
+ },
+ {
+  "id": 12,
+  "name": "Real Estate",
+  "full_name": "L - REAL ESTATE ACTIVITIES",
+  "name_ar": "العقارات"
+ },
+ {
+  "id": 13,
+  "name": "Scientific",
+  "full_name": "M - PROFESSIONAL, SCIENTIFIC AND TECHNICAL ACTIVITIES",
+  "name_ar": "علمي"
+ },
+ {
+  "id": 8,
+  "name": "Transportation/Logistics",
+  "full_name": "H - TRANSPORTATION AND STORAGE",
+  "name_ar": "المواصلات/اللوجستيات"
+ },
+ {
+  "id": 5,
+  "name": "Water supply",
+  "full_name": "E - WATER SUPPLY; SEWERAGE, WASTE MANAGEMENT AND REMEDIATION ACTIVITIES",
+  "name_ar": "مخزون الماء"
+ },
+ {
+  "id": 7,
+  "name": "Wholesale/Retail",
+  "full_name": "G - WHOLESALE AND RETAIL TRADE; REPAIR OF MOTOR VEHICLES AND MOTORCYCLES",
+  "name_ar": "البيع بالجملة/البيع بالتجزئة"
+ }
+]

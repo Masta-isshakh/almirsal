@@ -1,0 +1,9 @@
+{
+ "version": "saas~19.4+e",
+ "db": "masta",
+ "langs": [
+  "en_US",
+  "ar_001 (rtl)"
+ ],
+ "user": "masta"
+}

@@ -1,0 +1,16 @@
+[
+ {
+  "id": 1,
+  "name": "Manual Payment",
+  "code": "manual",
+  "payment_type": "inbound",
+  "name_ar": "الدفع اليدوي"
+ },
+ {
+  "id": 2,
+  "name": "Manual Payment",
+  "code": "manual",
+  "payment_type": "outbound",
+  "name_ar": "الدفع اليدوي"
+ }
+]

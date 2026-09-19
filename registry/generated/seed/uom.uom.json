@@ -1,0 +1,108 @@
+[
+ {
+  "id": 6,
+  "name": "Minutes",
+  "relative_factor": 0.0166667,
+  "relative_uom_id": "Hours",
+  "parent_path": "4/6/"
+ },
+ {
+  "id": 1,
+  "name": "Units",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "1/",
+  "name_ar": "الوحدات"
+ },
+ {
+  "id": 4,
+  "name": "Hours",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "4/",
+  "name_ar": "ساعات"
+ },
+ {
+  "id": 7,
+  "name": "mm",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "7/",
+  "name_ar": "مليمتر"
+ },
+ {
+  "id": 11,
+  "name": "m²",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "11/",
+  "name_ar": "متر مربع"
+ },
+ {
+  "id": 12,
+  "name": "ml",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "12/",
+  "name_ar": "مل"
+ },
+ {
+  "id": 15,
+  "name": "g",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "15/"
+ },
+ {
+  "id": 30,
+  "name": "KWH",
+  "relative_factor": 1,
+  "relative_uom_id": false,
+  "parent_path": "30/"
+ },
+ {
+  "id": 2,
+  "name": "Pack of 6",
+  "relative_factor": 6,
+  "relative_uom_id": "Units",
+  "parent_path": "1/2/",
+  "name_ar": "حزمة مكونة من 6 قطع"
+ },
+ {
+  "id": 5,
+  "name": "Days",
+  "relative_factor": 8,
+  "relative_uom_id": "Hours",
+  "parent_path": "4/5/",
+  "name_ar": "الأيام"
+ },
+ {
+  "id": 13,
+  "name": "L",
+  "relative_factor": 1000,
+  "relative_uom_id": "ml",
+  "parent_path": "12/13/"
+ },
+ {
+  "id": 16,
+  "name": "kg",
+  "relative_factor": 1000,
+  "relative_uom_id": "g",
+  "parent_path": "15/16/",
+  "name_ar": "كجم"
+ },
+ {
+  "id": 9,
+  "name": "m",
+  "relative_factor": 100,
+  "relative_uom_id": "cm",
+  "parent_path": "7/8/9/"
+ },
+ {
+  "id": 17,
+  "name": "t",
+  "relative_factor": 1000,
+  "relative_uom_id": "kg",
+  "parent_path": "15/16/17/"
+ }
+]

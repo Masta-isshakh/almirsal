@@ -1,0 +1,37 @@
+[
+ {
+  "id": 2,
+  "name": "Sales",
+  "sequence": 100
+ },
+ {
+  "id": 1,
+  "name": "Finance",
+  "sequence": 300
+ },
+ {
+  "id": 6,
+  "name": "Logistics",
+  "sequence": 400
+ },
+ {
+  "id": 5,
+  "name": "Services",
+  "sequence": 500
+ },
+ {
+  "id": 7,
+  "name": "Marketing",
+  "sequence": 600
+ },
+ {
+  "id": 4,
+  "name": "Website",
+  "sequence": 700
+ },
+ {
+  "id": 3,
+  "name": "Human Resources",
+  "sequence": 800
+ }
+]

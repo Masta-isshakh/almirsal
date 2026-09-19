@@ -1,0 +1,1116 @@
+[
+ {
+  "id": 4,
+  "name": {
+   "en": "Balance Sheet",
+   "ar": "Balance Sheet"
+  },
+  "filters": [
+   "multi_company=selector",
+   "show_draft",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "line_comparison",
+   "hierarchy=optional",
+   "analytic_groupby",
+   "cash_basis"
+  ],
+  "defaultPeriod": "today",
+  "columns": [
+   "Balance:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "ASSETS",
+     "ar": "الأصول"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Current Assets",
+     "ar": "الأصول المتداولة"
+    },
+    "parent": "ASSETS",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "Bank and Cash Accounts",
+     "ar": "الحسابات البنكية والنقدية"
+    },
+    "parent": "Current Assets",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Receivables",
+     "ar": "المدينين"
+    },
+    "parent": "Current Assets",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Current Assets",
+     "ar": "الأصول المتداولة"
+    },
+    "parent": "Current Assets",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Prepayments",
+     "ar": "المدفوعات المسددة مقدمًا"
+    },
+    "parent": "Current Assets",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Fixed Assets",
+     "ar": "الأصول الثابتة"
+    },
+    "parent": "ASSETS",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "Non-current Assets",
+     "ar": "الأصول غير المتداولة"
+    },
+    "parent": "ASSETS",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "LIABILITIES",
+     "ar": "التزامات"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Current Liabilities",
+     "ar": "الالتزامات الجارية"
+    },
+    "parent": "LIABILITIES",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "Current Liabilities",
+     "ar": "الالتزامات الجارية"
+    },
+    "parent": "Current Liabilities",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Credit Card",
+     "ar": "البطاقة الائتمانية"
+    },
+    "parent": "Current Liabilities",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Payables",
+     "ar": "الدائنون"
+    },
+    "parent": "Current Liabilities",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Non-current Liabilities",
+     "ar": "الالتزامات غير الجارية"
+    },
+    "parent": "LIABILITIES",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "EQUITY (& EARNINGS)",
+     "ar": "الأسهم (والأرباح)"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Equity",
+     "ar": "رأس المال"
+    },
+    "parent": "EQUITY (& EARNINGS)",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "Earnings",
+     "ar": "الأرباح"
+    },
+    "parent": "EQUITY (& EARNINGS)",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "Current Year Unallocated Earnings",
+     "ar": "الأرباح غير المخصصة للسنة الجارية"
+    },
+    "parent": "Earnings",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Previous Years Earnings",
+     "ar": "Previous Years Earnings"
+    },
+    "parent": "Earnings",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "Other Comprehensive Income",
+     "ar": "Other Comprehensive Income"
+    },
+    "parent": "EQUITY (& EARNINGS)",
+    "level": 3
+   },
+   {
+    "name": {
+     "en": "Cumulative Translation Adjustments",
+     "ar": "تعديلات الترجمة التراكمية"
+    },
+    "parent": "Other Comprehensive Income",
+    "level": 5
+   },
+   {
+    "name": {
+     "en": "LIABILITIES + EQUITY",
+     "ar": "الالتزامات + رأس المال"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "OFF BALANCE SHEET ACCOUNTS",
+     "ar": "الحسابات خارج الميزانية العمومية"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 5,
+  "name": {
+   "en": "Cash Flow Statement",
+   "ar": "Cash Flow Statement"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "previous_month",
+  "columns": [
+   "Balance:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 6,
+  "name": {
+   "en": "Executive Summary",
+   "ar": "Executive Summary"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "hierarchy=optional",
+   "cash_basis"
+  ],
+  "defaultPeriod": "this_year",
+  "columns": [
+   "Balance:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "Cash",
+     "ar": "نقدي"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Cash received",
+     "ar": "الأرباح النقدية"
+    },
+    "parent": "Cash",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Cash spent",
+     "ar": "المبلغ المُنفَق"
+    },
+    "parent": "Cash",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Cash surplus",
+     "ar": "الفائض النقدي"
+    },
+    "parent": "Cash",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Closing bank balance",
+     "ar": "رصيد الإقفال البنكي"
+    },
+    "parent": "Cash",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Profitability",
+     "ar": "الربحية"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Revenue",
+     "ar": "الإيرادات"
+    },
+    "parent": "Profitability",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Cost of Revenue",
+     "ar": "تكاليف الإيرادات"
+    },
+    "parent": "Profitability",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Gross profit",
+     "ar": "إجمالي الربح"
+    },
+    "parent": "Profitability",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Expenses",
+     "ar": "النفقات"
+    },
+    "parent": "Profitability",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Net Profit",
+     "ar": "صافي الربح"
+    },
+    "parent": "Profitability",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Balance Sheet",
+     "ar": "الميزانية العمومية"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Receivables",
+     "ar": "المدينين"
+    },
+    "parent": "Balance Sheet",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Payables",
+     "ar": "الدائنون"
+    },
+    "parent": "Balance Sheet",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Net assets",
+     "ar": "صافي الأصول"
+    },
+    "parent": "Balance Sheet",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Performance",
+     "ar": "الأداء"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Gross profit margin (gross profit / operating income)",
+     "ar": "إجمالي هامش الربح (إجمالي الربح / الدخل التشغيلي)"
+    },
+    "parent": "Performance",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Net profit margin (net profit / revenue)",
+     "ar": "صافي هامش الربح (صافي الربح / الإيرادات)"
+    },
+    "parent": "Performance",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Return on investments (net profit / assets)",
+     "ar": "العائد على الاستثمار (صافي الربح / الأصول)"
+    },
+    "parent": "Performance",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Position",
+     "ar": "المنصب الوظيفي"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Average debtors days",
+     "ar": "متوسط أيام المدينين"
+    },
+    "parent": "Position",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Average creditors days",
+     "ar": "متوسط أيام الدائنين"
+    },
+    "parent": "Position",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Short term cash forecast",
+     "ar": "توقعات النقد قصيرة الأجل"
+    },
+    "parent": "Position",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Current assets to liabilities",
+     "ar": "نسبة الأصول المتداولة إلى الالتزامات"
+    },
+    "parent": "Position",
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 8,
+  "name": {
+   "en": "Bank Reconciliation Report (Bank Matching)",
+   "ar": "Bank Reconciliation Report (Bank Matching)"
+  },
+  "filters": [
+   "multi_company=selector",
+   "show_draft",
+   "hide_0_lines=by_default",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "today",
+  "columns": [
+   "Date:date",
+   "Label:string",
+   "Amount Currency:monetary",
+   "Currency:string",
+   "Amount:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "Balance of Bank",
+     "ar": "رصيد البنك"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Last statement balance",
+     "ar": "رصيد آخر كشف حساب"
+    },
+    "parent": "Balance of Bank",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Including Unreconciled Receipts",
+     "ar": "شاملة الإيصالات غير المسواة"
+    },
+    "parent": "Last statement balance",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Including Unreconciled Payments",
+     "ar": "شاملة المدفوعات غير المسواة"
+    },
+    "parent": "Last statement balance",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Transactions without statement",
+     "ar": "المعاملات التي ليس لها كشف حساب"
+    },
+    "parent": "Balance of Bank",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Including Unreconciled Receipts",
+     "ar": "Including Unreconciled Receipts"
+    },
+    "parent": "Transactions without statement",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Including Unreconciled Payments",
+     "ar": "Including Unreconciled Payments"
+    },
+    "parent": "Transactions without statement",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Misc. operations",
+     "ar": "العمليات المتنوعة"
+    },
+    "parent": "Balance of Bank",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Outstanding Receipts/Payments",
+     "ar": "المدفوعات/الإيصالات المستحقة"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "(+) Outstanding Receipts",
+     "ar": "(+) الإيصالات المستحقة"
+    },
+    "parent": "Outstanding Receipts/Payments",
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "(-) Outstanding Payments",
+     "ar": "(-) المدفوعات المستحقة"
+    },
+    "parent": "Outstanding Receipts/Payments",
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 9,
+  "name": {
+   "en": "Aged Receivable",
+   "ar": "Aged Receivable"
+  },
+  "filters": [
+   "multi_company=selector",
+   "show_draft",
+   "unreconciled",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "growth_comparison",
+   "account_type=receivable",
+   "partner"
+  ],
+  "defaultPeriod": "today",
+  "columns": [
+   "Invoice Date:date",
+   "Amount Currency:monetary",
+   "Currency:string",
+   "Account:string",
+   "At Date:monetary",
+   "Period 1:monetary",
+   "Period 2:monetary",
+   "Period 3:monetary",
+   "Period 4:monetary",
+   "Older:monetary",
+   "Total:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 10,
+  "name": {
+   "en": "Aged Payable",
+   "ar": "Aged Payable"
+  },
+  "filters": [
+   "multi_company=selector",
+   "show_draft",
+   "unreconciled",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "growth_comparison",
+   "account_type=payable",
+   "partner"
+  ],
+  "defaultPeriod": "today",
+  "columns": [
+   "Invoice Date:date",
+   "Amount Currency:monetary",
+   "Currency:string",
+   "Account:string",
+   "At Date:monetary",
+   "Period 1:monetary",
+   "Period 2:monetary",
+   "Period 3:monetary",
+   "Period 4:monetary",
+   "Older:monetary",
+   "Total:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 11,
+  "name": {
+   "en": "General Ledger",
+   "ar": "General Ledger"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "growth_comparison",
+   "hierarchy=optional",
+   "analytic_groupby",
+   "cash_basis"
+  ],
+  "defaultPeriod": "this_month",
+  "columns": [
+   "Date:date",
+   "Partner:string",
+   "Currency:monetary",
+   "Debit:monetary",
+   "Credit:monetary",
+   "Balance:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 13,
+  "name": {
+   "en": "EC Sales List",
+   "ar": "EC Sales List"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "hide_0_lines=optional",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "previous_month",
+  "columns": [
+   "Country Code:string",
+   "VAT Number:string",
+   "Amount:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 14,
+  "name": {
+   "en": "Partner Ledger",
+   "ar": "Partner Ledger"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unreconciled",
+   "unfold_all",
+   "growth_comparison",
+   "hierarchy=optional",
+   "account_type=both",
+   "partner"
+  ],
+  "defaultPeriod": "this_year",
+  "columns": [
+   "Journal:string",
+   "Account:string",
+   "Invoice Date:date",
+   "Due Date:date",
+   "Matching:string",
+   "Debit:monetary",
+   "Credit:monetary",
+   "Amount Currency:monetary",
+   "Balance:monetary",
+   "Residual:monetary",
+   "Residual Currency:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 17,
+  "name": {
+   "en": "Unrealized Currency Gains/Losses",
+   "ar": "Unrealized Currency Gains/Losses"
+  },
+  "filters": [
+   "multi_company=selector",
+   "show_draft",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "previous_month",
+  "columns": [
+   "Balance in Foreign Currency:monetary",
+   "Balance at Operation Rate:monetary",
+   "Balance at Current Rate:monetary",
+   "Adjustment:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 18,
+  "name": {
+   "en": "Deferred Expense Report",
+   "ar": "Deferred Expense Report"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "hierarchy=by_default",
+   "analytic_groupby"
+  ],
+  "defaultPeriod": "previous_month",
+  "columns": [
+   "Current:monetary (plus Total / Not Started / Before / Current / Later columns generated dynamically)"
+  ],
+  "lines": []
+ },
+ {
+  "id": 19,
+  "name": {
+   "en": "Deferred Revenue Report",
+   "ar": "Deferred Revenue Report"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "journals",
+   "hierarchy=by_default",
+   "analytic_groupby"
+  ],
+  "defaultPeriod": "previous_month",
+  "columns": [
+   "Current:monetary (dynamic Total/Not Started/Before/Current/Later)"
+  ],
+  "lines": []
+ },
+ {
+  "id": 20,
+  "name": {
+   "en": "Journal Report (Journal Audit)",
+   "ar": "Journal Report (Journal Audit)"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "growth_comparison"
+  ],
+  "defaultPeriod": "this_year",
+  "columns": [
+   "Documents:integer",
+   "To Review:integer",
+   "Debit:monetary",
+   "Credit:monetary",
+   "Balance:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 7,
+  "name": {
+   "en": "Profit and Loss",
+   "ar": "Profit and Loss"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "line_comparison",
+   "hierarchy=optional",
+   "budgets",
+   "analytic_groupby",
+   "cash_basis"
+  ],
+  "defaultPeriod": "this_year",
+  "columns": [
+   "Balance:monetary"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "Revenue",
+     "ar": "الإيرادات"
+    },
+    "level": 1
+   },
+   {
+    "name": {
+     "en": "Costs of Revenue",
+     "ar": "تكاليف الإيرادات"
+    },
+    "level": 1
+   },
+   {
+    "name": {
+     "en": "Gross Profit",
+     "ar": "إجمالي الربح"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Operating Expenses",
+     "ar": "نفقات التشغيل"
+    },
+    "level": 1
+   },
+   {
+    "name": {
+     "en": "Operating Income (or Loss)",
+     "ar": "الدخل التشغيلي (أو الخسائر التشغيلية)"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Other Income",
+     "ar": "دخل آخر"
+    },
+    "level": 1
+   },
+   {
+    "name": {
+     "en": "Other Expenses",
+     "ar": "النفقات الأخرى"
+    },
+    "level": 1
+   },
+   {
+    "name": {
+     "en": "Net Profit",
+     "ar": "صافي الربح"
+    },
+    "level": 0
+   },
+   {
+    "name": {
+     "en": "Allocations and Withdrawals",
+     "ar": "التخصيصات والسحوبات"
+    },
+    "level": 1
+   },
+   {
+    "name": {
+     "en": "Net Profit Left After Allocations and Withdrawals",
+     "ar": "صافي الربح المتبقي بعد المخصصات والمسحوبات"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 12,
+  "name": {
+   "en": "Trial Balance",
+   "ar": "Trial Balance"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "period_comparison",
+   "hierarchy=by_default",
+   "analytic_groupby",
+   "cash_basis"
+  ],
+  "defaultPeriod": "this_month",
+  "columns": [
+   "Initial Balance Debit/Credit",
+   "Period Debit:monetary",
+   "Credit:monetary",
+   "End Balance Debit/Credit"
+  ],
+  "lines": [
+   {
+    "name": {
+     "en": "undefined",
+     "ar": "undefined"
+    },
+    "level": 0
+   }
+  ]
+ },
+ {
+  "id": 1,
+  "name": {
+   "en": "Generic Tax report",
+   "ar": "Generic Tax report"
+  },
+  "filters": [
+   "multi_company=tax_units",
+   "date_range",
+   "show_draft",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "previous_return_period",
+  "columns": [
+   "Net:monetary",
+   "Tax:monetary"
+  ],
+  "lines": []
+ },
+ {
+  "id": 21,
+  "name": {
+   "en": "Annual Statements (Annual Report / Audit working file)",
+   "ar": "Annual Statements (Annual Report / Audit working file)"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "previous_month",
+  "columns": [],
+  "lines": []
+ },
+ {
+  "id": 22,
+  "name": {
+   "en": "Fiscal Report",
+   "ar": "Fiscal Report"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "period_comparison",
+   "growth_comparison",
+   "hierarchy=optional"
+  ],
+  "defaultPeriod": "previous_year",
+  "columns": [
+   "Base Total:monetary",
+   "Rate:percentage",
+   "Fiscal Amount:monetary"
+  ],
+  "lines": []
+ },
+ {
+  "id": 23,
+  "name": {
+   "en": "Depreciation Schedule",
+   "ar": "Depreciation Schedule"
+  },
+  "filters": [
+   "multi_company=selector",
+   "date_range",
+   "show_draft",
+   "unfold_all",
+   "hide_0_lines=optional",
+   "growth_comparison",
+   "analytic_groupby"
+  ],
+  "defaultPeriod": "previous_year",
+  "columns": [
+   "Acquisition Date:date",
+   "Method:string",
+   "Rate:string",
+   "Assets: date from, +, -, date to",
+   "Depreciation: date from, +, -, date to",
+   "Book Value:monetary"
+  ],
+  "lines": []
+ }
+]

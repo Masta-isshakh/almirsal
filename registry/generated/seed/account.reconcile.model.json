@@ -1,0 +1,18 @@
+[
+ {
+  "id": 3,
+  "name": "Internal Transfers",
+  "match_label": false,
+  "match_journal_ids": [],
+  "trigger": "manual",
+  "name_ar": "تحويلات داخلية"
+ },
+ {
+  "id": 4,
+  "name": "Bank Fees",
+  "match_label": "contains",
+  "match_journal_ids": [],
+  "trigger": "manual",
+  "name_ar": "رسوم بنكية"
+ }
+]
