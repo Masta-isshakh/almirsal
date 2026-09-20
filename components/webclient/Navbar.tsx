@@ -8,6 +8,8 @@ import type { AppEntry, SessionInfo } from './WebClient';
 import { ActivitiesMenu, MessagesMenu } from './Systray';
 import { useTheme } from './theme';
 import { ShortcutsHelp } from './Shortcuts';
+import { logout as signOutEverywhere } from '@/lib/client/auth';
+import { ChangePassword } from './ChangePassword';
 import { useUi } from './ui';
 
 /**
@@ -108,10 +110,7 @@ function UserMenu({ user }: { user: SessionInfo }) {
     await fetch('/api/auth/lang', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lang: next }) });
     window.location.reload();
   }
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/web/login';
-  }
+  const logout = () => signOutEverywhere();
 
   return (
     <Dropdown end toggle={() => (
@@ -129,6 +128,7 @@ function UserMenu({ user }: { user: SessionInfo }) {
       <button type="button" className="o_dropdown_item" onClick={() => setTheme('system')}>{preference === 'system' ? '✓ ' : ''}{t('System')}</button>
       <div className="o_dropdown_divider" />
       <Link href={`/odoo/m/res.users/${user.uid}`} className="o_dropdown_item">{t('My Preferences')}</Link>
+      <button type="button" className="o_dropdown_item" onClick={() => { let id = 0; id = ui.openDialog({ title: { en: 'Change Password', ar: 'تغيير كلمة المرور' }, size: 'sm', footer: null, body: <ChangePassword uid={user.uid} authConfig={user.authConfig ?? null} onDone={() => ui.closeDialog(id)} /> }); }}>{t('Change Password')}</button>
       <div className="o_dropdown_divider" />
       <div className="o_dropdown_header">{t('Language')}</div>
       <button type="button" className="o_dropdown_item" onClick={() => switchLang('en_US')}>{lang === 'en_US' ? '✓ ' : ''}English (US)</button>

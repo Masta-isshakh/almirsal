@@ -5608,5 +5608,14 @@
   "Register Payment": "تسجيل الدفع",
   "Create Payment": "إنشاء الدفعة",
   "Print / Save as PDF": "طباعة / حفظ PDF",
-  "Back": "رجوع"
+  "Back": "رجوع",
+  "Current password": "كلمة المرور الحالية",
+  "New password": "كلمة المرور الجديدة",
+  "Confirm new password": "تأكيد كلمة المرور الجديدة",
+  "The new password must be at least 8 characters long.": "يجب ألا تقل كلمة المرور الجديدة عن 8 أحرف.",
+  "The passwords do not match.": "كلمتا المرور غير متطابقتين.",
+  "The current password is wrong.": "كلمة المرور الحالية غير صحيحة.",
+  "Could not change the password": "تعذر تغيير كلمة المرور",
+  "Keyboard Shortcuts": "اختصارات لوحة المفاتيح",
+  "Shortcuts": "الاختصارات"
 }

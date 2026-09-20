@@ -8,6 +8,7 @@ import { useLang, useT } from '@/lib/client/i18n';
 import type { AppEntry } from './WebClient';
 import { useTheme } from './theme';
 import { useNavigation } from '@/lib/client/navigation';
+import { logout as signOutEverywhere } from '@/lib/client/auth';
 
 interface Item { id: string; kind: 'menu' | 'record' | 'command'; label: string; hint?: string; icon: string; run: () => void }
 interface SearchGroup { model: string; label: I18n; hits: [number, string][] }
@@ -87,7 +88,7 @@ export function CommandPalette({ open, onClose, apps, menuHrefs, currentModel, c
       commands.push({ id: 'cmd:theme', kind: 'command', label: theme === 'dark' ? t('Switch to light mode') : t('Switch to dark mode'), icon: theme === 'dark' ? 'fa-sun-o' : 'fa-moon-o', run: () => { setTheme(theme === 'dark' ? 'light' : 'dark'); onClose(); } });
       commands.push({ id: 'cmd:lang', kind: 'command', label: lang === 'ar_001' ? 'Switch to English' : 'التبديل إلى العربية', icon: 'fa-globe', run: async () => { await fetch('/api/auth/lang', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lang: lang === 'ar_001' ? 'en_US' : 'ar_001' }) }); window.location.reload(); } });
       commands.push({ id: 'cmd:users', kind: 'command', label: t('Users & Companies'), icon: 'fa-users', run: () => go('/odoo/users') });
-      commands.push({ id: 'cmd:logout', kind: 'command', label: t('Log out'), icon: 'fa-sign-out', run: async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/web/login'; } });
+      commands.push({ id: 'cmd:logout', kind: 'command', label: t('Log out'), icon: 'fa-sign-out', run: () => signOutEverywhere() });
       list.push(...commands.filter((command) => !text || matches(command.label)));
     }
     if (mode === 'all' || mode === 'menu') {

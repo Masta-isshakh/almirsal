@@ -32,6 +32,8 @@ export interface SessionInfo {
   login: string;
   lang: Lang;
   companyIds: number[];
+  /** Cognito client configuration (user pool, client id) when sign-in goes through Cognito. */
+  authConfig?: Record<string, unknown> | null;
 }
 
 /**

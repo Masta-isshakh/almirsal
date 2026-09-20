@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getRegistry } from '@/lib/server/registry';
-import { getRequestLang, getSessionUser } from '@/lib/server/session';
+import { clientAuthConfig, cognitoConfigured, getRequestLang, getSessionUser } from '@/lib/server/session';
 import { resolvePath, menuHref } from '@/lib/server/actions';
 import { appSlug } from '@/lib/apps';
 import { WebClient, type AppEntry } from '@/components/webclient/WebClient';
@@ -40,7 +40,7 @@ export default async function OdooPage({ params, searchParams }: PageProps) {
 
   return (
     <WebClient
-      user={{ uid: user.uid, name: user.name, login: user.login, lang, companyIds: user.companyIds }}
+      user={{ uid: user.uid, name: user.name, login: user.login, lang, companyIds: user.companyIds, authConfig: cognitoConfigured() && process.env.RODEO_LOCAL_LOGIN !== '1' ? clientAuthConfig() : null }}
       apps={apps}
       menuHrefs={menuHrefs}
       resolution={resolution}
