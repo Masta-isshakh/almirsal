@@ -98,6 +98,16 @@ export function cognitoConfigured(): boolean {
   return amplifyOutputs() !== null;
 }
 
+/**
+ * The part of amplify_outputs.json the browser needs to sign in (user pool,
+ * client id, region). Database ARNs and the like stay server-side.
+ */
+export function clientAuthConfig(): Record<string, unknown> | null {
+  const outputs = amplifyOutputs();
+  if (!outputs) return null;
+  return { version: outputs.version ?? '1', auth: outputs.auth };
+}
+
 async function cognitoEmail(): Promise<string | null> {
   const outputs = amplifyOutputs();
   if (!outputs) return null;
