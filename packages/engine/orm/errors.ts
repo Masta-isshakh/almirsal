@@ -41,7 +41,8 @@ export class OrmError extends Error {
     return ERROR_TITLES[this.kind];
   }
 
-  toJSON() {
+  /** Wire form for the RPC layer (not `toJSON`: test runners would hide the message). */
+  serialize() {
     return { kind: this.kind, title: this.title, message: this.i18n, data: this.data };
   }
 }

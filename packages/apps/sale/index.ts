@@ -87,7 +87,7 @@ export function registerSale(): void {
 
     computes: [{
       fields: ['amount_untaxed', 'amount_tax', 'amount_total', 'amount_to_invoice', 'amount_invoiced'],
-      depends: ['order_line.price_subtotal', 'order_line.price_tax', 'order_line', 'currency_id'],
+      depends: ['order_line.price_subtotal', 'order_line.price_tax', 'order_line.qty_to_invoice', 'order_line', 'currency_id'],
       compute: async (env, ids) => {
         const rows = await env.cr.query<{ order_id: number; untaxed: number; tax: number; to_invoice: number }>(
           `SELECT order_id, coalesce(sum(price_subtotal), 0)::float8 AS untaxed, coalesce(sum(price_tax), 0)::float8 AS tax,

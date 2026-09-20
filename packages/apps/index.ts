@@ -1,12 +1,22 @@
+import type { Registry } from '../engine/registry/types.js';
+import { hooksFor } from '../engine/orm/hooks.js';
 import { registerBase } from './base/index.js';
+import { registerActivities } from './base/activity.js';
+import { registerUsers } from './base/users.js';
 import { registerSale } from './sale/index.js';
+import { registerSaleInvoicing } from './sale/invoice.js';
+import { registerAccount } from './account/index.js';
 
-let registered = false;
-
-/** Register every app's model hooks once per process (J-1 phase 4 order). */
-export function registerApps(): void {
-  if (registered) return;
-  registered = true;
+/**
+ * Register every app's model hooks (J-1 phase 4 order). Idempotent per
+ * process; tests that clear the hook table can call it again.
+ */
+export function registerApps(registry: Registry): void {
+  if (hooksFor('sale.order').methods) return;
   registerBase();
+  registerUsers();
+  registerActivities();
+  registerAccount(registry);
   registerSale();
+  registerSaleInvoicing();
 }

@@ -6,6 +6,11 @@ import type { FieldDef } from '@engine/registry/types';
 import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
+import { GroupsField } from './GroupsField';
+import {
+  BadgesMany2OneField, BooleanFavoriteField, CodeField, ColorPickerField, CopyClipboardField, DateRangeField, ImageField, LinkField,
+  Many2ManyCheckboxesField, Many2OneAvatarField, PercentPieField, ProgressBarField, RemainingDaysField,
+} from './widgets';
 
 type Rec = Record<string, unknown>;
 
@@ -31,11 +36,26 @@ export function Field(props: FieldProps) {
 
   if (widget === 'priority') return <PriorityField {...props} />;
   if (widget === 'many2many_tags' || widget === 'many2many_tags_avatar') return <TagsField {...props} />;
+  if (widget === 'many2many_checkboxes') return <Many2ManyCheckboxesField {...props} />;
+  if (widget === 'res_user_group_ids') return <GroupsField {...props} />;
   if (widget === 'badge' || widget === 'label_selection') {
     return <span className="badge rounded-pill text-bg-secondary">{formatValue(field, value, { lang, record: props.record, currencies })}</span>;
   }
-  if (widget === 'image' || field.type === 'image' || field.type === 'binary') return <BinaryField {...props} />;
+  if (widget === 'image' || widget === 'contact_image' || widget === 'image_url' || field.type === 'image' || field.type === 'binary') return <ImageField {...props} />;
   if (widget === 'boolean_toggle') return <ToggleField {...props} />;
+  if (widget === 'boolean_favorite') return <BooleanFavoriteField {...props} />;
+  if (widget === 'color_picker' || widget === 'color') return <ColorPickerField {...props} />;
+  if (widget === 'progressbar') return <ProgressBarField {...props} />;
+  if (widget === 'percentpie') return <PercentPieField {...props} />;
+  if (widget.startsWith('CopyClipboard')) return <CopyClipboardField {...props} />;
+  if (widget === 'remaining_days') return <RemainingDaysField {...props} />;
+  if (widget === 'daterange') return <DateRangeField {...props} />;
+  if (widget === 'url' || widget === 'email' || widget === 'phone') return <LinkField {...props} />;
+  if (widget === 'ace' || widget === 'domain' || widget === 'code_editor' || widget === 'json') return <CodeField {...props} />;
+  if (widget === 'badges_many2one' && field.type === 'many2one') return <BadgesMany2OneField {...props} editor={<Many2OneField {...props} />} />;
+  if ((widget === 'many2one_avatar' || widget === 'many2one_avatar_user' || widget === 'many2one_avatar_employee') && field.type === 'many2one') {
+    return <Many2OneAvatarField {...props} editor={<Many2OneField {...props} />} />;
+  }
 
   switch (field.type) {
     case 'boolean': return <BooleanField {...props} />;
@@ -177,18 +197,6 @@ function PriorityField({ field, value, readonly, onChange }: FieldProps) {
       ))}
     </div>
   );
-}
-
-function BinaryField({ value, field }: FieldProps) {
-  const t = useT();
-  if (field.type === 'image' || (typeof value === 'string' && value.startsWith('data:image'))) {
-    return (
-      <div className="o_field_widget" style={{ width: 90, height: 90, border: '1px dashed var(--o-border)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--o-text-muted)' }}>
-        {value ? <img src={String(value)} alt="" style={{ maxWidth: '100%', maxHeight: '100%' }} /> : <i className="fa fa-camera fa-2x" />}
-      </div>
-    );
-  }
-  return <span className="o_field_widget o_readonly text-muted">{value ? <i className="fa fa-download" /> : t('No file')}</span>;
 }
 
 /** A-4 §6 many2one: dropdown of 8 matches, "Search More…", "Create…". */

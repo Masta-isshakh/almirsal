@@ -6,6 +6,7 @@ import { formatDateTime, formatRelativeDate } from '@engine/format/index';
 import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { avatarColor } from './Navbar';
+import { ActivityList, useScheduleActivity } from './Activities';
 import type { SessionInfo } from './WebClient';
 
 type Rec = Record<string, unknown>;
@@ -24,6 +25,8 @@ export function Chatter({ model, recordId, user }: { model: string; recordId: nu
   const [tracking, setTracking] = useState<Record<number, Tracking[]>>({});
   const [mode, setMode] = useState<'message' | 'note' | null>(null);
   const [body, setBody] = useState('');
+  const [activityVersion, setActivityVersion] = useState(0);
+  const schedule = useScheduleActivity();
 
   const load = useCallback(async () => {
     const rows = await rpc<Rec[]>('searchRead', 'mail.message', {
@@ -64,7 +67,7 @@ export function Chatter({ model, recordId, user }: { model: string; recordId: nu
       <div className="o_chatter_topbar">
         <button type="button" className={`btn ${mode === 'message' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setMode(mode === 'message' ? null : 'message')}>{t('Send message')}</button>
         <button type="button" className={`btn ${mode === 'note' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setMode(mode === 'note' ? null : 'note')}>{t('Log note')}</button>
-        <button type="button" className="btn btn-secondary" title={t('Activities')}><i className="fa fa-clock-o me-1" />{t('Activities')}</button>
+        <button type="button" className="btn btn-secondary" title={t('Activities')} onClick={() => void schedule(model, recordId, { onClose: () => { setActivityVersion((v) => v + 1); void load(); } })}><i className="fa fa-clock-o me-1" />{t('Activities')}</button>
         <span className="ms-auto text-muted small"><i className="fa fa-user-o me-1" />0</span>
       </div>
       {mode && (
@@ -76,6 +79,7 @@ export function Chatter({ model, recordId, user }: { model: string; recordId: nu
           </div>
         </div>
       )}
+      <ActivityList key={activityVersion} model={model} recordId={recordId} onChanged={() => void load()} />
       <div className="o_thread">
         {messages.map((message) => {
           const author = Array.isArray(message.author_id) ? String((message.author_id as [number, string])[1]) : user.name;

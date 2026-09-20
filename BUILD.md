@@ -177,7 +177,24 @@ unit stay unresolved.
 
 ### `packages/apps` — business modules (Part D)
 - `base`: partners (commercial entity), products (variant creation and
-  mirroring, `[CODE] Name`), users, taxes (defaults incl. a tax group).
+  mirroring, `[CODE] Name`), taxes (defaults incl. a tax group).
+- `base/users` (D-16, Settings › Users): a user creates its partner and
+  mirrors name/email/phone, default "Role / User" groups, login uniqueness,
+  `new_password` hashing, and a pluggable identity provider —
+  `lib/server/cognito.ts` provisions the Cognito account on create
+  (AdminCreateUser sends the invitation), "Send an Invitation Email" resends,
+  archive/unarchive disables/enables sign-in.
+- `base/activity` (Part G): `mail.activity` defaults from context and type
+  delay, `res_name`, chatter note on Mark Done with feedback and chained next
+  activity, `activity_state` / `activity_date_deadline` / `activity_user_id`
+  kept on the document; done activities are archived and vanish from x2many
+  reads (active_test).
+- `account` (D-3 core): journals, accounts, moves with balancing tax and
+  receivable/payable items, posting with `INV/2026/00001` / `RINV/…`
+  sequences, draft/cancel, invoice lines restricted by display type.
+- `sale/invoice`: the Create Invoice wizard (regular / down payment
+  percentage / fixed) producing real `account.move` invoices, `qty_invoiced`
+  from invoice lines, `action_view_invoice`.
 - `sale` (D-2): numbering on save, partner-driven addresses and payment
   terms, product-driven lines (description, unit, price, taxes), sections
   and notes, subtotal/tax/total with currency rounding, `qty_to_invoice` and
@@ -197,24 +214,39 @@ handlers on Amplify Hosting — no AppSync, no separate RPC Lambda.
   language switch and logout (C-1); `<html dir="rtl">` + Bootstrap RTL for
   Arabic (B-9).
 - Control panel: New, breadcrumb, search facets (default `search_default_*`,
-  text search via `filter_domain`, Filters / Group By panel), pager, view
-  switcher.
+  text search via `filter_domain`, Filters with date-period submenus /
+  Group By / Favorites saved as `ir.filters` with default + shared flags —
+  `components/webclient/search.ts`), list header buttons acting on the
+  selected rows, pager, view switcher.
 - List view: sticky sortable header, optional columns, decorations, badges,
   tags, avatars, priority stars, footer sums via `read_group`, folded group
   headers with counts and sums, sample-data empty state (B-8).
 - Kanban view (from the card summaries), form view (status bar with header
-  buttons and stage pipeline, smart buttons, groups, notebook, embedded
-  lines, save/discard with Alt+S / Alt+J, `call_button`), field widgets
-  (char, text, number, boolean, toggle, selection, radio, date, datetime,
-  many2one with autocomplete/quick-create, many2many tags, priority, image),
-  chatter (send message / log note, feed with tracking values).
+  buttons and stage pipeline, smart buttons, groups, notebook, editable
+  embedded lines with add line/section/note, product onchange and the
+  Catalog dialog, save/discard with Alt+S / Alt+J, `call_button` → action
+  runner, dialog mode for `target=new` actions with footer buttons), field
+  widgets (char, text, number, boolean, toggle, favorite star, selection,
+  radio, date, datetime, daterange, remaining days, many2one with
+  autocomplete/quick-create, avatar and badges variants, many2many tags /
+  checkboxes, `res_user_group_ids` access-rights matrix, priority, colour
+  picker, progress bar, percent pie, copy-to-clipboard, url/email/phone
+  links, image upload, code/domain editors), chatter (send message / log
+  note, feed with tracking values, activities with Schedule / Mark Done /
+  Done & Schedule Next / Edit / Cancel), systray Messages and Activities
+  panels (Late / Today / Future per document model).
 - `/api/rpc` dispatching the A-4 surface; local password sessions or Cognito.
 
 Verified over HTTP on the seeded database: login → home menu → Sales →
 create partner, product, quotation `S00001` with lines (1,000 + 200) →
 confirm → `sale`, grouped list, Arabic RTL home menu.
 
-**160 tests pass; `tsc --noEmit` is clean under `strict`.**
+Also verified: confirm → Create Invoice → `INV/2026/00001` posted with
+balanced items; Settings › Users creates a user, provisions the Cognito
+account (sandbox pool), archive disables it; activities update the order's
+`activity_state` and Mark Done logs the note.
+
+**171 tests pass; `tsc --noEmit` and `next build` are clean.**
 
 ## Next — J-1 build phases
 
@@ -239,9 +271,9 @@ J-1 fixes the order and the gate for each phase:
 5. **Cross-app flows** integration tests (D).
 6. **Polish** — empty states, shortcuts, PWA, performance, a11y, mobile.
 
-Phase 1 is complete and Phase 2 has started (ORM, list/kanban/form, Sales
-hooks). Remaining for the Phase 2 gate: editable embedded lines and the
-product catalog on the quotation form, the `sale.advance.payment.inv`
-invoice wizard with `account.move` creation, dialogs for `target=new`
-actions, search date filters and favorites, the messaging/activities systray
-panels, the remaining field widgets, and pixel-parity screenshots.
+Phase 1 is complete. Phase 2 is functionally complete (ORM, list/kanban/
+form, editable lines + catalog, invoice wizard → `account.move`, dialogs,
+search dates + favorites, systray panels, widgets, Settings › Users with
+Cognito provisioning); what remains for its gate is the pixel-parity
+screenshot pass. Next: Phase 3 (calendar/pivot/graph/activity views, the
+settings engine, PDF reports, SES mail, cron).

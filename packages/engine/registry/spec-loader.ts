@@ -988,6 +988,7 @@ const M2M_PAIRS: [string, string][] = [
   ['res.users.company_ids', 'res.company.user_ids'],
   ['account.journal.journal_group_ids', 'account.journal.group.excluded_journal_ids'],
   ['sale.order.template.line.product_document_ids', 'product.document.sale_order_template_line_ids'],
+  ['sale.order.line.invoice_lines', 'account.move.line.sale_line_ids'],
 ];
 
 function m2mTableFor(model: string, field: FieldDef): Pick<FieldDef, 'm2mTable' | 'm2mColumn1' | 'm2mColumn2'> {

@@ -6,8 +6,7 @@ import { loadSeed } from '../../engine/seed/load.js';
 import { testRegistry } from '../../engine/testing/registry.js';
 import { Environment } from '../../engine/orm/env.js';
 import { clearModelHooks } from '../../engine/orm/hooks.js';
-import { registerBase } from '../base/index.js';
-import { registerSale } from './index.js';
+import { registerApps } from '../index.js';
 
 /**
  * D-2 on top of the real seed: quotation numbering, product-driven lines,
@@ -22,8 +21,7 @@ beforeAll(async () => {
   await syncSchema(db, registry);
   await loadSeed(db, registry);
   clearModelHooks();
-  registerBase();
-  registerSale();
+  registerApps(registry);
   env = new Environment({ registry, db, uid: 2, companyIds: [1] });
 }, 240_000);
 
@@ -41,7 +39,7 @@ describe('sales', () => {
     expect(a.state).toBe('draft');
     expect(a.partner_invoice_id).toEqual([partner, 'Deco Addict']);
     expect(a.partner_shipping_id).toEqual([partner, 'Deco Addict']);
-    expect(a.user_id).toEqual([2, 'mastaisshakh@gmail.com']);
+    expect(a.user_id).toEqual([2, 'masta']);
     expect(a.display_name).toBe('S00001');
     expect(String(a.validity_date)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });

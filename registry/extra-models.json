@@ -3021,6 +3021,21 @@
         "ar": "الشركة",
         "t": "many2one",
         "rel": "res.company"
+      },
+      "image_128": {
+        "s": "Image 128",
+        "ar": "صورة 128",
+        "t": "binary"
+      },
+      "type": {
+        "s": "Product Type",
+        "ar": "نوع المنتج",
+        "t": "selection",
+        "sel": [
+          "consu=Goods ⇔ سلع",
+          "service=Service ⇔ خدمة",
+          "combo=Combo ⇔ حزمة"
+        ]
       }
     },
     "product.tag": {
@@ -4344,6 +4359,12 @@
           "suggest=Suggest Next Activity ⇔ اقتراح النشاط التالي",
           "trigger=Trigger Next Activity ⇔ تشغيل النشاط التالي"
         ]
+      },
+      "res_name": {
+        "s": "Document Name",
+        "ar": "اسم المستند",
+        "t": "char",
+        "ro": 1
       }
     },
     "res.users": {
@@ -4360,6 +4381,11 @@
       "totp_secret": {
         "s": "TOTP Secret",
         "ar": "سر TOTP",
+        "t": "char"
+      },
+      "new_password": {
+        "s": "Set Password",
+        "ar": "تعيين كلمة المرور",
         "t": "char"
       }
     },
@@ -4733,6 +4759,18 @@
         "ar": "السعر المخفض بدون ضريبة",
         "t": "monetary",
         "ro": 1
+      },
+      "untaxed_amount_to_invoice": {
+        "s": "Untaxed Amount To Invoice",
+        "ar": "المبلغ غير الشامل للضريبة المراد فوترته",
+        "t": "monetary",
+        "ro": 1
+      },
+      "untaxed_amount_invoiced": {
+        "s": "Untaxed Invoiced Amount",
+        "ar": "المبلغ المفوتر غير الشامل للضريبة",
+        "t": "monetary",
+        "ro": 1
       }
     },
     "account.move.line": {
@@ -4741,6 +4779,90 @@
         "ar": "بنود أمر البيع",
         "t": "many2many",
         "rel": "sale.order.line"
+      }
+    },
+    "account.move": {
+      "amount_tax": {
+        "s": "Tax",
+        "ar": "الضريبة",
+        "t": "monetary",
+        "ro": 1
+      },
+      "amount_untaxed_signed": {
+        "s": "Untaxed Amount Signed",
+        "ar": "المبلغ غير الشامل للضريبة",
+        "t": "monetary",
+        "ro": 1
+      },
+      "amount_total_signed": {
+        "s": "Total Signed",
+        "ar": "الإجمالي",
+        "t": "monetary",
+        "ro": 1
+      }
+    },
+    "sale.advance.payment.inv": {
+      "deduct_down_payments": {
+        "s": "Deduct down payments",
+        "ar": "خصم الدفعات المقدمة",
+        "t": "boolean"
+      },
+      "product_id": {
+        "s": "Down Payment Product",
+        "ar": "منتج الدفعة المقدمة",
+        "t": "many2one",
+        "rel": "product.product"
+      },
+      "deposit_account_id": {
+        "s": "Income Account",
+        "ar": "حساب الإيراد",
+        "t": "many2one",
+        "rel": "account.account"
+      },
+      "amount_to_invoice": {
+        "s": "Amount to invoice",
+        "ar": "المبلغ المراد فوترته",
+        "t": "monetary",
+        "ro": 1
+      },
+      "display_invoice_amount_warning": {
+        "s": "Display Invoice Amount Warning",
+        "ar": "عرض تحذير مبلغ الفاتورة",
+        "t": "boolean",
+        "ro": 1
+      }
+    },
+    "mail.activity.type": {
+      "chaining_type": {
+        "s": "Chaining Type",
+        "ar": "نوع التسلسل",
+        "t": "selection",
+        "sel": [
+          "suggest=Suggest Next Activity ⇔ اقتراح النشاط التالي",
+          "trigger=Trigger Next Activity ⇔ تشغيل النشاط التالي"
+        ]
+      }
+    },
+    "product.template": {
+      "property_account_income_id": {
+        "s": "Income Account",
+        "ar": "حساب الإيراد",
+        "t": "many2one",
+        "rel": "account.account"
+      },
+      "property_account_expense_id": {
+        "s": "Expense Account",
+        "ar": "حساب المصروف",
+        "t": "many2one",
+        "rel": "account.account"
+      }
+    },
+    "account.journal": {
+      "secure_sequence_id": {
+        "s": "Secure Sequence",
+        "ar": "التسلسل الآمن",
+        "t": "many2one",
+        "rel": "ir.sequence"
       }
     }
   }

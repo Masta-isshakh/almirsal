@@ -82,11 +82,6 @@ export function registerBase(): void {
     displayName: (_env, record) => (record.default_code ? `[${record.default_code}] ${record.name ?? ''}` : String(record.name ?? '')),
   });
 
-  registerModelHooks('res.users', {
-    displayName: (_env, record) => String(record.login ?? record.id),
-    searchFields: ['login'],
-  });
-
   registerModelHooks('res.company', {
     tracked: ['name', 'currency_id'],
   });

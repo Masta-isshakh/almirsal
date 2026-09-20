@@ -9,6 +9,8 @@ import { HomeMenu } from './HomeMenu';
 import { Navbar } from './Navbar';
 import { ActionContainer } from './ActionContainer';
 import { DialogHost, NotificationHost, UiProvider, useUi } from './ui';
+import { SessionProvider } from './session';
+import { ActionRunnerProvider } from '@/lib/client/actions';
 
 export interface AppEntry {
   id: number;
@@ -35,7 +37,11 @@ export interface SessionInfo {
 export function WebClient({ user, apps, menuHrefs, resolution }: { user: SessionInfo; apps: AppEntry[]; menuHrefs: Record<number, string>; resolution: Resolution }) {
   return (
     <UiProvider>
-      <Shell user={user} apps={apps} menuHrefs={menuHrefs} resolution={resolution} />
+      <SessionProvider user={user}>
+        <ActionRunnerProvider>
+          <Shell user={user} apps={apps} menuHrefs={menuHrefs} resolution={resolution} />
+        </ActionRunnerProvider>
+      </SessionProvider>
     </UiProvider>
   );
 }

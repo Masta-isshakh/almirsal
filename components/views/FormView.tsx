@@ -3,90 +3,142 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ButtonNode, FieldNode, FormArch, FormNode, GroupNode } from '@engine/registry/arch';
-import type { FieldDef, ViewDef, ViewType } from '@engine/registry/types';
+import type { FieldDef } from '@engine/registry/types';
+import { evaluate } from '@engine/expr/evaluate';
 import { rpc } from '@/lib/client/rpc';
-import { useLang, useT } from '@/lib/client/i18n';
+import { useT } from '@/lib/client/i18n';
+import { useActions } from '@/lib/client/actions';
 import { formFields, isInvisible, isReadonly, isRequired, makeRecordScope, specificationFor } from '@/lib/client/arch';
-import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
+import { idOf, nameOf } from '@/lib/client/display';
 import { Field } from '../fields/Field';
 import { Chatter } from '../webclient/Chatter';
 import { useUi } from '../webclient/ui';
 import type { SessionInfo } from '../webclient/WebClient';
-
-type Rec = Record<string, unknown>;
+import { EmbeddedList } from './form/EmbeddedList';
+import { hasLineChanges, rowsFromRecords, toCommands, type LineRow, type Rec } from './form/lines';
 
 interface Props {
   arch: FormArch;
   fields: Record<string, FieldDef>;
+  relatedFields?: Record<string, Record<string, FieldDef>>;
   model: string;
   recordId: number | null;
   context: Record<string, unknown>;
   user: SessionInfo;
   slug: string;
-  views: Partial<Record<ViewType, ViewDef>>;
+  /** `dialog` = wizard: no status bar/chatter, footer buttons from the arch. */
+  mode?: 'page' | 'dialog';
+  onDone?: (changed: boolean) => void;
 }
 
 /**
- * A-4 §5: always-editable form with sticky status bar (buttons + stage
- * pipeline), sheet, smart buttons, groups, notebook, embedded lines, and
- * the chatter. Saves through `web_save`; button clicks go through
- * `call_button` and reload the record.
+ * A-4 §5: always-editable form — sticky status bar (header buttons + stage
+ * pipeline), sheet, smart buttons, groups, notebook, editable x2many lines,
+ * chatter, keyboard save/discard. Saves through `web_save`; buttons run
+ * through `call_button` and the action runner.
  */
-export function FormView({ arch, fields, model, recordId, context, user, slug }: Props) {
+export function FormView({ arch, fields, relatedFields = {}, model, recordId, context, user, slug, mode = 'page', onDone }: Props) {
   const t = useT();
   const router = useRouter();
   const ui = useUi();
+  const { doAction } = useActions();
   const [record, setRecord] = useState<Rec | null>(null);
   const [changes, setChanges] = useState<Rec>({});
+  const [lines, setLines] = useState<Record<string, LineRow[]>>({});
   const [saving, setSaving] = useState(false);
   const nodes = useMemo(() => formFields(arch), [arch]);
   const names = useMemo(() => [...new Set(nodes.map((node) => node.name).filter((name) => fields[name]))], [nodes, fields]);
   const spec = useMemo(() => specificationFor(names, fields, nodes), [names, fields, nodes]);
+  const lineFields = useMemo(() => names.filter((name) => fields[name].type === 'one2many' || (fields[name].type === 'many2many' && nodes.find((node) => node.name === name)?.views?.list)), [names, fields, nodes]);
 
   const load = useCallback(async () => {
+    let loaded: Rec;
     if (recordId) {
-      const [loaded] = await rpc<Rec[]>('webRead', model, { ids: [recordId], specification: spec });
-      setRecord(loaded ?? null);
+      [loaded] = await rpc<Rec[]>('webRead', model, { ids: [recordId], specification: spec }, { context });
+      if (!loaded) { setRecord(null); return; }
     } else {
-      const defaults = await rpc<Rec>('defaultGet', model, { fields: names });
-      const initial: Rec = { id: false };
-      for (const name of names) initial[name] = defaults[name] ?? (fields[name].type === 'one2many' || fields[name].type === 'many2many' ? [] : false);
-      // Resolve many2one defaults to {id, display_name}.
+      const defaults = await rpc<Rec>('defaultGet', model, { fields: names }, { context });
+      loaded = { id: false };
+      for (const name of names) loaded[name] = defaults[name] ?? (fields[name].type === 'one2many' || fields[name].type === 'many2many' ? [] : false);
       for (const name of names) {
         const field = fields[name];
-        if (field.type === 'many2one' && typeof initial[name] === 'number') {
-          const found = await rpc<[number, string][]>('nameSearch', field.relation!, { domain: [['id', '=', initial[name]]], limit: 1 }, { silent: true }).catch(() => []);
-          initial[name] = found[0] ? { id: found[0][0], display_name: found[0][1] } : false;
+        if (field.type === 'many2one' && typeof loaded[name] === 'number') {
+          const found = await rpc<[number, string][]>('nameSearch', field.relation!, { domain: [['id', '=', loaded[name]]], limit: 1 }, { silent: true }).catch(() => []);
+          loaded[name] = found[0] ? { id: found[0][0], display_name: found[0][1] } : false;
+        }
+        if (field.type === 'many2many' && Array.isArray(loaded[name]) && Array.isArray((loaded[name] as unknown[])[0])) {
+          const ids = ((loaded[name] as unknown[])[0] as [number, number, number[]])[2] ?? [];
+          loaded[name] = ids.length ? await rpc<Rec[]>('read', field.relation!, { ids, fields: ['display_name'] }, { silent: true }).catch(() => []) : [];
         }
       }
-      setRecord(initial);
     }
+    setRecord(loaded);
     setChanges({});
-  }, [recordId, model, spec, names, fields]);
+    const next: Record<string, LineRow[]> = {};
+    for (const name of lineFields) next[name] = rowsFromRecords(loaded[name]);
+    setLines(next);
+  }, [recordId, model, spec, names, fields, context, lineFields]);
 
   useEffect(() => { load().catch(() => undefined); }, [load]);
 
-  const values = useMemo<Rec>(() => ({ ...(record ?? {}), ...changes }), [record, changes]);
+  const values = useMemo<Rec>(() => {
+    const merged: Rec = { ...(record ?? {}), ...changes };
+    for (const [name, rows] of Object.entries(lines)) merged[name] = rows.filter((row) => !row.deleted).map((row) => row.values);
+    return merged;
+  }, [record, changes, lines]);
   const scope = useMemo(() => makeRecordScope(values, { uid: user.uid, context, companyIds: user.companyIds }), [values, user, context]);
-  const dirty = Object.keys(changes).length > 0;
+  const dirty = Object.keys(changes).length > 0 || Object.values(lines).some(hasLineChanges);
 
   useEffect(() => {
+    if (mode !== 'page') return;
     const title = document.getElementById('o_breadcrumb_current');
     if (title && record) title.textContent = recordId ? String(values.display_name ?? values.name ?? '') : t('New');
-  }, [record, values, recordId, t]);
+  }, [record, values, recordId, t, mode]);
 
-  const setValue = (name: string, value: unknown) => setChanges((current) => ({ ...current, [name]: value }));
+  const setValue = async (name: string, value: unknown) => {
+    setChanges((current) => ({ ...current, [name]: value }));
+    // Server onchange rules for the changed field (partner → addresses, …).
+    try {
+      const plain: Rec = {};
+      for (const [key, current] of Object.entries({ ...values, [name]: value })) {
+        plain[key] = current && typeof current === 'object' && !Array.isArray(current) ? idOf(current) : Array.isArray(current) ? (current as unknown[]).map((item) => idOf(item) ?? item) : current;
+      }
+      const result = await rpc<{ value?: Rec; warning?: { title: string; message: string } }>('onchange', model, { values: plain, fields: [name] }, { silent: true, context });
+      if (result.warning) ui.openDialog({ title: result.warning.title, size: 'sm', body: <div>{result.warning.message}</div> });
+      if (result.value) {
+        const resolved: Rec = {};
+        for (const [key, incoming] of Object.entries(result.value)) {
+          const def = fields[key];
+          if (!def) continue;
+          if (def.type === 'many2one' && typeof incoming === 'number') {
+            const found = await rpc<[number, string][]>('nameSearch', def.relation!, { domain: [['id', '=', incoming]], limit: 1 }, { silent: true }).catch(() => []);
+            resolved[key] = found[0] ? { id: found[0][0], display_name: found[0][1] } : false;
+          } else if (def.type === 'many2one' && Array.isArray(incoming)) {
+            resolved[key] = { id: incoming[0], display_name: incoming[1] };
+          } else {
+            resolved[key] = incoming;
+          }
+        }
+        setChanges((current) => ({ ...current, ...resolved }));
+      }
+    } catch { /* onchange is advisory */ }
+  };
 
-  /** Wire values → write values (many2one objects → ids, tags → replace command). */
+  /** Wire values → write values (many2one objects → ids, tags → replace command, lines → commands). */
   const writeValues = (): Rec => {
     const out: Rec = {};
     for (const [name, value] of Object.entries(changes)) {
       const field = fields[name];
-      if (!field) continue;
+      if (!field || lineFields.includes(name)) continue;
       if (field.type === 'many2one') out[name] = idOf(value) ?? false;
       else if (field.type === 'many2many') out[name] = [[6, 0, (value as unknown[]).map((item) => idOf(item)).filter((id): id is number => id !== null)]];
       else if (field.type === 'one2many') continue;
       else out[name] = value;
+    }
+    for (const [name, rows] of Object.entries(lines)) {
+      if (!hasLineChanges(rows)) continue;
+      const comodel = fields[name].relation ?? '';
+      out[name] = toCommands(rows, relatedFields[comodel] ?? {});
     }
     return out;
   };
@@ -95,10 +147,13 @@ export function FormView({ arch, fields, model, recordId, context, user, slug }:
     if (!dirty && recordId) return recordId;
     setSaving(true);
     try {
-      const saved = await rpc<Rec>('webSave', model, { id: recordId ?? undefined, values: writeValues(), specification: spec });
+      const saved = await rpc<Rec>('webSave', model, { id: recordId ?? undefined, values: writeValues(), specification: spec }, { context });
       setRecord(saved);
       setChanges({});
-      if (!recordId) router.replace(`/odoo/${slug}/${saved.id}`);
+      const next: Record<string, LineRow[]> = {};
+      for (const name of lineFields) next[name] = rowsFromRecords(saved[name]);
+      setLines(next);
+      if (!recordId && mode === 'page') router.replace(`/odoo/${slug}/${saved.id}`);
       return saved.id as number;
     } catch {
       return null;
@@ -107,27 +162,42 @@ export function FormView({ arch, fields, model, recordId, context, user, slug }:
     }
   };
 
-  const discard = () => { if (recordId) setChanges({}); else router.push(`/odoo/${slug}`); };
+  const discard = () => {
+    if (recordId) { setChanges({}); const next: Record<string, LineRow[]> = {}; for (const name of lineFields) next[name] = rowsFromRecords(record?.[name]); setLines(next); }
+    else if (mode === 'dialog') onDone?.(false);
+    else router.push(`/odoo/${slug}`);
+  };
+
+  const buttonContext = (button: ButtonNode): Record<string, unknown> => {
+    if (!button.context) return {};
+    try { return (evaluate(button.context, scope) as Record<string, unknown>) ?? {}; } catch { return {}; }
+  };
 
   const clickButton = async (button: ButtonNode) => {
+    if (button.special === 'cancel') { onDone?.(false); return; }
     if (button.confirm && !(await ui.confirm({ message: button.confirm }))) return;
     const id = await save();
     if (!id) return;
+    const extra = buttonContext(button);
     if (button.type === 'object' && button.name) {
       try {
-        const result = await rpc<Rec | false>('callButton', model, { ids: [id], method: button.name, context });
-        if (result && typeof result === 'object' && result.type === 'ir.actions.client' && result.tag === 'display_notification') {
-          const params = (result.params ?? {}) as { title?: string; message?: string; type?: 'success' | 'warning' | 'danger' | 'info' };
-          ui.notify({ title: params.title, message: params.message ?? '', type: params.type ?? 'info' });
+        const result = await rpc<Record<string, unknown> | false>('callButton', model, { ids: [id], method: button.name, context: { ...context, ...extra } }, { context: { ...context, ...extra } });
+        if (mode === 'dialog') {
+          if (!result) { onDone?.(true); return; }
+          await doAction(result, { onClose: () => onDone?.(true) });
+          if (result && (result as Record<string, unknown>).type !== 'ir.actions.act_window' || ((result as Record<string, unknown>).target !== 'new')) onDone?.(true);
+          return;
         }
+        if (result) await doAction(result, { activeId: id, activeIds: [id], activeModel: model, onClose: () => void load() });
         await load();
       } catch { /* dialog already shown */ }
     } else if (button.type === 'action' && button.name) {
-      router.push(`/odoo/action-${button.name}?active_id=${id}`);
+      await doAction(button.name, { activeId: id, activeIds: [id], activeModel: model, context: { ...context, ...extra }, onClose: (changed) => { if (changed) void load(); } });
     }
   };
 
   useEffect(() => {
+    if (mode !== 'page') return;
     const onKey = (event: KeyboardEvent) => {
       if (event.altKey && event.key.toLowerCase() === 's') { event.preventDefault(); void save(); }
       if (event.altKey && event.key.toLowerCase() === 'j') { event.preventDefault(); discard(); }
@@ -139,8 +209,32 @@ export function FormView({ arch, fields, model, recordId, context, user, slug }:
   if (!record) return <div className="o_loading_indicator" />;
 
   const header = arch.body.find((node): node is Extract<FormNode, { kind: 'header' }> => node.kind === 'header');
-  const hasChatter = arch.body.some((node) => node.kind === 'chatter');
-  const ctx = { values, fields, scope, setValue, clickButton, readonlyAll: false };
+  const footer = findFooter(arch.body);
+  const hasChatter = mode === 'page' && arch.body.some((node) => node.kind === 'chatter');
+  const ctx: RenderCtx = { values, fields, relatedFields, scope, setValue, clickButton, lines, setLines, footer };
+
+  if (mode === 'dialog') {
+    return (
+      <div className="o_form_view o_form_dialog">
+        <div className="o_form_sheet_bg p-0">
+          <div className="o_form_sheet border-0 p-0" style={{ maxWidth: 'none' }}>
+            {arch.body.filter((node) => node.kind !== 'header' && node.kind !== 'chatter' && node !== footer).map((node, index) => <Node key={index} node={node} ctx={ctx} />)}
+          </div>
+        </div>
+        <div className="o_dialog_footer px-0 pb-0">
+          {(footer?.children.filter((node): node is ButtonNode => node.kind === 'button') ?? [{ kind: 'button', type: 'object', name: undefined, string: { en: 'Save', ar: 'حفظ' }, class: 'btn-primary', attrs: {} } as ButtonNode])
+            .filter((button) => !isInvisible(button, scope))
+            .map((button, index) => (
+              <button key={index} type="button" className={`btn ${/btn-primary|oe_highlight/.test(button.class ?? '') ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => (button.special === 'cancel' ? onDone?.(false) : button.type === 'object' && !button.name ? save().then((id) => id && onDone?.(true)) : clickButton(button))}>
+                {t(button.string ?? (button.special === 'cancel' ? 'Discard' : 'Save'))}
+              </button>
+            ))}
+          {!footer && <button type="button" className="btn btn-secondary" onClick={() => onDone?.(false)}>{t('Discard')}</button>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="o_form_view">
@@ -177,13 +271,24 @@ export function FormView({ arch, fields, model, recordId, context, user, slug }:
   );
 }
 
+function findFooter(nodes: FormNode[]): Extract<FormNode, { kind: 'element' }> | null {
+  for (const node of nodes) {
+    if (node.kind === 'element' && node.tag === 'footer') return node;
+    if ('children' in node) { const found = findFooter(node.children); if (found) return found; }
+  }
+  return null;
+}
+
 interface RenderCtx {
   values: Rec;
   fields: Record<string, FieldDef>;
+  relatedFields: Record<string, Record<string, FieldDef>>;
   scope: ReturnType<typeof makeRecordScope>;
   setValue: (name: string, value: unknown) => void;
   clickButton: (button: ButtonNode) => void;
-  readonlyAll: boolean;
+  lines: Record<string, LineRow[]>;
+  setLines: (updater: (current: Record<string, LineRow[]>) => Record<string, LineRow[]>) => void;
+  footer: FormNode | null;
 }
 
 function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
@@ -207,6 +312,7 @@ function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
       );
     }
     case 'element': {
+      if (node === ctx.footer) return null;
       if (isInvisible(node, scope)) return null;
       const classes = node.class ?? '';
       const children = <>{node.text && t(node.text)}{node.children.map((child, index) => <Node key={index} node={child} ctx={ctx} />)}</>;
@@ -220,7 +326,6 @@ function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
       if (node.tag === 'small') return <small className={classes}>{children}</small>;
       if (node.tag === 'span' || node.tag === 'a' || node.tag === 'label') return <span className={classes}>{children}</span>;
       if (node.tag === 'p') return <p className={classes}>{children}</p>;
-      if (node.tag === 'footer' || node.tag === 'link' || node.tag === 't') return <div className={classes}>{children}</div>;
       return <div className={classes}>{children}</div>;
     }
     case 'group': return <Group node={node} ctx={ctx} />;
@@ -278,12 +383,23 @@ function FieldSlot({ node, ctx, withLabel }: { node: FieldNode; ctx: RenderCtx; 
   const field = ctx.fields[node.name];
   if (!field || node.hidden) return null;
   if (isInvisible(node, ctx.scope)) return null;
-  const readonly = ctx.readonlyAll || isReadonly(node, field, ctx.scope);
+  const readonly = isReadonly(node, field, ctx.scope);
   const required = isRequired(node, field, ctx.scope);
-  const isLines = field.type === 'one2many' || (field.type === 'many2many' && node.views?.list);
-  const control = isLines
-    ? <EmbeddedList node={node} field={field} value={ctx.values[node.name]} />
-    : <Field node={node} field={field} value={ctx.values[node.name]} record={ctx.values} readonly={readonly} required={required} onChange={(value) => ctx.setValue(node.name, value)} />;
+  const embedded = node.views?.list;
+  const isLines = field.type === 'one2many' || (field.type === 'many2many' && embedded);
+  let control: ReactNode;
+  if (isLines && embedded && embedded.type === 'list' && field.relation) {
+    control = (
+      <EmbeddedList node={node} field={field} arch={embedded} comodelFields={ctx.relatedFields[field.relation] ?? {}}
+        rows={ctx.lines[node.name] ?? []} parent={ctx.values} readonly={readonly}
+        onChange={(rows) => ctx.setLines((current) => ({ ...current, [node.name]: rows }))} />
+    );
+  } else if (isLines) {
+    const rows = ctx.lines[node.name] ?? [];
+    control = <div className="o_field_widget o_readonly text-muted">{rows.filter((row) => !row.deleted).map((row) => nameOf(row.values) || String(row.id ?? '')).join(', ') || t('None')}</div>;
+  } else {
+    control = <Field node={node} field={field} value={ctx.values[node.name]} record={ctx.values} readonly={readonly} required={required} onChange={(value) => ctx.setValue(node.name, value)} />;
+  }
   if (!withLabel || node.nolabel) return isLines ? <div style={{ gridColumn: '1 / -1' }}>{control}</div> : control;
   return (
     <>
@@ -321,55 +437,6 @@ function StatusBar({ node, field, value }: { node: FieldNode; field: FieldDef | 
       {options.map((option) => (
         <button key={option.value} type="button" className={`o_arrow_button ${option.value === value ? 'o_arrow_button_current' : ''}`}><span>{t(option.label)}</span></button>
       ))}
-    </div>
-  );
-}
-
-/** Embedded one2many/many2many list (read-only lines for now). */
-function EmbeddedList({ node, field, value }: { node: FieldNode; field: FieldDef; value: unknown }) {
-  const t = useT();
-  const lang = useLang();
-  const currencies = useCurrencies();
-  const embedded = node.views?.list;
-  const rows = Array.isArray(value) ? (value as Rec[]) : [];
-  const columns = embedded && embedded.type === 'list'
-    ? embedded.columns.filter((column): column is FieldNode => column.kind === 'field' && !column.hidden && column.columnInvisible !== true && column.optional !== 'hide' && column.widget !== 'handle')
-    : [];
-  if (!embedded || columns.length === 0) {
-    return <div className="o_field_widget o_readonly text-muted">{rows.map((row) => nameOf(row) || String(row.id)).join(', ') || t('None')}</div>;
-  }
-  const isSection = (row: Rec) => typeof row.display_type === 'string' && row.display_type.startsWith('line_');
-  const listArch = embedded.type === 'list' ? embedded : null;
-  const controls = listArch?.control.filter((c): c is Extract<FormNode, { kind: 'create' }> => c.kind === 'create') ?? [];
-  const addLinks = controls.length ? controls : [{ kind: 'create' as const, string: { en: 'Add a line', ar: 'إضافة بند' } }];
-  return (
-    <div className="o_embedded_list">
-      <table className="o_list_table">
-        <thead><tr>{columns.map((column) => <th key={column.name}>{t(column.string ?? column.name)}</th>)}</tr></thead>
-        <tbody>
-          {rows.map((row) => (
-            isSection(row)
-              ? <tr key={String(row.id)}><td colSpan={columns.length} className={row.display_type === 'line_note' ? 'fst-italic text-muted' : 'fw-bold'}>{String(row.name ?? '')}</td></tr>
-              : (
-                <tr key={String(row.id)}>
-                  {columns.map((column) => {
-                    const cell = row[column.name];
-                    const text = Array.isArray(cell) && cell.length === 2 && typeof cell[1] === 'string' ? cell[1]
-                      : typeof cell === 'number' ? (column.widget === 'monetary' ? formatValue({ ...field, type: 'monetary', name: column.name, label: field.label }, cell, { lang, record: row, currencies }) : String(cell))
-                      : cell === false || cell == null ? '' : String(cell);
-                    return <td key={column.name} className={typeof cell === 'number' ? 'o_list_number' : ''}>{text}</td>;
-                  })}
-                </tr>
-              )
-          ))}
-          {rows.length === 0 && <tr><td colSpan={columns.length} className="text-muted">{t('No lines')}</td></tr>}
-        </tbody>
-      </table>
-      <div className="o_list_add">
-        {addLinks.map((control, index) => (
-          <a key={index} href="#add" onClick={(event) => event.preventDefault()}>{t(control.string)}</a>
-        ))}
-      </div>
     </div>
   );
 }

@@ -15,7 +15,8 @@ export interface DialogSpec {
   title: I18n | string;
   body: ReactNode;
   size?: 'sm' | 'md' | 'lg';
-  footer?: ReactNode;
+  /** `undefined` = default Ok footer; `null` = the body renders its own. */
+  footer?: ReactNode | null;
   onClose?: () => void;
 }
 
@@ -150,7 +151,7 @@ export function DialogHost() {
               <button type="button" className="btn-close" aria-label="Close" onClick={() => closeDialog(dialog.id)} />
             </div>
             <div className="o_dialog_body">{dialog.body}</div>
-            {dialog.footer !== undefined ? (
+            {dialog.footer === null ? null : dialog.footer !== undefined ? (
               <div className="o_dialog_footer">{dialog.footer}</div>
             ) : (
               <div className="o_dialog_footer">

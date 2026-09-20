@@ -66,6 +66,15 @@ const computeRole = new iam.Role(dbStack, 'ComputeRole', {
   managedPolicies: [dataApiPolicy],
 });
 
+// Settings › Users provisions accounts in the pool (invite, disable, reset).
+computeRole.addToPolicy(new iam.PolicyStatement({
+  actions: [
+    'cognito-idp:AdminCreateUser', 'cognito-idp:AdminGetUser', 'cognito-idp:AdminEnableUser', 'cognito-idp:AdminDisableUser',
+    'cognito-idp:AdminSetUserPassword', 'cognito-idp:AdminResetUserPassword', 'cognito-idp:AdminDeleteUser',
+  ],
+  resources: [backend.auth.resources.userPool.userPoolArn],
+}));
+
 /**
  * Database initialisation at deploy time (A-6 "seed on first deploy"): the
  * migrate function runs once the cluster exists and again whenever its code

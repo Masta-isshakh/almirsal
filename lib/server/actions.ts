@@ -1,4 +1,5 @@
 import type { ActionDef, FieldDef, MenuDef, ViewDef, ViewType } from '@engine/registry/types';
+import type { FormNode } from '@engine/registry/arch';
 import { getRegistry } from './registry';
 
 /**
@@ -27,6 +28,8 @@ export interface ResolvedAction {
   views: Partial<Record<ViewType, ViewDef>>;
   searchView: ViewDef | null;
   fields: Record<string, FieldDef>;
+  /** Field definitions of the comodels shown in embedded x2many views. */
+  relatedFields: Record<string, Record<string, FieldDef>>;
   /** Public URL slug for this action. */
   slug: string;
 }
@@ -80,6 +83,52 @@ export function menuHref(menu: MenuDef): string {
   return action ? `/odoo/${actionSlug(action)}` : '/odoo';
 }
 
+/** Comodels referenced by x2many fields of the model's views, with their fields. */
+export function relatedFieldsFor(model: string, views: Partial<Record<ViewType, ViewDef>>): Record<string, Record<string, FieldDef>> {
+  const registry = getRegistry();
+  const def = registry.models[model];
+  const out: Record<string, Record<string, FieldDef>> = {};
+  if (!def) return out;
+  const visit = (nodes: FormNode[]): void => {
+    for (const node of nodes) {
+      if (node.kind === 'field') {
+        const field = def.fields[node.name];
+        if (field && (field.type === 'one2many' || field.type === 'many2many') && field.relation && registry.models[field.relation]) {
+          out[field.relation] = registry.models[field.relation].fields;
+        }
+      }
+      if ('children' in node) visit(node.children);
+      if (node.kind === 'notebook') visit(node.pages);
+    }
+  };
+  for (const view of Object.values(views)) {
+    if (view?.arch.type === 'form') visit(view.arch.body);
+    if (view?.arch.type === 'list') visit(view.arch.columns);
+  }
+  return out;
+}
+
+/**
+ * Best registry action for opening records of a model when a method returns
+ * an ad-hoc `act_window` (no action id): prefer one with a URL slug whose
+ * context matches (e.g. `default_move_type`).
+ */
+export function findActionForModel(model: string, context: Record<string, unknown> = {}): ActionDef | null {
+  const registry = getRegistry();
+  const candidates = Object.values(registry.actions).filter((action) => action.type === 'act_window' && action.model === model);
+  if (candidates.length === 0) return null;
+  const score = (action: ActionDef): number => {
+    let points = action.path ? 10 : 0;
+    if (action.target === 'current') points += 2;
+    for (const [key, value] of Object.entries(context)) {
+      if (key.startsWith('default_') && action.context?.includes(`'${key}': '${String(value)}'`)) points += 5;
+    }
+    if (!action.secondary) points += 1;
+    return points;
+  };
+  return [...candidates].sort((a, b) => score(b) - score(a))[0];
+}
+
 export function viewsForAction(action: ActionDef): { views: Partial<Record<ViewType, ViewDef>>; searchView: ViewDef | null } {
   const registry = getRegistry();
   const views: Partial<Record<ViewType, ViewDef>> = {};
@@ -100,11 +149,28 @@ export function viewsForAction(action: ActionDef): { views: Partial<Record<ViewT
   return { views, searchView };
 }
 
+/** Synthetic action for a model that no registry action exposes at a URL. */
+function syntheticAction(model: string): ActionDef | undefined {
+  const registry = getRegistry();
+  const def = registry.models[model];
+  if (!def) return undefined;
+  return {
+    id: `m:${model}`, xmlId: `synthetic.${model}`, type: 'act_window', name: def.description, model,
+    viewMode: ['list', 'form'], views: [], domain: false, context: '{}', target: 'current', path: `m/${model}`,
+  };
+}
+
 export function resolvePath(segments: string[], searchParams: Record<string, string | string[] | undefined>): Resolution {
   if (segments.length === 0) return { kind: 'home' };
 
-  const action = findAction(segments[0]);
+  let rest = segments.slice(1);
+  let action = findAction(segments[0]);
+  if (!action && segments[0] === 'm' && segments[1]) {
+    action = syntheticAction(segments[1]);
+    rest = segments.slice(2);
+  }
   if (!action) return { kind: 'notfound', path: segments.join('/') };
+  const segmentsAfter = rest;
 
   const bound = menuForAction(action.id);
   const { views, searchView } = viewsForAction(action);
@@ -112,8 +178,8 @@ export function resolvePath(segments: string[], searchParams: Record<string, str
 
   let recordId: number | null = null;
   let isNew = false;
-  if (segments[1] === 'new') isNew = true;
-  else if (segments[1] && /^\d+$/.test(segments[1])) recordId = Number(segments[1]);
+  if (segmentsAfter[0] === 'new') isNew = true;
+  else if (segmentsAfter[0] && /^\d+$/.test(segmentsAfter[0])) recordId = Number(segmentsAfter[0]);
 
   const requested = typeof searchParams.view_type === 'string' ? (searchParams.view_type as ViewType) : undefined;
   const viewMode = action.viewMode ?? ['list', 'form'];
@@ -131,8 +197,35 @@ export function resolvePath(segments: string[], searchParams: Record<string, str
     views,
     searchView,
     fields: action.model ? registry.models[action.model]?.fields ?? {} : {},
+    relatedFields: action.model ? relatedFieldsFor(action.model, views) : {},
     slug: actionSlug(action),
   };
+}
+
+/** Everything the client needs to render an action in a dialog or page. */
+export function describeAction(action: ActionDef) {
+  const registry = getRegistry();
+  const { views, searchView } = viewsForAction(action);
+  return {
+    action,
+    views,
+    searchView,
+    fields: action.model ? registry.models[action.model]?.fields ?? {} : {},
+    relatedFields: action.model ? relatedFieldsFor(action.model, views) : {},
+    slug: actionSlug(action),
+  };
+}
+
+/** Views for a model without a registry action (ad-hoc act_window results). */
+export function describeModel(model: string, viewTypes: ViewType[]) {
+  const registry = getRegistry();
+  const views: Partial<Record<ViewType, ViewDef>> = {};
+  for (const type of viewTypes) {
+    const view = Object.values(registry.views).find((candidate) => candidate.model === model && candidate.type === type);
+    if (view) views[type] = view;
+  }
+  const searchView = Object.values(registry.views).find((view) => view.model === model && view.type === 'search') ?? null;
+  return { views, searchView, fields: registry.models[model]?.fields ?? {}, relatedFields: relatedFieldsFor(model, views) };
 }
 
 export { ROOT_SLUGS };

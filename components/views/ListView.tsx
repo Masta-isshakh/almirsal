@@ -24,6 +24,7 @@ interface Props {
   limit: number;
   onTotal: (total: number) => void;
   onOpen: (id: number) => void;
+  onSelect?: (ids: number[]) => void;
   user: SessionInfo;
   context: Record<string, unknown>;
   help?: I18n;
@@ -35,7 +36,7 @@ interface Props {
  * sums (folded until clicked), sample-data empty state.
  */
 export function ListView(props: Props) {
-  const { arch, fields, model, domain, groupBy, offset, limit, onTotal, onOpen, user, context, help } = props;
+  const { arch, fields, model, domain, groupBy, offset, limit, onTotal, onOpen, onSelect, user, context, help } = props;
   const t = useT();
   const lang = useLang();
   const currencies = useCurrencies();
@@ -46,6 +47,9 @@ export function ListView(props: Props) {
   const [expanded, setExpanded] = useState<Record<string, Rec[]>>({});
   const [totals, setTotals] = useState<Rec | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const select = (next: Set<number>) => { setSelected(next); onSelect?.([...next]); };
+  const toggleSelected = (id: number) => { const next = new Set(selected); if (next.has(id)) next.delete(id); else next.add(id); select(next); };
 
   const columns = useMemo(() => listColumns(arch, optional), [arch, optional]);
   const optionalColumns = arch.columns.filter((c): c is FieldNode => c.kind === 'field' && !c.hidden && Boolean(c.optional));
@@ -70,6 +74,7 @@ export function ListView(props: Props) {
         if (cancelled) return;
         setRecords(result.records);
         setGroups(null);
+        select(new Set());
         onTotal(result.length);
         if (sumColumns.length && result.length) {
           const agg = await rpc<ReadGroupRow[]>('readGroup', model, { domain, fields: sumColumns.map((c) => `${c.name}:${c.avg ? 'avg' : 'sum'}`), groupby: [] });
@@ -103,7 +108,7 @@ export function ListView(props: Props) {
     const rowClass = decorationClasses(arch.decorations, scope);
     return (
       <tr key={record.id as number} className={rowClass} onClick={() => onOpen(record.id as number)}>
-        <td className="o_list_record_selector" onClick={(event) => event.stopPropagation()}><input type="checkbox" className="form-check-input" /></td>
+        <td className="o_list_record_selector" onClick={(event) => event.stopPropagation()}><input type="checkbox" className="form-check-input" checked={selected.has(record.id as number)} onChange={() => toggleSelected(record.id as number)} /></td>
         {columns.map((column) => <Cell key={column.name} column={column} field={fields[column.name]} record={record} scope={scope} />)}
         <td />
       </tr>
@@ -116,7 +121,8 @@ export function ListView(props: Props) {
       <table className={`o_list_table ${isEmpty && arch.sample ? 'o_sample_data' : ''}`}>
         <thead>
           <tr>
-            <th className="o_list_record_selector"><input type="checkbox" className="form-check-input" aria-label="Select all" /></th>
+            <th className="o_list_record_selector"><input type="checkbox" className="form-check-input" aria-label="Select all" checked={Boolean(records?.length) && selected.size === records?.length}
+              onChange={() => select(records && selected.size !== records.length ? new Set(records.map((r) => r.id as number)) : new Set())} /></th>
             {columns.map((column) => {
               const field = fields[column.name];
               const numeric = field && ['integer', 'float', 'monetary'].includes(field.type);

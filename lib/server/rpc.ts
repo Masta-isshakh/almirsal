@@ -5,6 +5,8 @@ import type { Values } from '@engine/orm/hooks';
 import type { ReadSpecification, SearchOptions } from '@engine/orm/model';
 import type { ReadGroupOptions } from '@engine/orm/read-group';
 import { getRegistry } from './registry';
+import { describeAction, describeModel, findActionForModel } from './actions';
+import type { ViewType } from '@engine/registry/types';
 import { postMessage } from '@engine/orm/mail';
 
 /**
@@ -18,6 +20,8 @@ export interface RpcRequest {
   method: string;
   model?: string;
   params?: Record<string, unknown>;
+  /** Evaluation context for this call (`default_*`, `active_id`, …). */
+  context?: Record<string, unknown>;
 }
 
 type Handler = (env: Environment, model: string, params: Record<string, unknown>) => Promise<unknown>;
@@ -108,7 +112,15 @@ const HANDLERS: Record<string, Handler> = {
     const key = String(p.id ?? p.path ?? '');
     const action = registry.actions[key] ?? Object.values(registry.actions).find((a) => a.path === key || a.xmlId === key);
     if (!action) throw new UserError({ en: `Unknown action ${key}`, ar: `إجراء غير معروف ${key}` });
-    return action;
+    return describeAction(action);
+  },
+  /** Views + fields for a model when a method returned an ad-hoc act_window. */
+  async loadModelViews(env, model, p) {
+    return describeModel(model, ((p.viewTypes as ViewType[]) ?? ['list', 'form']));
+  },
+  async findAction(env, model, p) {
+    const action = findActionForModel(model, (p.context as Record<string, unknown>) ?? {});
+    return action ? describeAction(action) : null;
   },
   async getViews(env, model, p) {
     const registry = getRegistry();
@@ -131,11 +143,12 @@ export async function dispatch(env: Environment, request: RpcRequest): Promise<u
   if (!handler) throw new UserError({ en: `Unknown RPC method ${request.method}`, ar: `دالة RPC غير معروفة ${request.method}` });
   const model = request.model ?? '';
   if (model && !getRegistry().models[model]) throw new UserError({ en: `Unknown model ${model}`, ar: `نموذج غير معروف ${model}` });
-  return handler(env, model, request.params ?? {});
+  const scoped = request.context && Object.keys(request.context).length ? env.with({ context: request.context }) : env;
+  return handler(scoped, model, request.params ?? {});
 }
 
 export function serializeError(error: unknown): { kind: string; title: unknown; message: unknown; data?: unknown; debug?: string } {
-  if (error instanceof OrmError) return error.toJSON();
+  if (error instanceof OrmError) return error.serialize();
   const message = error instanceof Error ? error.message : String(error);
   return {
     kind: 'server_error',

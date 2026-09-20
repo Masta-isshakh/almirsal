@@ -267,3 +267,18 @@
 .o_hidden { display: none !important; }
 .o_text_muted { color: var(--o-text-muted); }
 .o_row { display: flex; gap: 8px; align-items: center; }
+
+/* Systray panels and activities (C-1 / Part G) */
+.o_systray_badge { position: absolute; top: 4px; inset-inline-end: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--o-color-1); color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; }
+.o_systray_item.active { background: var(--o-gray-200); }
+.o_systray_panel .o_dropdown_item { white-space: normal; }
+.o_activity_app_icon { width: 32px; height: 32px; border-radius: 6px; background: var(--o-gray-200); display: inline-flex; align-items: center; justify-content: center; color: var(--o-brand-primary); flex: 0 0 auto; }
+.o_activity_list { padding: 8px 0; border-bottom: 1px solid var(--o-border); }
+.o_activity { display: flex; gap: 12px; padding: 8px 16px; }
+.o_activity_icon { width: 32px; height: 32px; border-radius: 50%; background: var(--o-gray-200); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.o_activity_overdue .o_activity_icon { background: #f8d7da; color: #842029; }
+.o_activity_today .o_activity_icon { background: #fff3cd; color: #664d03; }
+.o_activity_planned .o_activity_icon { background: #d1e7dd; color: #0f5132; }
+.o_activity_actions a { text-decoration: none; }
+.o_user_groups .o_horizontal_separator { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--o-brand-primary); border-bottom: 1px solid var(--o-border); padding-bottom: 4px; }
+.d-contents { display: contents; }

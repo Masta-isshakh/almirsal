@@ -5,6 +5,8 @@ import { syncSchema } from '@engine/schema/ddl';
 import { loadSeed } from '@engine/seed/load';
 import { getRegistry } from './registry';
 import { registerApps } from '@/packages/apps/index';
+import { setIdentityProvider } from '@/packages/apps/base/users';
+import { cognitoIdentityProvider } from './cognito';
 
 /**
  * Picks the database for this deployment, cheapest option first:
@@ -49,8 +51,10 @@ function auroraConfig(): AuroraConfig | null {
 }
 
 async function connect(): Promise<Database> {
-  registerApps();
   const registry = getRegistry();
+  registerApps(registry);
+  // Settings › Users provisions Cognito accounts when a user pool is configured.
+  setIdentityProvider(cognitoIdentityProvider());
   let db: Database;
 
   const aurora = auroraConfig();

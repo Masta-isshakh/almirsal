@@ -218,7 +218,9 @@ export class Model {
     for (const field of x2many) await this.readX2Many(records, field);
     await this.resolveMany2One(records, scalar.filter((field) => field.type === 'many2one'));
     if (wantDisplay) {
-      const displayNames = await this.displayNames(records.map((record) => record.id as number), records);
+      // A custom display name may need columns outside the requested set; re-read then.
+      const preloaded = hooksFor(this.name).displayName && !this.storedFields().every((field) => field.name in (records[0] ?? {})) ? undefined : records;
+      const displayNames = await this.displayNames(records.map((record) => record.id as number), preloaded);
       for (const record of records) record.display_name = displayNames.get(record.id as number) ?? '';
     }
     return records;
@@ -231,11 +233,22 @@ export class Model {
 
     if (field.type === 'one2many' && comodel && field.inverse) {
       const co = this.env.model(comodel.name);
+      // A one2many may carry a domain (Odoo's invoice_line_ids = line_ids
+      // restricted to product lines); registered as a Domain by app hooks.
+      const params: unknown[] = field.inverse === 'res_id' ? [ids, this.name] : [ids];
+      let extra = '';
+      if (Array.isArray(field.domain) && field.domain.length) {
+        const compiled = co.compileDomain(field.domain as Domain, 't', params.length);
+        extra = ` AND (${compiled.text})`;
+        params.push(...compiled.params);
+      }
+      // Odoo applies active_test on x2many reads: archived children (done activities) disappear.
+      if (comodel.fields.active && this.env.context.active_test !== false) extra += ` AND coalesce(t."active", true)`;
       const rows = await this.env.cr.query<{ id: number; parent: number }>(
         `SELECT t."id", t.${quoteIdent(field.inverse)} AS parent FROM ${quoteIdent(comodel.table)} t
-         WHERE t.${quoteIdent(field.inverse)} = ANY($1)${field.inverse === 'res_id' ? ` AND t."res_model" = $2` : ''}
+         WHERE t.${quoteIdent(field.inverse)} = ANY($1)${field.inverse === 'res_id' ? ` AND t."res_model" = $2` : ''}${extra}
          ORDER BY ${co.orderClause(undefined, 't')}`,
-        field.inverse === 'res_id' ? [ids, this.name] : [ids],
+        params,
       );
       for (const row of rows.rows) map.get(Number(row.parent))?.push(Number(row.id));
     } else if (field.type === 'many2many' && field.m2mTable && field.m2mColumn1 && field.m2mColumn2) {
@@ -782,9 +795,17 @@ export class Model {
     return out;
   }
 
-  private async triggerDependents(ids: number[], changed: string[]): Promise<void> {
+  /**
+   * Recompute dependents and keep propagating: a line's invoiced quantity
+   * changes the order's invoice status, which may change something else.
+   * Depth-limited so a cyclic declaration cannot loop forever.
+   */
+  private async triggerDependents(ids: number[], changed: string[], depth = 0): Promise<void> {
+    if (depth > 6) return;
     for (const [model, parentIds, fields] of await this.dependentParents(ids, changed)) {
-      await this.env.model(model).recompute(parentIds, fields, false);
+      const parent = this.env.model(model);
+      const touched = await parent.recompute(parentIds, fields, false);
+      if (touched.length) await parent.triggerDependents(parentIds, [...fields, ...touched], depth + 1);
     }
   }
 

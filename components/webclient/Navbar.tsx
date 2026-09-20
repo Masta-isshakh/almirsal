@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { MenuDef } from '@engine/registry/types';
 import { useLang, useT } from '@/lib/client/i18n';
 import type { AppEntry, SessionInfo } from './WebClient';
+import { ActivitiesMenu, MessagesMenu } from './Systray';
 
 /**
  * C-1: 46px white navbar — app icon (opens the home menu), app name, the
@@ -34,8 +35,8 @@ export function Navbar({ user, apps, currentApp, homeOpen, onToggleHome, menuHre
         </>
       )}
       <div className="o_menu_systray">
-        <button type="button" className="o_systray_item" title={t('Messages')}><i className="fa fa-comments fa-lg" /></button>
-        <button type="button" className="o_systray_item" title={t('Activities')}><i className="fa fa-clock-o fa-lg" /></button>
+        <MessagesMenu />
+        <ActivitiesMenu user={user} />
         <UserMenu user={user} />
       </div>
     </nav>
@@ -116,7 +117,7 @@ function UserMenu({ user }: { user: SessionInfo }) {
       <a className="o_dropdown_item" href="https://www.odoo.com/documentation/19.0/" target="_blank" rel="noreferrer">{t('Documentation')}</a>
       <button type="button" className="o_dropdown_item">{t('Shortcuts')} <span className="text-muted small ms-2">CTRL+K</span></button>
       <div className="o_dropdown_divider" />
-      <button type="button" className="o_dropdown_item">{t('My Preferences')}</button>
+      <Link href={`/odoo/m/res.users/${user.uid}`} className="o_dropdown_item">{t('My Preferences')}</Link>
       <div className="o_dropdown_divider" />
       <div className="o_dropdown_header">{t('Language')}</div>
       <button type="button" className="o_dropdown_item" onClick={() => switchLang('en_US')}>{lang === 'en_US' ? '✓ ' : ''}English (US)</button>
