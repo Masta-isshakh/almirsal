@@ -213,7 +213,11 @@ class Compiler {
       }
       const comodel = this.comodel(field);
       const invAlias = this.nextAlias(comodel.table);
-      return `${alias}.${quoteIdent('id')} IN (SELECT ${invAlias}.${quoteIdent(field.inverse)} FROM ${quoteIdent(comodel.table)} AS ${invAlias} WHERE ${invAlias}.${quoteIdent('id')} IN (${innerIdSelect}) AND ${invAlias}.${quoteIdent(field.inverse)} IS NOT NULL)`;
+      // Polymorphic inverses (activities, messages: res_model + res_id) are
+      // scoped to this model; archived children do not count, as on read.
+      const polymorphic = field.inverse === 'res_id' && comodel.fields.res_model ? ` AND ${invAlias}."res_model" = '${model.name.replace(/'/g, "''")}'` : '';
+      const active = comodel.fields.active ? ` AND coalesce(${invAlias}."active", true)` : '';
+      return `${alias}.${quoteIdent('id')} IN (SELECT ${invAlias}.${quoteIdent(field.inverse)} FROM ${quoteIdent(comodel.table)} AS ${invAlias} WHERE ${invAlias}.${quoteIdent('id')} IN (${innerIdSelect}) AND ${invAlias}.${quoteIdent(field.inverse)} IS NOT NULL${polymorphic}${active})`;
     }
 
     if (field.type === 'many2many') {
@@ -296,6 +300,17 @@ class Compiler {
     return this.wrapRelation(field, model, alias, cte);
   }
 
+  /**
+   * The Data API sends every bind parameter as text; Postgres will not
+   * compare a date/timestamp column to text, so temporal parameters are
+   * cast explicitly (PGlite and node-postgres infer, the cast is harmless).
+   */
+  private typed(placeholder: string, fieldType: string, array = false): string {
+    if (fieldType === 'date') return `${placeholder}::${array ? 'date[]' : 'date'}`;
+    if (fieldType === 'datetime') return `${placeholder}::${array ? 'timestamp[]' : 'timestamp'}`;
+    return placeholder;
+  }
+
   private scalarCondition(
     column: string,
     op: string,
@@ -313,7 +328,7 @@ class Compiler {
           return `${column} IS NULL`;
         }
         if (value === true && fieldType === 'boolean') return `${column} = TRUE`;
-        return `${column} = ${this.placeholder(this.coerce(value, fieldType))}`;
+        return `${column} = ${this.typed(this.placeholder(this.coerce(value, fieldType)), fieldType)}`;
       }
 
       case '!=': {
@@ -325,7 +340,7 @@ class Compiler {
       case '>=':
       case '<':
       case '<=':
-        return `${column} ${op} ${this.placeholder(this.coerce(value, fieldType))}`;
+        return `${column} ${op} ${this.typed(this.placeholder(this.coerce(value, fieldType)), fieldType)}`;
 
       case 'in':
       case 'not in': {
@@ -336,7 +351,7 @@ class Compiler {
 
         const parts: string[] = [];
         if (concrete.length > 0) {
-          parts.push(`${column} = ANY(${this.placeholder(concrete.map((item) => this.coerce(item, fieldType)))})`);
+          parts.push(`${column} = ANY(${this.typed(this.placeholder(concrete.map((item) => this.coerce(item, fieldType))), fieldType, true)})`);
         }
         if (hasEmpty) {
           parts.push(this.scalarCondition(column, '=', false, fieldType));

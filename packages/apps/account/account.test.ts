@@ -147,3 +147,46 @@ describe('invoicing', () => {
     expect(lines.some((line) => line.is_downpayment && line.price_unit === 300 && line.product_uom_qty === 0)).toBe(true);
   });
 });
+
+describe('payments', () => {
+  it('registers a partial then a final payment: numbered payments, balanced entries, residual and status', async () => {
+    const order = await confirmedOrder(2); // 2 × 100 + 10% tax = 220
+    const wizardEnv = env.with({ context: { active_ids: [order], active_id: order, active_model: 'sale.order' } });
+    const wizard = await wizardEnv.model('sale.advance.payment.inv').create({ advance_payment_method: 'delivered' });
+    const action = await wizardEnv.model('sale.advance.payment.inv').callButton(wizard, 'create_invoices') as { res_id: number };
+    const invoices = env.model('account.move');
+    await invoices.callButton(action.res_id, 'action_post');
+    let [invoice] = await invoices.read(action.res_id, ['amount_total', 'amount_residual', 'payment_state']);
+    expect(invoice).toMatchObject({ amount_total: 220, amount_residual: 220, payment_state: 'not_paid' });
+
+    const payCtx = env.with({ context: { active_model: 'account.move', active_ids: [action.res_id], active_id: action.res_id } });
+    const register = payCtx.model('account.payment.register');
+    const defaults = await register.defaultGet();
+    expect(defaults.amount).toBe(220);
+    expect(defaults.payment_type).toBe('inbound');
+    expect(defaults.partner_type).toBe('customer');
+    expect(typeof defaults.journal_id).toBe('number');
+
+    const first = await register.create({ ...defaults, amount: 100 });
+    const result = await register.callButton(first, 'action_create_payments', { active_ids: [action.res_id] });
+    expect(result).toEqual({ type: 'ir.actions.act_window_close' });
+    [invoice] = await invoices.read(action.res_id, ['amount_residual', 'payment_state']);
+    expect(invoice).toMatchObject({ amount_residual: 120, payment_state: 'partial' });
+
+    const payments = await env.model('account.payment').searchRead([['reconciled_invoice_ids', 'in', [action.res_id]]], ['name', 'amount', 'state', 'move_id']);
+    expect(payments).toHaveLength(1);
+    expect(payments[0].name).toMatch(/^PBNK1\/\d{4}\/00001$/);
+    expect(payments[0].state).toBe('paid');
+    const entryId = Array.isArray(payments[0].move_id) ? payments[0].move_id[0] : 0;
+    const items = await env.model('account.move.line').searchRead([['move_id', '=', entryId]], ['debit', 'credit']);
+    expect(items.reduce((sum, item) => sum + Number(item.debit), 0)).toBe(100);
+    expect(items.reduce((sum, item) => sum + Number(item.credit), 0)).toBe(100);
+
+    const second = await register.create({ ...(await register.defaultGet()) });
+    await register.callButton(second, 'action_create_payments', { active_ids: [action.res_id] });
+    [invoice] = await invoices.read(action.res_id, ['amount_residual', 'payment_state']);
+    expect(invoice).toMatchObject({ amount_residual: 0, payment_state: 'paid' });
+    await expect(invoices.callButton(action.res_id, 'button_draft')).rejects.toMatchObject({ kind: 'user_error' });
+    await expect(payCtx.model('account.payment.register').defaultGet()).rejects.toMatchObject({ kind: 'user_error' });
+  });
+});

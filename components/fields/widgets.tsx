@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PyDate } from '@engine/expr/pydate';
 import { daysUntil, formatDate } from '@engine/format/index';
 import { rpc } from '@/lib/client/rpc';
@@ -286,5 +286,103 @@ export function BadgesMany2OneField(props: FieldProps & { editor: React.ReactNod
       ))}
       {(!inList || items.length === 0) && <div style={{ minWidth: 160 }}>{props.editor}</div>}
     </div>
+  );
+}
+
+/**
+ * Date / datetime: a text input showing the localised value, a calendar
+ * button that opens the native picker, and lenient typed input
+ * (`2026-09-20`, `09/20/2026`, `20/09/2026` by language, `20/9`, `+3` days).
+ */
+export function DatePickerField({ field, value, readonly, required, onChange, node, record }: FieldProps) {
+  const lang = useLang();
+  const t = useT();
+  const currencies = useCurrencies();
+  const isDatetime = field.type === 'datetime';
+  const picker = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState<string | null>(null);
+  const text = formatValue(field, value, { lang, record, currencies });
+  if (readonly) return <span className="o_field_widget o_readonly">{text}</span>;
+
+  const raw = value === false || value == null ? '' : String(value);
+  const nativeValue = isDatetime ? raw.replace(' ', 'T').slice(0, 16) : raw.slice(0, 10);
+  const commit = (typed: string) => {
+    setDraft(null);
+    const parsed = parseTypedDate(typed.trim(), lang, isDatetime, raw);
+    if (parsed === undefined) return;
+    onChange(parsed);
+  };
+  return (
+    <div className="o_field_widget o_field_date d-flex align-items-center">
+      <input className="o_input" value={draft ?? text} placeholder={t(node.placeholder) || (isDatetime ? `${lang === 'ar_001' ? 'DD/MM/YYYY' : 'MM/DD/YYYY'} HH:MM` : lang === 'ar_001' ? 'DD/MM/YYYY' : 'MM/DD/YYYY')} required={required}
+        onChange={(event) => setDraft(event.target.value)} onBlur={(event) => commit(event.target.value)}
+        onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); commit((event.target as HTMLInputElement).value); } if (event.key === 'Escape') setDraft(null); }} />
+      <button type="button" className="btn btn-link btn-sm text-muted p-0 ms-1" tabIndex={-1} aria-label={t('Pick a date')}
+        onClick={() => { const input = picker.current; if (!input) return; if ('showPicker' in input) { try { (input as HTMLInputElement & { showPicker: () => void }).showPicker(); return; } catch { /* fall through */ } } input.click(); }}>
+        <i className="fa fa-calendar" />
+      </button>
+      <input ref={picker} type={isDatetime ? 'datetime-local' : 'date'} value={nativeValue} tabIndex={-1} aria-hidden="true"
+        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+        onChange={(event) => { const next = event.target.value; if (!next) return onChange(false); onChange(isDatetime ? `${next.replace('T', ' ')}:00`.slice(0, 19) : next); }} />
+    </div>
+  );
+}
+
+function pad(n: number): string { return String(n).padStart(2, '0'); }
+
+/** Typed text → ISO value (`undefined` = leave unchanged, `false` = cleared). */
+export function parseTypedDate(text: string, lang: string, isDatetime: boolean, current: string): string | false | undefined {
+  if (!text) return false;
+  const today = new Date();
+  let year = today.getFullYear(); let month = today.getMonth() + 1; let day = today.getDate();
+  let time = current.length > 10 ? current.slice(11, 16) : '00:00';
+  const relative = /^([+-]\d+)([dwm]?)$/i.exec(text);
+  const timeMatch = /(\d{1,2}):(\d{2})/.exec(text);
+  if (timeMatch) time = `${pad(Number(timeMatch[1]))}:${timeMatch[2]}`;
+  const datePart = text.replace(/\d{1,2}:\d{2}(:\d{2})?\s*([ap]m)?/i, '').trim();
+  if (relative) {
+    const n = Number(relative[1]);
+    const unit = relative[2].toLowerCase();
+    const base = new Date(today);
+    if (unit === 'w') base.setDate(base.getDate() + n * 7); else if (unit === 'm') base.setMonth(base.getMonth() + n); else base.setDate(base.getDate() + n);
+    year = base.getFullYear(); month = base.getMonth() + 1; day = base.getDate();
+  } else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(datePart)) {
+    [year, month, day] = datePart.split('-').map(Number);
+  } else if (/^\d{1,2}[/.-]\d{1,2}([/.-]\d{2,4})?$/.test(datePart)) {
+    const parts = datePart.split(/[/.-]/).map(Number);
+    const dayFirst = lang === 'ar_001';
+    day = dayFirst ? parts[0] : parts[1]; month = dayFirst ? parts[1] : parts[0];
+    if (parts[2] !== undefined) year = parts[2] < 100 ? 2000 + parts[2] : parts[2];
+  } else if (datePart) {
+    return undefined;
+  }
+  const date = new Date(year, month - 1, day);
+  if (Number.isNaN(date.getTime()) || date.getMonth() + 1 !== month) return undefined;
+  const iso = `${year}-${pad(month)}-${pad(day)}`;
+  return isDatetime ? `${iso} ${time}:00` : iso;
+}
+
+/** `account-tax-totals-field`: Untaxed Amount / Taxes / Total from the record's amounts. */
+export function TaxTotalsField({ record, field }: FieldProps) {
+  const t = useT();
+  const lang = useLang();
+  const currencies = useCurrencies();
+  const money = (name: string) => formatValue({ ...field, name, type: 'monetary', currencyField: 'currency_id' }, record[name], { lang, record, currencies });
+  const rows: [string, string][] = [];
+  if ('amount_untaxed' in record) rows.push([t('Untaxed Amount'), money('amount_untaxed')]);
+  if ('amount_tax' in record) rows.push([t('Taxes'), money('amount_tax')]);
+  if ('amount_total' in record) rows.push([t('Total'), money('amount_total')]);
+  if (rows.length === 0) return null;
+  return (
+    <table className="o_tax_totals ms-auto">
+      <tbody>
+        {rows.map(([label, amount], index) => (
+          <tr key={label} className={index === rows.length - 1 ? 'o_tax_totals_total' : ''}>
+            <td className="text-end pe-4 text-muted">{label}</td>
+            <td className="text-end fw-bold">{amount}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

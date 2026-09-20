@@ -328,3 +328,38 @@ a:hover {
 .o_color_9 { --o-current-color: var(--o-color-9); }
 .o_color_10 { --o-current-color: var(--o-color-10); }
 .o_color_11 { --o-current-color: var(--o-color-11); }
+
+/* ---------------------------------------------------------------- *
+ * Dark theme (Rodeo extra): same tokens, night surfaces. Set from the
+ * user menu / Ctrl+K; `[data-theme]` is applied before first paint.
+ * ---------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  --o-body-bg: #111418;
+  --o-white: #1b1f24;
+  --o-gray-100: #22272e;
+  --o-gray-200: #2d333b;
+  --o-border: #373e47;
+  --o-text: #e6e8eb;
+  --o-text-heading: #ffffff;
+  --o-text-muted: rgba(200, 206, 214, 0.72);
+  --o-brand-primary: #a97ba0;
+  --o-brand-primary-hover: #c093b7;
+  --o-brand-secondary: #3fb5bd;
+  --o-brand-lightsecondary: #17393d;
+  --o-purple-light: #2a2230;
+  --o-warning-bg: #3d3110;
+  --o-warning-text: #ffe083;
+  --o-info-bg: #123a42;
+  --o-discuss-bubble: #163338;
+  --o-row-selected-bg: #17393d;
+  --o-row-hover-bg: #22272e;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] body { background: var(--o-body-bg); color: var(--o-text); }
+:root[data-theme="dark"] .o_main_navbar, :root[data-theme="dark"] .o_control_panel, :root[data-theme="dark"] .o_form_sheet, :root[data-theme="dark"] .o_list_table thead th, :root[data-theme="dark"] .o_list_table tfoot td { background: var(--o-white); color: var(--o-text); }
+:root[data-theme="dark"] .o_dropdown_menu, :root[data-theme="dark"] .o_home_menu { background: var(--o-white); color: var(--o-text); border-color: var(--o-border); }
+:root[data-theme="dark"] .btn-secondary { background: var(--o-gray-200); border-color: var(--o-gray-200); color: var(--o-text); }
+:root[data-theme="dark"] .form-control, :root[data-theme="dark"] .o_input, :root[data-theme="dark"] select.o_input, :root[data-theme="dark"] textarea.o_input { background: transparent; color: var(--o-text); border-color: var(--o-border); }
+:root[data-theme="dark"] .o_activity_cell_overdue { background: #4a1f1f; } :root[data-theme="dark"] .o_activity_cell_today { background: #4a3d12; } :root[data-theme="dark"] .o_activity_cell_planned { background: #1c3a24; }
+:root[data-theme="dark"] .o_activity_overdue .o_activity_icon { background: #4a1f1f; color: #f5b5b5; } :root[data-theme="dark"] .o_activity_today .o_activity_icon { background: #4a3d12; color: #ffe083; } :root[data-theme="dark"] .o_activity_planned .o_activity_icon { background: #1c3a24; color: #9fdcae; }
+:root[data-theme="dark"] .o_app_icon { box-shadow: none; }

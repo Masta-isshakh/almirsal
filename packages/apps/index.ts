@@ -3,6 +3,7 @@ import { hooksFor } from '../engine/orm/hooks.js';
 import { registerBase } from './base/index.js';
 import { registerActivities } from './base/activity.js';
 import { registerUsers } from './base/users.js';
+import { registerSettings } from './base/settings.js';
 import { registerSale } from './sale/index.js';
 import { registerSaleInvoicing } from './sale/invoice.js';
 import { registerAccount } from './account/index.js';
@@ -16,6 +17,7 @@ export function registerApps(registry: Registry): void {
   registerBase();
   registerUsers();
   registerActivities();
+  registerSettings(registry);
   registerAccount(registry);
   registerSale();
   registerSaleInvoicing();

@@ -5,6 +5,7 @@ import { UserError, ValidationError } from '../../engine/orm/errors.js';
 import { nextByCode } from '../../engine/orm/sequence.js';
 import { floatRound } from '../../engine/format/index.js';
 import { m2oId } from '../base/index.js';
+import { paidAmount, registerPayments } from './payment.js';
 
 /**
  * D-3 — Accounting core: journal entries and invoices (`account.move`),
@@ -131,21 +132,52 @@ async function rebuildBalancingLines(env: Environment, moveId: number): Promise<
 }
 
 export function registerAccount(registry: Registry): void {
+  registerPayments();
+  // The Register Payment wizard form (the export has none): journal, method, date, amount, memo.
+  if (registry.models['account.payment.register'] && !Object.values(registry.views).some((view) => view.model === 'account.payment.register' && view.type === 'form')) {
+    const field = (name: string, extra: Record<string, unknown> = {}) => ({ kind: 'field' as const, name, decorations: {}, attrs: {}, ...extra });
+    registry.views['account.payment.register|form|rodeo'] = {
+      key: 'account.payment.register|form|rodeo', id: null, model: 'account.payment.register', type: 'form', toolbar: { print: [], action: [] },
+      arch: {
+        type: 'form', attrs: {}, string: { en: 'Register Payment', ar: 'تسجيل الدفع' },
+        body: [
+          { kind: 'group', children: [
+            { kind: 'group', children: [field('journal_id', { options: "{'no_create': True}" }), field('payment_method_line_id', { options: "{'no_create': True}" }), field('partner_id', { invisible: 'not partner_id', options: "{'no_create': True}" })] },
+            { kind: 'group', children: [field('amount'), field('currency_id', { options: "{'no_create': True}", invisible: 'not currency_id' }), field('payment_date'), field('communication')] },
+          ] },
+          { kind: 'group', invisible: 'not payment_difference', children: [field('source_amount'), field('payment_difference'), field('payment_difference_handling', { widget: 'radio' })] },
+          { kind: 'element', tag: 'footer', attrs: {}, children: [
+            { kind: 'button', type: 'object', name: 'action_create_payments', string: { en: 'Create Payment', ar: 'إنشاء الدفعة' }, class: 'btn-primary', attrs: {} },
+            { kind: 'button', type: 'object', special: 'cancel', string: { en: 'Discard', ar: 'تجاهل' }, class: 'btn-secondary', attrs: {} },
+          ] },
+        ],
+      },
+    };
+  }
   // invoice_line_ids is line_ids restricted to the lines a user edits.
   const move = registry.models['account.move'];
   if (move?.fields.invoice_line_ids) move.fields.invoice_line_ids.domain = [['display_type', 'in', PRODUCT_LINE_TYPES]];
 
   registerModelHooks('account.journal', {
     displayName: (_env, record) => String(record.name ?? ''),
+    displayNameFields: ['name'],
+    displayNameSql: (alias) => `${alias}."name"`,
     searchFields: ['code'],
   });
 
   registerModelHooks('account.account', {
     displayName: (_env, record) => (record.code ? `${record.code} ${record.name ?? ''}` : String(record.name ?? '')),
+    displayNameFields: ['code', 'name'],
+    displayNameSql: (alias) => `CASE WHEN ${alias}."code" IS NOT NULL AND ${alias}."code" <> '' THEN ${alias}."code" || ' ' || coalesce(${alias}."name", '') ELSE coalesce(${alias}."name", '') END`,
     searchFields: ['code'],
   });
 
   registerModelHooks('account.move', {
+    // Posted entries are part of the books: cancel or reset to draft first.
+    onUnlink: async (env, ids) => {
+      const posted = await env.cr.query<{ name: string }>(`SELECT name FROM account_move WHERE id = ANY($1) AND state = 'posted'`, [ids]);
+      if (posted.rows.length) throw new UserError({ en: `You cannot delete posted entries (${posted.rows.map((row) => row.name).join(', ')}); cancel or reset them to draft first.`, ar: `لا يمكن حذف قيود مرحّلة (${posted.rows.map((row) => row.name).join('، ')})؛ قم بإلغائها أو إعادتها إلى المسودة أولاً.` });
+    },
     defaults: async (env) => {
       const moveType = String(env.context.default_move_type ?? 'entry');
       return {
@@ -165,6 +197,7 @@ export function registerAccount(registry: Registry): void {
     tracked: ['state', 'partner_id', 'amount_total', 'invoice_date'],
     searchFields: ['ref', 'invoice_origin', 'payment_reference'],
     creationMessage: { en: 'Invoice Created', ar: 'تم إنشاء الفاتورة' },
+    displayNameFields: ['name', 'move_type', 'state'],
     displayName: (_env, record) => {
       if (record.name && record.name !== '/') return String(record.name);
       const type = String(record.move_type ?? 'entry');
@@ -190,11 +223,11 @@ export function registerAccount(registry: Registry): void {
     },
 
     computes: [{
-      fields: ['amount_untaxed', 'amount_tax', 'amount_total', 'amount_residual', 'amount_untaxed_signed', 'amount_total_signed'],
-      depends: ['invoice_line_ids.price_subtotal', 'invoice_line_ids.price_total', 'invoice_line_ids', 'line_ids', 'currency_id', 'move_type', 'payment_state'],
+      fields: ['amount_untaxed', 'amount_tax', 'amount_total', 'amount_residual', 'amount_untaxed_signed', 'amount_total_signed', 'payment_state'],
+      depends: ['invoice_line_ids.price_subtotal', 'invoice_line_ids.price_total', 'invoice_line_ids', 'line_ids', 'currency_id', 'move_type', 'state'],
       compute: async (env, ids) => {
-        const rows = await env.cr.query<{ id: number; move_type: string; payment_state: string | null; untaxed: number; total: number }>(
-          `SELECT m.id, m.move_type, m.payment_state,
+        const rows = await env.cr.query<{ id: number; move_type: string; state: string | null; payment_state: string | null; untaxed: number; total: number }>(
+          `SELECT m.id, m.move_type, m.state, m.payment_state,
                   coalesce((SELECT sum(l.price_subtotal) FROM account_move_line l WHERE l.move_id = m.id AND l.display_type = 'product'), 0)::float8 AS untaxed,
                   coalesce((SELECT sum(l.price_total) FROM account_move_line l WHERE l.move_id = m.id AND l.display_type = 'product'), 0)::float8 AS total
            FROM account_move m WHERE m.id = ANY($1)`, [ids],
@@ -205,10 +238,13 @@ export function registerAccount(registry: Registry): void {
           const untaxed = floatRound(row.untaxed, rounding);
           const total = floatRound(row.total, rounding);
           const sign = REFUND_TYPES.has(row.move_type) ? -1 : 1;
-          const residual = row.payment_state === 'paid' || row.payment_state === 'reversed' ? 0 : total;
+          // Residual = total less the posted payments linked to the invoice (payment.ts).
+          const paid = row.state === 'posted' && total > 0 ? floatRound(await paidAmount(env, Number(row.id)), rounding) : 0;
+          const residual = row.payment_state === 'reversed' ? 0 : Math.max(0, floatRound(total - paid, rounding));
+          const paymentState = row.payment_state === 'reversed' ? 'reversed' : row.state !== 'posted' || total === 0 ? 'not_paid' : residual <= 0 ? 'paid' : paid > 0 ? 'partial' : 'not_paid';
           out[Number(row.id)] = {
             amount_untaxed: untaxed, amount_tax: floatRound(total - untaxed, rounding), amount_total: total,
-            amount_residual: residual, amount_untaxed_signed: sign * untaxed, amount_total_signed: sign * total,
+            amount_residual: residual, amount_untaxed_signed: sign * untaxed, amount_total_signed: sign * total, payment_state: paymentState,
           };
         }
         return out;
@@ -271,14 +307,15 @@ export function registerAccount(registry: Registry): void {
       button_cancel: async (env, ids) => {
         await env.model('account.move').write(ids, { state: 'cancel' });
       },
-      action_invoice_sent: async (env, ids) => {
-        await env.model('account.move').write(ids, { is_move_sent: true });
-        return { type: 'ir.actions.client', tag: 'display_notification', params: { title: 'Invoice sent', message: 'The invoice has been marked as sent.', type: 'success' } };
-      },
-      preview_invoice: async (_env, ids) => ({ type: 'ir.actions.act_url', url: `/my/invoices/${ids[0]}`, target: 'new' }),
-      action_register_payment: async () => {
-        throw new UserError({ en: 'Payment registration is part of the Accounting phase; not available yet.', ar: 'تسجيل الدفعات جزء من مرحلة المحاسبة؛ غير متاح بعد.' });
-      },
+      action_invoice_sent: async (_env, ids) => ({ type: 'ir.actions.client', tag: 'mail.compose', params: { model: 'account.move', res_id: ids[0] } }),
+      message_sent: async (env, ids) => { await env.model('account.move').write(ids, { is_move_sent: true }); },
+      preview_invoice: async (_env, ids) => ({ type: 'ir.actions.act_url', url: `/report/account.report_invoice_with_payments/${ids[0]}`, target: 'new' }),
+      action_print_pdf: async (_env, ids) => ({ type: 'ir.actions.report', report_name: 'account.report_invoice_with_payments', context: { active_ids: ids } }),
+      /** "Pay": the Register Payment wizard (D-3), see payment.ts. */
+      action_register_payment: async (_env, ids) => ({
+        type: 'ir.actions.act_window', res_model: 'account.payment.register', view_mode: 'form', target: 'new', name: { en: 'Register Payment', ar: 'تسجيل الدفع' },
+        context: { active_model: 'account.move', active_ids: ids, active_id: ids[0] },
+      }),
     },
   });
 

@@ -24,7 +24,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     rpc<Record<string, unknown>[]>('searchRead', 'res.currency', {
       domain: [], fields: ['name', 'symbol', 'position', 'decimal_places', 'rounding'], limit: 500,
-    }, { silent: true }).then((rows) => {
+    }, { silent: true, cacheMs: 10 * 60_000 }).then((rows) => {
       if (cancelled) return;
       const map: Record<number, CurrencyDef> = {};
       for (const row of rows) {

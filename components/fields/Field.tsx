@@ -9,7 +9,7 @@ import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
 import { GroupsField } from './GroupsField';
 import {
   BadgesMany2OneField, BooleanFavoriteField, CodeField, ColorPickerField, CopyClipboardField, DateRangeField, ImageField, LinkField,
-  Many2ManyCheckboxesField, Many2OneAvatarField, PercentPieField, ProgressBarField, RemainingDaysField,
+  Many2ManyCheckboxesField, Many2OneAvatarField, PercentPieField, ProgressBarField, RemainingDaysField, DatePickerField, TaxTotalsField,
 } from './widgets';
 
 type Rec = Record<string, unknown>;
@@ -49,6 +49,9 @@ export function Field(props: FieldProps) {
   if (widget === 'percentpie') return <PercentPieField {...props} />;
   if (widget.startsWith('CopyClipboard')) return <CopyClipboardField {...props} />;
   if (widget === 'remaining_days') return <RemainingDaysField {...props} />;
+  if (widget === 'account-tax-totals-field') return <TaxTotalsField {...props} />;
+  if (widget === 'sale-extra-totals') return null;
+  if (widget === 'document_tax_mode_selector') return <TaxModeBadge {...props} />;
   if (widget === 'daterange') return <DateRangeField {...props} />;
   if (widget === 'url' || widget === 'email' || widget === 'phone') return <LinkField {...props} />;
   if (widget === 'ace' || widget === 'domain' || widget === 'code_editor' || widget === 'json') return <CodeField {...props} />;
@@ -69,9 +72,23 @@ export function Field(props: FieldProps) {
     case 'float':
     case 'monetary': return <NumberField {...props} />;
     case 'date':
-    case 'datetime': return <DateField {...props} />;
+    case 'datetime': return <DatePickerField {...props} />;
     default: return readonly ? <ReadonlyText {...props} /> : <CharField {...props} />;
   }
+}
+
+/** The small "Tax Excl. / Tax Incl." pill on documents: click flips the mode. */
+function TaxModeBadge({ field, value, readonly, onChange }: FieldProps) {
+  const t = useT();
+  const options = field.selection ?? [];
+  const current = options.find((option) => option.value === value) ?? options[0];
+  if (!current) return null;
+  const next = options[(options.indexOf(current) + 1) % options.length];
+  return (
+    <button type="button" className="badge rounded-pill text-bg-light border ms-auto" disabled={readonly} title={t('Switch price mode')} onClick={() => onChange(next.value)}>
+      {t(current.label)}
+    </button>
+  );
 }
 
 function ReadonlyText({ field, value, record, node }: FieldProps) {
@@ -98,6 +115,12 @@ function TextField({ node, value, readonly, onChange, field }: FieldProps) {
   const t = useT();
   const text = value === false || value == null ? '' : String(value);
   const plain = field.type === 'html' ? text.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '') : text;
+  if (readonly) {
+    if (!plain.trim()) return null;
+    return field.type === 'html'
+      ? <div className="o_field_widget o_readonly" dangerouslySetInnerHTML={{ __html: text }} />
+      : <div className="o_field_widget o_readonly" style={{ whiteSpace: 'pre-wrap' }}>{plain}</div>;
+  }
   return (
     <div className={`o_field_widget ${readonly ? 'o_readonly' : ''}`}>
       <textarea className="o_input" rows={Math.min(12, Math.max(2, plain.split('\n').length))} value={plain} placeholder={t(node.placeholder)}
@@ -164,24 +187,6 @@ function SelectionField({ field, value, readonly, required, onChange, node }: Fi
         {!required && <option value="" />}
         {field.selection?.map((option) => <option key={option.value} value={option.value}>{t(option.label)}</option>)}
       </select>
-    </div>
-  );
-}
-
-function DateField({ field, value, readonly, onChange, record }: FieldProps) {
-  const lang = useLang();
-  const currencies = useCurrencies();
-  if (readonly) return <span className="o_field_widget o_readonly">{formatValue(field, value, { lang, record, currencies })}</span>;
-  const text = value === false || value == null ? '' : String(value);
-  const inputValue = field.type === 'date' ? text.slice(0, 10) : text.replace(' ', 'T').slice(0, 16);
-  return (
-    <div className="o_field_widget">
-      <input className="o_input" type={field.type === 'date' ? 'date' : 'datetime-local'} value={inputValue}
-        onChange={(event) => {
-          const next = event.target.value;
-          if (!next) return onChange(false);
-          onChange(field.type === 'date' ? next : `${next.replace('T', ' ')}:00`.slice(0, 19));
-        }} />
     </div>
   );
 }

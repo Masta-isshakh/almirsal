@@ -135,7 +135,28 @@ interface UserRow extends Record<string, unknown> {
   lang: string | null; tz: string | null; company_id: number | null; active: boolean | null;
 }
 
+/**
+ * The resolved user is cached for a short while: every RPC call resolves
+ * the session, and over the Data API the three queries behind it cost more
+ * than most of the calls they guard. Writes to users/groups clear it.
+ */
+const USER_CACHE = new Map<string, { user: SessionUser | null; at: number }>();
+const USER_TTL_MS = 30_000;
+
+export function invalidateSessionCache(): void {
+  USER_CACHE.clear();
+}
+
 async function loadUser(where: string, param: string | number): Promise<SessionUser | null> {
+  const key = `${where}:${param}`;
+  const cached = USER_CACHE.get(key);
+  if (cached && Date.now() - cached.at < USER_TTL_MS) return cached.user;
+  const user = await queryUser(where, param);
+  USER_CACHE.set(key, { user, at: Date.now() });
+  return user;
+}
+
+async function queryUser(where: string, param: string | number): Promise<SessionUser | null> {
   const db = await getDatabase();
   const registry = getRegistry();
   const result = await db.query<UserRow>(

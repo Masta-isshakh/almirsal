@@ -11,6 +11,11 @@ import { ActionContainer } from './ActionContainer';
 import { DialogHost, NotificationHost, UiProvider, useUi } from './ui';
 import { SessionProvider } from './session';
 import { ActionRunnerProvider } from '@/lib/client/actions';
+import { ThemeProvider } from './theme';
+import { CommandPalette } from './CommandPalette';
+import { NavigationProvider, parseHref, resolveLocation, seedResolution, useNavigation, type Location } from '@/lib/client/navigation';
+import { ProgressBar } from './ProgressBar';
+import { ShortcutsHelp } from './Shortcuts';
 
 export interface AppEntry {
   id: number;
@@ -34,21 +39,51 @@ export interface SessionInfo {
  * toast notifications. Server-resolved props say what to render; data is
  * fetched through `/api/rpc`.
  */
-export function WebClient({ user, apps, menuHrefs, resolution }: { user: SessionInfo; apps: AppEntry[]; menuHrefs: Record<number, string>; resolution: Resolution }) {
+export function WebClient({ user, apps, menuHrefs, resolution, href }: { user: SessionInfo; apps: AppEntry[]; menuHrefs: Record<number, string>; resolution: Resolution; href: string }) {
+  // The server-rendered resolution seeds the client cache: the first page
+  // paints without a round trip, later moves are client-side.
+  seedResolution(resolution);
   return (
-    <UiProvider>
-      <SessionProvider user={user}>
-        <ActionRunnerProvider>
-          <Shell user={user} apps={apps} menuHrefs={menuHrefs} resolution={resolution} />
-        </ActionRunnerProvider>
-      </SessionProvider>
-    </UiProvider>
+    <ThemeProvider>
+      <UiProvider>
+        <SessionProvider user={user}>
+          <NavigationProvider initial={parseHref(href)}>
+            <ActionRunnerProvider>
+              <Shell user={user} apps={apps} menuHrefs={menuHrefs} initialResolution={resolution} />
+            </ActionRunnerProvider>
+          </NavigationProvider>
+        </SessionProvider>
+      </UiProvider>
+    </ThemeProvider>
   );
 }
 
-function Shell({ user, apps, menuHrefs, resolution }: { user: SessionInfo; apps: AppEntry[]; menuHrefs: Record<number, string>; resolution: Resolution }) {
+/** Resolution of the current client location; the initial one comes from the server. */
+function useResolution(initial: Resolution): { resolution: Resolution; resolving: boolean } {
+  const { location, version } = useNavigation();
+  const [state, setState] = useState<{ resolution: Resolution; key: string }>({ resolution: initial, key: keyOf(location) });
+  const [resolving, setResolving] = useState(false);
+  useEffect(() => {
+    const key = keyOf(location);
+    let cancelled = false;
+    setResolving(true);
+    resolveLocation(location).then((resolution) => { if (!cancelled) { setState({ resolution, key }); setResolving(false); } })
+      .catch(() => { if (!cancelled) { setState({ resolution: { kind: 'notfound', path: location.path.join('/') }, key }); setResolving(false); } });
+    return () => { cancelled = true; };
+  }, [location, version]);
+  return { resolution: state.resolution, resolving: resolving && state.key !== keyOf(location) };
+}
+
+function keyOf(location: Location): string {
+  return `${location.path.join('/')}?${new URLSearchParams(location.query).toString()}`;
+}
+
+function Shell({ user, apps, menuHrefs, initialResolution }: { user: SessionInfo; apps: AppEntry[]; menuHrefs: Record<number, string>; initialResolution: Resolution }) {
   const ui = useUi();
+  const { resolution, resolving } = useResolution(initialResolution);
+  const { location, version } = useNavigation();
   const [homeOpen, setHomeOpen] = useState(resolution.kind === 'home');
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => setHomeOpen(resolution.kind === 'home'), [resolution]);
 
@@ -62,11 +97,14 @@ function Shell({ user, apps, menuHrefs, resolution }: { user: SessionInfo; apps:
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.altKey && event.key.toLowerCase() === 'h') { event.preventDefault(); setHomeOpen(true); }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setPaletteOpen((open) => !open); }
+      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement)?.tagName) || (event.target as HTMLElement)?.isContentEditable;
+      if (event.key === '?' && !typing && !event.ctrlKey && !event.altKey) { event.preventDefault(); ui.openDialog({ title: { en: 'Keyboard Shortcuts', ar: 'اختصارات لوحة المفاتيح' }, size: 'sm', body: <ShortcutsHelp /> }); }
       if (event.key === 'Escape' && homeOpen && resolution.kind !== 'home') setHomeOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [homeOpen, resolution.kind]);
+  }, [homeOpen, resolution.kind, ui]);
 
   const currentApp = resolution.kind === 'action' && resolution.app
     ? apps.find((app) => app.id === resolution.app!.id) ?? null
@@ -74,7 +112,10 @@ function Shell({ user, apps, menuHrefs, resolution }: { user: SessionInfo; apps:
 
   return (
     <div className="o_web_client">
-      <Navbar user={user} apps={apps} menuHrefs={menuHrefs} currentApp={homeOpen ? null : currentApp} onToggleHome={() => setHomeOpen((open) => !open)} homeOpen={homeOpen} />
+      <ProgressBar active={resolving} />
+      <Navbar user={user} apps={apps} menuHrefs={menuHrefs} currentApp={homeOpen ? null : currentApp} onToggleHome={() => setHomeOpen((open) => !open)} homeOpen={homeOpen} onSearch={() => setPaletteOpen(true)} />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} apps={apps} menuHrefs={menuHrefs}
+        currentModel={resolution.kind === 'action' ? resolution.action.model ?? undefined : undefined} currentSlug={resolution.kind === 'action' ? resolution.slug : undefined} currentName={resolution.kind === 'action' ? resolution.action.name : undefined} />
       <div className="o_action_manager">
         {homeOpen || resolution.kind === 'home' ? (
           <HomeMenu apps={apps} />
@@ -84,7 +125,7 @@ function Shell({ user, apps, menuHrefs, resolution }: { user: SessionInfo; apps:
             <p>No action at <code>/odoo/{resolution.path}</code>.</p>
           </div>
         ) : (
-          <ActionContainer key={`${resolution.action.id}:${resolution.viewType}:${resolution.recordId ?? (resolution.isNew ? 'new' : '')}`} resolution={resolution} user={user} />
+          <ActionContainer key={`${resolution.action.id}:${resolution.viewType}:${resolution.recordId ?? (resolution.isNew ? 'new' : '')}:${version}`} resolution={resolution} query={location.query} user={user} />
         )}
       </div>
       <DialogHost />

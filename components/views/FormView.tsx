@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ButtonNode, FieldNode, FormArch, FormNode, GroupNode } from '@engine/registry/arch';
 import type { FieldDef } from '@engine/registry/types';
@@ -8,13 +7,16 @@ import { evaluate } from '@engine/expr/evaluate';
 import { rpc } from '@/lib/client/rpc';
 import { useT } from '@/lib/client/i18n';
 import { useActions } from '@/lib/client/actions';
-import { formFields, isInvisible, isReadonly, isRequired, makeRecordScope, specificationFor } from '@/lib/client/arch';
+import { RECORD_CACHE_MS, formSpecification, isInvisible, isReadonly, isRequired, makeRecordScope } from '@/lib/client/arch';
 import { idOf, nameOf } from '@/lib/client/display';
 import { Field } from '../fields/Field';
 import { Chatter } from '../webclient/Chatter';
+import { SettingsPage } from './form/Settings';
 import { useUi } from '../webclient/ui';
 import type { SessionInfo } from '../webclient/WebClient';
 import { EmbeddedList } from './form/EmbeddedList';
+import { FormSkeleton } from './Skeleton';
+import { useNavigation } from '@/lib/client/navigation';
 import { hasLineChanges, rowsFromRecords, toCommands, type LineRow, type Rec } from './form/lines';
 
 interface Props {
@@ -39,22 +41,21 @@ interface Props {
  */
 export function FormView({ arch, fields, relatedFields = {}, model, recordId, context, user, slug, mode = 'page', onDone }: Props) {
   const t = useT();
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const ui = useUi();
   const { doAction } = useActions();
   const [record, setRecord] = useState<Rec | null>(null);
   const [changes, setChanges] = useState<Rec>({});
   const [lines, setLines] = useState<Record<string, LineRow[]>>({});
   const [saving, setSaving] = useState(false);
-  const nodes = useMemo(() => formFields(arch), [arch]);
-  const names = useMemo(() => [...new Set(nodes.map((node) => node.name).filter((name) => fields[name]))], [nodes, fields]);
-  const spec = useMemo(() => specificationFor(names, fields, nodes), [names, fields, nodes]);
+  const { names, nodes, spec } = useMemo(() => formSpecification(arch, fields), [arch, fields]);
   const lineFields = useMemo(() => names.filter((name) => fields[name].type === 'one2many' || (fields[name].type === 'many2many' && nodes.find((node) => node.name === name)?.views?.list)), [names, fields, nodes]);
 
   const load = useCallback(async () => {
     let loaded: Rec;
     if (recordId) {
-      [loaded] = await rpc<Rec[]>('webRead', model, { ids: [recordId], specification: spec }, { context });
+      // Same key as the list's hover prefetch: an already-fetched record opens instantly.
+      [loaded] = await rpc<Rec[]>('webRead', model, { ids: [recordId], specification: spec }, { context, cacheMs: RECORD_CACHE_MS });
       if (!loaded) { setRecord(null); return; }
     } else {
       const defaults = await rpc<Rec>('defaultGet', model, { fields: names }, { context });
@@ -86,7 +87,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
     for (const [name, rows] of Object.entries(lines)) merged[name] = rows.filter((row) => !row.deleted).map((row) => row.values);
     return merged;
   }, [record, changes, lines]);
-  const scope = useMemo(() => makeRecordScope(values, { uid: user.uid, context, companyIds: user.companyIds }), [values, user, context]);
+  const scope = useMemo(() => makeRecordScope(values, { uid: user.uid, context, companyIds: user.companyIds, fields }), [values, user, context]);
   const dirty = Object.keys(changes).length > 0 || Object.values(lines).some(hasLineChanges);
 
   useEffect(() => {
@@ -153,7 +154,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
       const next: Record<string, LineRow[]> = {};
       for (const name of lineFields) next[name] = rowsFromRecords(saved[name]);
       setLines(next);
-      if (!recordId && mode === 'page') router.replace(`/odoo/${slug}/${saved.id}`);
+      if (!recordId && mode === 'page') navigate(`/odoo/${slug}/${saved.id}`, { replace: true });
       return saved.id as number;
     } catch {
       return null;
@@ -165,7 +166,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
   const discard = () => {
     if (recordId) { setChanges({}); const next: Record<string, LineRow[]> = {}; for (const name of lineFields) next[name] = rowsFromRecords(record?.[name]); setLines(next); }
     else if (mode === 'dialog') onDone?.(false);
-    else router.push(`/odoo/${slug}`);
+    else navigate(`/odoo/${slug}`);
   };
 
   const buttonContext = (button: ButtonNode): Record<string, unknown> => {
@@ -206,12 +207,26 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  if (!record) return <div className="o_loading_indicator" />;
+  if (!record) return mode === 'dialog' ? <div className="o_loading_indicator" /> : <FormSkeleton />;
 
   const header = arch.body.find((node): node is Extract<FormNode, { kind: 'header' }> => node.kind === 'header');
   const footer = findFooter(arch.body);
   const hasChatter = mode === 'page' && arch.body.some((node) => node.kind === 'chatter');
   const ctx: RenderCtx = { values, fields, relatedFields, scope, setValue, clickButton, lines, setLines, footer };
+
+  // C-6: the settings page is a transient form with its own layout; Save = create + execute.
+  if (mode === 'page' && arch.jsClass === 'base_settings') {
+    const saveSettings = async () => {
+      const id = await save();
+      if (!id) return;
+      const result = await rpc<Record<string, unknown> | false>('callButton', model, { ids: [id], method: 'execute' }, { context }).catch(() => false);
+      if (result && typeof result === 'object') await doAction(result); else window.location.reload();
+    };
+    return (
+      <SettingsPage arch={arch} fields={fields} values={values} scope={scope} renderNode={(node, key) => <Node key={key} node={node} ctx={ctx} />}
+        dirty={dirty} saving={saving} onSave={() => void saveSettings()} onDiscard={() => window.location.reload()} />
+    );
+  }
 
   if (mode === 'dialog') {
     return (
@@ -400,6 +415,7 @@ function FieldSlot({ node, ctx, withLabel }: { node: FieldNode; ctx: RenderCtx; 
   } else {
     control = <Field node={node} field={field} value={ctx.values[node.name]} record={ctx.values} readonly={readonly} required={required} onChange={(value) => ctx.setValue(node.name, value)} />;
   }
+  if (node.class && !isLines) control = <div className={node.class}>{control}</div>;
   if (!withLabel || node.nolabel) return isLines ? <div style={{ gridColumn: '1 / -1' }}>{control}</div> : control;
   return (
     <>

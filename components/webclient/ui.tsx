@@ -26,6 +26,8 @@ export interface NotificationSpec {
   message: I18n | string;
   type: 'success' | 'warning' | 'danger' | 'info';
   sticky?: boolean;
+  /** Optional button (e.g. "Undo"); the toast closes when it is clicked. */
+  action?: { label: I18n | string; onClick: () => void };
 }
 
 interface UiApi {
@@ -35,7 +37,8 @@ interface UiApi {
   closeDialog: (id: number) => void;
   showError: (payload: { title: I18n | string; message: I18n | string; debug?: string }) => void;
   confirm: (options: { title?: I18n | string; message: I18n | string; confirmLabel?: I18n | string }) => Promise<boolean>;
-  notify: (spec: Omit<NotificationSpec, 'id'>) => void;
+  notify: (spec: Omit<NotificationSpec, 'id'>) => number;
+  dismiss: (id: number) => void;
 }
 
 const UiContext = createContext<UiApi | null>(null);
@@ -62,8 +65,10 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const notify = useCallback((spec: Omit<NotificationSpec, 'id'>) => {
     const id = ++counter.current;
     setNotifications((list) => [...list, { ...spec, id }]);
-    if (!spec.sticky) setTimeout(() => setNotifications((list) => list.filter((item) => item.id !== id)), 4000);
+    if (!spec.sticky) setTimeout(() => setNotifications((list) => list.filter((item) => item.id !== id)), spec.action ? 8000 : 4000);
+    return id;
   }, []);
+  const dismiss = useCallback((id: number) => setNotifications((list) => list.filter((item) => item.id !== id)), []);
 
   const api = useMemo<UiApi>(() => ({
     dialogs,
@@ -93,7 +98,8 @@ export function UiProvider({ children }: { children: ReactNode }) {
       }]);
     }),
     notify,
-  }), [dialogs, notifications, openDialog, closeDialog, notify]);
+    dismiss,
+  }), [dialogs, notifications, openDialog, closeDialog, notify, dismiss]);
 
   return <UiContext.Provider value={api}>{children}</UiContext.Provider>;
 }
@@ -166,15 +172,21 @@ export function DialogHost() {
 }
 
 export function NotificationHost() {
-  const { notifications } = useUi();
+  const { notifications, dismiss } = useUi();
   const t = useT();
   if (notifications.length === 0) return null;
   return (
     <div className="o_notification_manager">
       {notifications.map((notification) => (
-        <div key={notification.id} className={`o_notification o_notification_${notification.type}`}>
-          {notification.title && <div className="o_notification_title">{t(notification.title)}</div>}
-          <div>{t(notification.message)}</div>
+        <div key={notification.id} className={`o_notification o_notification_${notification.type} d-flex align-items-start gap-2`}>
+          <div className="flex-grow-1">
+            {notification.title && <div className="o_notification_title">{t(notification.title)}</div>}
+            <div>{t(notification.message)}</div>
+          </div>
+          {notification.action && (
+            <button type="button" className="btn btn-link btn-sm p-0 fw-bold text-nowrap" onClick={() => { notification.action?.onClick(); dismiss(notification.id); }}>{t(notification.action.label)}</button>
+          )}
+          <button type="button" className="btn-close btn-sm" aria-label="Close" onClick={() => dismiss(notification.id)} />
         </div>
       ))}
     </div>

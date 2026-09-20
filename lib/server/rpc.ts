@@ -5,9 +5,11 @@ import type { Values } from '@engine/orm/hooks';
 import type { ReadSpecification, SearchOptions } from '@engine/orm/model';
 import type { ReadGroupOptions } from '@engine/orm/read-group';
 import { getRegistry } from './registry';
-import { describeAction, describeModel, findActionForModel } from './actions';
+import { describeAction, describeModel, findActionForModel, resolvePath } from './actions';
 import type { ViewType } from '@engine/registry/types';
 import { postMessage } from '@engine/orm/mail';
+import { findReport, reportsFor } from './reports';
+import { composerDefaults, mailConfigured, sendDocumentMail } from './mail';
 
 /**
  * The RPC surface of A-4, dispatched from `/api/rpc`. Every method takes the
@@ -29,9 +31,30 @@ type Handler = (env: Environment, model: string, params: Record<string, unknown>
 const num = (value: unknown): number => Number(value);
 const ids = (value: unknown): number[] => (Array.isArray(value) ? value.map(num) : [num(value)]);
 
+/**
+ * Reference data that every page reads (currencies, activity types, groups,
+ * …) is served from memory for a few minutes; a write to such a model
+ * clears its entries. Keyed by user language because names are translated.
+ */
+const STATIC_MODELS = new Set(['res.currency', 'mail.activity.type', 'ir.module.category', 'res.groups.privilege', 'res.groups', 'res.lang', 'res.country', 'res.country.state', 'uom.uom', 'account.payment.method.line', 'account.journal', 'account.tax', 'product.category', 'res.partner.category', 'ir.model']);
+const STATIC_TTL_MS = 5 * 60_000;
+const staticCache = new Map<string, { at: number; value: unknown }>();
+
+export function invalidateStaticCache(model?: string): void {
+  for (const key of [...staticCache.keys()]) if (!model || key.startsWith(`${model}|`)) staticCache.delete(key);
+}
+
 const HANDLERS: Record<string, Handler> = {
   async searchRead(env, model, p) {
     const options: SearchOptions = { offset: p.offset as number, limit: p.limit as number, order: p.order as string };
+    if (STATIC_MODELS.has(model)) {
+      const key = `${model}|${env.lang}|${env.companyId}|${JSON.stringify(p)}`;
+      const hit = staticCache.get(key);
+      if (hit && Date.now() - hit.at < STATIC_TTL_MS) return hit.value;
+      const value = await env.model(model).searchRead((p.domain as Domain) ?? [], p.fields as string[] | undefined, options);
+      staticCache.set(key, { at: Date.now(), value });
+      return value;
+    }
     return env.model(model).searchRead((p.domain as Domain) ?? [], p.fields as string[] | undefined, options);
   },
   async search(env, model, p) {
@@ -50,7 +73,7 @@ const HANDLERS: Record<string, Handler> = {
     const m = env.model(model);
     const domain = (p.domain as Domain) ?? [];
     const options: SearchOptions = { offset: p.offset as number, limit: p.limit as number, order: p.order as string };
-    const [found, length] = await Promise.all([m.search(domain, options), m.searchCount(domain)]);
+    const { ids: found, total: length } = await m.searchWithCount(domain, options);
     const records = await m.webRead(found, (p.specification as ReadSpecification) ?? {});
     return { length, records };
   },
@@ -111,7 +134,12 @@ const HANDLERS: Record<string, Handler> = {
     const registry = getRegistry();
     const key = String(p.id ?? p.path ?? '');
     const action = registry.actions[key] ?? Object.values(registry.actions).find((a) => a.path === key || a.xmlId === key);
-    if (!action) throw new UserError({ en: `Unknown action ${key}`, ar: `إجراء غير معروف ${key}` });
+    if (!action) {
+      // Report buttons (`sale.action_report_saleorder`) resolve to the printable document.
+      const report = findReport(key);
+      if (report) return { action: { id: key, xmlId: key, type: 'report', name: report.name, model: report.model, reportName: report.reportName }, views: {}, searchView: null, fields: {}, slug: `report/${report.reportName}` };
+      throw new UserError({ en: `Unknown action ${key}`, ar: `إجراء غير معروف ${key}` });
+    }
     return describeAction(action);
   },
   /** Views + fields for a model when a method returned an ad-hoc act_window. */
@@ -133,10 +161,58 @@ const HANDLERS: Record<string, Handler> = {
     const def = registry.models[model];
     return { views, fields: def?.fields ?? {} };
   },
+  /** Composer defaults for "Send by email" on a document. */
+  async composerDefaults(env, model, p) {
+    return { ...(await composerDefaults(env, model, num(p.id))), configured: mailConfigured() };
+  },
+  /** Send the composed email, log it in the chatter, mark the document sent. */
+  async sendDocument(env, model, p) {
+    const result = await sendDocumentMail(env, { model, id: num(p.id), partnerIds: ids(p.partnerIds ?? []), subject: String(p.subject ?? ''), body: String(p.body ?? ''), reportName: p.reportName ? String(p.reportName) : null });
+    const hooks = (await import('@engine/orm/hooks')).hooksFor(model);
+    if (hooks.methods?.message_sent) await hooks.methods.message_sent(env, [num(p.id)], {});
+    return result;
+  },
+  /** Client-side routing: the same resolution the page does on the server. */
+  async resolvePath(_env, _model, p) {
+    return resolvePath((p.path as string[]) ?? [], (p.query as Record<string, string>) ?? {});
+  },
+  /** Printable reports bound to a model (form ⚙ › Print). */
+  async listReports(_env, model) {
+    return reportsFor(model);
+  },
   async fieldsGet(env, model) {
     return getRegistry().models[model]?.fields ?? {};
   },
+  /**
+   * Command palette: one round trip searching the record names of the models
+   * that have a menu (the current model first), 5 hits each.
+   */
+  async globalSearch(env, _model, p) {
+    const registry = getRegistry();
+    const text = String(p.name ?? '').trim();
+    if (!text) return [];
+    const preferred = typeof p.model === 'string' ? [p.model] : [];
+    const withMenu = new Set<string>();
+    for (const action of Object.values(registry.actions)) if (action.type === 'act_window' && action.model && registry.models[action.model]) withMenu.add(action.model);
+    const candidates = [...preferred, ...GLOBAL_SEARCH_MODELS.filter((m) => withMenu.has(m) && !preferred.includes(m))]
+      .filter((m, index, list) => registry.models[m] && list.indexOf(m) === index).slice(0, 12);
+    const results = await Promise.all(candidates.map(async (model) => {
+      try {
+        const hits = await env.model(model).nameSearch(text, [], 'ilike', 5);
+        return { model, label: registry.models[model].description ?? { en: model, ar: model }, hits };
+      } catch { return { model, label: { en: model, ar: model }, hits: [] as [number, string][] }; }
+    }));
+    return results.filter((entry) => entry.hits.length);
+  },
 };
+
+const GLOBAL_SEARCH_MODELS = [
+  'res.partner', 'sale.order', 'account.move', 'product.template', 'product.product', 'purchase.order', 'project.task', 'project.project',
+  'helpdesk.ticket', 'crm.lead', 'hr.employee', 'calendar.event', 'knowledge.article', 'documents.document', 'res.users', 'account.payment',
+  'fleet.vehicle', 'approval.request', 'sign.request', 'survey.survey', 'planning.slot', 'hr.leave', 'sale.order.template', 'account.account',
+];
+
+const MUTATING = new Set(['create', 'write', 'unlink', 'webSave', 'callButton', 'toggleActive', 'copy']);
 
 export async function dispatch(env: Environment, request: RpcRequest): Promise<unknown> {
   const handler = HANDLERS[request.method];
@@ -144,6 +220,7 @@ export async function dispatch(env: Environment, request: RpcRequest): Promise<u
   const model = request.model ?? '';
   if (model && !getRegistry().models[model]) throw new UserError({ en: `Unknown model ${model}`, ar: `نموذج غير معروف ${model}` });
   const scoped = request.context && Object.keys(request.context).length ? env.with({ context: request.context }) : env;
+  if (MUTATING.has(request.method) && STATIC_MODELS.has(model)) invalidateStaticCache(model);
   return handler(scoped, model, request.params ?? {});
 }
 

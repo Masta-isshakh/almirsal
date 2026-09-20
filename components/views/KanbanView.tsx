@@ -9,6 +9,7 @@ import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { specificationFor } from '@/lib/client/arch';
 import { formatValue, nameOf, useCurrencies } from '@/lib/client/display';
+import { groupKey, groupLabel } from './groups';
 import type { SessionInfo } from '../webclient/WebClient';
 import { EmptyState } from './EmptyState';
 
@@ -18,6 +19,7 @@ interface Props {
   arch: KanbanArch; fields: Record<string, FieldDef>; model: string; domain: Domain; groupBy: string[];
   offset: number; limit: number; onTotal: (total: number) => void; onOpen: (id: number) => void;
   user: SessionInfo; context: Record<string, unknown>; help?: I18n;
+  onHover?: (id: number) => void;
 }
 
 /**
@@ -26,7 +28,7 @@ interface Props {
  * money formatted), colour stripe from `highlight_color`, grouped columns
  * when a group-by is active or the arch declares `default_group_by`.
  */
-export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit, onTotal, onOpen, context, help }: Props) {
+export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit, onTotal, onOpen, onHover, context, help }: Props) {
   const t = useT();
   const lang = useLang();
   const currencies = useCurrencies();
@@ -52,6 +54,55 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
   const [records, setRecords] = useState<Rec[] | null>(null);
   const [columns, setColumns] = useState<{ row: ReadGroupRow; records: Rec[] }[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(0);
+  const [dragging, setDragging] = useState<{ id: number; from: string } | null>(null);
+  const [over, setOver] = useState<string | null>(null);
+  const [folded, setFolded] = useState<Set<string>>(new Set());
+  const [quick, setQuick] = useState<string | null>(null);
+  const [quickName, setQuickName] = useState('');
+  const groupField = grouping ? grouping.split(':')[0] : null;
+  const groupDef = groupField ? fields[groupField] : undefined;
+  // Cards move between columns when the group-by is a plain many2one / selection / boolean field.
+  const canDrag = Boolean(groupDef && ['many2one', 'selection', 'boolean'].includes(groupDef.type) && !grouping?.includes(':'));
+
+  /** Value to write so a record lands in the column of `row`. */
+  const columnValue = (row: ReadGroupRow): unknown => {
+    const raw = row[groupField!];
+    return Array.isArray(raw) ? raw[0] : raw;
+  };
+
+  const drop = async (target: { row: ReadGroupRow; records: Rec[] }) => {
+    if (!dragging || !groupField) return;
+    const key = groupKey(target.row, grouping!);
+    setOver(null);
+    if (key === dragging.from) { setDragging(null); return; }
+    const id = dragging.id;
+    const from = dragging.from;
+    setDragging(null);
+    // Optimistic move, then the write; reload on failure.
+    setColumns((current) => current?.map((column) => {
+      const columnKey = groupKey(column.row, grouping!);
+      if (columnKey === from) return { ...column, row: { ...column.row, __count: column.row.__count - 1 }, records: column.records.filter((record) => record.id !== id) };
+      if (columnKey === key) { const moved = current.flatMap((c) => c.records).find((record) => record.id === id); return moved ? { ...column, row: { ...column.row, __count: column.row.__count + 1 }, records: [...column.records, moved] } : column; }
+      return column;
+    }) ?? null);
+    try { await rpc('write', model, { ids: [id], values: { [groupField]: columnValue(target.row) } }); }
+    catch { setReload((n) => n + 1); }
+  };
+
+  const quickCreate = async (row: ReadGroupRow) => {
+    const name = quickName.trim();
+    if (!name || !groupField) return;
+    const recName = fields.name ? 'name' : fields.summary ? 'summary' : 'display_name';
+    try {
+      await rpc('create', model, { values: { [recName]: name, [groupField]: columnValue(row) } }, { context });
+      setQuickName('');
+      setQuick(null);
+      setReload((n) => n + 1);
+    } catch { /* error dialog shown by the rpc listener */ }
+  };
+
+  const toggleFold = (key: string) => setFolded((set) => { const next = new Set(set); if (next.has(key)) next.delete(key); else next.add(key); return next; });
 
   useEffect(() => {
     let cancelled = false;
@@ -76,15 +127,16 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
       setLoading(false);
     })().catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [model, domain, grouping, offset, limit, spec, arch.defaultOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [model, domain, grouping, offset, limit, spec, arch.defaultOrder, reload]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isEmpty = !loading && ((records && records.length === 0) || (columns && columns.length === 0));
 
-  const renderCard = (record: Rec) => {
+  const renderCard = (record: Rec, column = '') => {
     const title = typeof record.name === 'string' ? record.name : nameOf(record.display_name) || String(record.display_name ?? '');
     const color = arch.highlightColor ? Number(record[arch.highlightColor]) : 0;
     return (
-      <div key={record.id as number} className="o_kanban_record" onClick={() => onOpen(record.id as number)}>
+      <div key={record.id as number} className={`o_kanban_record ${dragging?.id === record.id ? 'o_kanban_dragging' : ''}`} onClick={() => onOpen(record.id as number)} onMouseEnter={() => onHover?.(record.id as number)}
+        draggable={canDrag} onDragStart={(event) => { if (!canDrag) return; event.dataTransfer.effectAllowed = 'move'; setDragging({ id: record.id as number, from: column }); }} onDragEnd={() => { setDragging(null); setOver(null); }}>
         {color > 0 && <span className="o_kanban_color_stripe" style={{ background: `var(--o-color-${color})` }} />}
         <div className="o_kanban_title">{title}</div>
         {cardFields.filter((name) => name !== 'name' && name !== arch.highlightColor && name !== 'display_name').map((name) => {
@@ -108,14 +160,43 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
   return (
     <div className={`o_kanban_view ${grouping ? '' : 'o_kanban_ungrouped'} ${isEmpty && arch.sample ? 'o_sample_data' : ''}`}>
       {loading && <div className="o_loading_indicator" />}
-      {records?.map(renderCard)}
-      {columns?.map(({ row, records: items }) => {
-        const label = row[grouping!.split(':')[0]] ?? row[grouping!];
-        const text = Array.isArray(label) ? label[1] : label === false ? t('None') : String(label);
+      {records?.map((record) => renderCard(record))}
+      {columns?.map((column) => {
+        const { row, records: items } = column;
+        const key = groupKey(row, grouping!);
+        const text = groupLabel(row, grouping!, groupDef, t);
+        if (folded.has(key)) {
+          return (
+            <div key={key} className="o_kanban_group o_kanban_group_folded" onClick={() => toggleFold(key)}
+              onDragOver={(event) => { if (dragging) { event.preventDefault(); setOver(key); } }} onDrop={(event) => { event.preventDefault(); void drop(column); }}>
+              <div className="o_kanban_folded_title">{text} <span className="o_kanban_counter">{row.__count}</span></div>
+            </div>
+          );
+        }
         return (
-          <div key={JSON.stringify(row.__domain)} className="o_kanban_group">
-            <div className="o_kanban_header"><span>{text}</span><span className="o_kanban_counter">{row.__count}</span></div>
-            {items.map(renderCard)}
+          <div key={key} className={`o_kanban_group ${over === key && dragging?.from !== key ? 'o_kanban_group_over' : ''}`}
+            onDragOver={(event) => { if (dragging) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; if (over !== key) setOver(key); } }}
+            onDragLeave={(event) => { if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)) setOver((current) => (current === key ? null : current)); }}
+            onDrop={(event) => { event.preventDefault(); void drop(column); }}>
+            <div className="o_kanban_header">
+              <span className="o_kanban_header_title" onClick={() => toggleFold(key)} title={t('Fold')}>{text}</span>
+              <span className="o_kanban_counter">{row.__count}</span>
+              {arch.quickCreate !== false && groupField && (fields.name || fields.summary) && (
+                <button type="button" className="o_kanban_quick_add" title={t('Quick add')} onClick={() => { setQuick(key); setQuickName(''); }}><i className="fa fa-plus" /></button>
+              )}
+            </div>
+            {quick === key && (
+              <div className="o_kanban_quick_create" onClick={(event) => event.stopPropagation()}>
+                <input className="form-control form-control-sm" autoFocus placeholder={t('Title')} value={quickName} onChange={(event) => setQuickName(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === 'Enter') void quickCreate(row); if (event.key === 'Escape') setQuick(null); }} />
+                <div className="d-flex gap-1 mt-1">
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => void quickCreate(row)}>{t('Add')}</button>
+                  <button type="button" className="btn btn-link btn-sm" onClick={() => setQuick(null)}>{t('Discard')}</button>
+                </div>
+              </div>
+            )}
+            {items.map((record) => renderCard(record, key))}
+            {items.length === 0 && dragging && <div className="o_kanban_drop_hint">{t('Drop here')}</div>}
           </div>
         );
       })}

@@ -26,6 +26,11 @@ export function Chatter({ model, recordId, user }: { model: string; recordId: nu
   const [mode, setMode] = useState<'message' | 'note' | null>(null);
   const [body, setBody] = useState('');
   const [activityVersion, setActivityVersion] = useState(0);
+  const [labels, setLabels] = useState<Record<string, { en: string; ar: string }>>({});
+  useEffect(() => {
+    rpc<Record<string, { label: { en: string; ar: string } }>>('fieldsGet', model, {}, { silent: true, cacheMs: 30 * 60_000 })
+      .then((fields) => setLabels(Object.fromEntries(Object.entries(fields).map(([name, field]) => [name, field.label])))).catch(() => undefined);
+  }, [model]);
   const schedule = useScheduleActivity();
 
   const load = useCallback(async () => {
@@ -96,7 +101,7 @@ export function Chatter({ model, recordId, user }: { model: string; recordId: nu
                 {typeof message.body === 'string' && message.body !== '' && <div className="o_message_body" dangerouslySetInnerHTML={{ __html: message.body }} />}
                 {values.map((value, index) => (
                   <div key={index} className="o_message_tracking">
-                    {value.field_name}: {String(value.old_value_char ?? value.old_value_float ?? value.old_value_integer ?? '')}
+                    {t(labels[value.field_name] ?? value.field_name)}: {String(value.old_value_char ?? value.old_value_float ?? value.old_value_integer ?? '')}
                     <span className="o_tracking_arrow">→</span>{String(value.new_value_char ?? value.new_value_float ?? value.new_value_integer ?? '')}
                   </div>
                 ))}

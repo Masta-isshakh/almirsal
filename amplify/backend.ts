@@ -66,6 +66,10 @@ const computeRole = new iam.Role(dbStack, 'ComputeRole', {
   managedPolicies: [dataApiPolicy],
 });
 
+// Outgoing email (Send quotation / invoice) goes through SES; the sender identity
+// is verified once in the SES console and set as RODEO_MAIL_FROM on the branch.
+computeRole.addToPolicy(new iam.PolicyStatement({ actions: ['ses:SendEmail', 'ses:SendRawEmail'], resources: ['*'] }));
+
 // Settings › Users provisions accounts in the pool (invite, disable, reset).
 computeRole.addToPolicy(new iam.PolicyStatement({
   actions: [

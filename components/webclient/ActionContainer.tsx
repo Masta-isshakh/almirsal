@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SearchArch, SearchFilter, SearchGroupBy } from '@engine/registry/arch';
 import type { Domain, ViewType } from '@engine/registry/types';
 import { PyDate } from '@engine/expr/pydate';
@@ -11,13 +10,20 @@ import { useLang, useT } from '@/lib/client/i18n';
 import { rpc } from '@/lib/client/rpc';
 import { CurrencyProvider } from '@/lib/client/display';
 import { useActions } from '@/lib/client/actions';
+import { useNavigation } from '@/lib/client/navigation';
 import { Dropdown } from './Navbar';
 import { useUi } from './ui';
 import type { SessionInfo } from './WebClient';
 import { ListView } from '../views/ListView';
 import { KanbanView } from '../views/KanbanView';
 import { FormView } from '../views/FormView';
+import { PivotView } from '../views/PivotView';
+import { GraphView } from '../views/GraphView';
+import { CalendarView } from '../views/CalendarView';
+import { ActivityView } from '../views/ActivityView';
+import { ListActions } from '../views/ListActions';
 import { UnsupportedView } from '../views/UnsupportedView';
+import { RECORD_CACHE_MS, formSpecification, listFieldNames } from '@/lib/client/arch';
 import {
   EMPTY_STATE, facetsFromState, periodOptions, safeEval, stateFromContext, textFacetDomain,
   type EvalEnv, type Facet, type SearchState,
@@ -40,17 +46,26 @@ const VIEW_ICONS: Record<ViewType, string> = {
 
 interface Favorite { id: number; name: string; state: SearchState; isDefault: boolean; shared: boolean }
 
-export function ActionContainer({ resolution, user }: { resolution: ResolvedAction; user: SessionInfo }) {
+export function ActionContainer({ resolution, query: urlQuery, user }: { resolution: ResolvedAction; query: Record<string, string>; user: SessionInfo }) {
   const t = useT();
   const lang = useLang();
-  const router = useRouter();
+  const { navigate, reload: reloadPage } = useNavigation();
   const ui = useUi();
   const { doAction } = useActions();
   const { action, views, searchView, fields } = resolution;
   const search = searchView?.arch.type === 'search' ? (searchView.arch as SearchArch) : null;
   const today = useMemo(() => PyDate.parse(new Date().toISOString().slice(0, 10))!, []);
 
-  const actionContext = useMemo(() => (safeEval(action.context, { uid: user.uid, companyIds: user.companyIds, context: {} }) as Record<string, unknown>) ?? {}, [action.context, user]);
+  const idsParam = urlQuery.ids ?? null;
+  const defaultsParam = urlQuery.defaults ?? null;
+  const actionContext = useMemo(() => {
+    const base = (safeEval(action.context, { uid: user.uid, companyIds: user.companyIds, context: {} }) as Record<string, unknown>) ?? {};
+    // Calendar / kanban quick-create hand their defaults to the form through the URL.
+    if (defaultsParam) {
+      try { for (const [key, value] of Object.entries(JSON.parse(defaultsParam) as Record<string, unknown>)) base[`default_${key}`] = value; } catch { /* ignore */ }
+    }
+    return base;
+  }, [action.context, user, defaultsParam]);
   const env = useMemo<EvalEnv>(() => ({ uid: user.uid, companyIds: user.companyIds, context: actionContext }), [user, actionContext]);
   const actionDomain = useMemo(() => (safeEval(action.domain || undefined, env) as Domain) ?? [], [action.domain, env]);
 
@@ -61,8 +76,64 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState<number | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
+  const [allMatching, setAllMatching] = useState(false);
+  const [reload, setReload] = useState(0);
   const limit = action.limit ?? 80;
   const isForm = resolution.viewType === 'form';
+  const isSettings = action.model === 'res.config.settings';
+  const pagerKey = `rodeo.pager.${resolution.slug}`;
+
+  // Record pager on the form: the ids of the list page the user came from.
+  const [pagerIds, setPagerIds] = useState<number[]>([]);
+  useEffect(() => {
+    if (!isForm) return;
+    try { setPagerIds(JSON.parse(sessionStorage.getItem(pagerKey) ?? '[]')); } catch { setPagerIds([]); }
+  }, [isForm, pagerKey]);
+  const rememberPage = useCallback((ids: number[]) => { try { sessionStorage.setItem(pagerKey, JSON.stringify(ids)); } catch { /* private mode */ } }, [pagerKey]);
+  const pagerIndex = resolution.recordId ? pagerIds.indexOf(resolution.recordId) : -1;
+
+  const refresh = useCallback(() => { setReload((n) => n + 1); setSelected([]); setAllMatching(false); }, []);
+
+  // Alt+N new record, Alt+←/→ previous / next record on a form.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!event.altKey || event.ctrlKey || event.metaKey) return;
+      const key = event.key.toLowerCase();
+      if (key === 'n' && views.form && !isSettings) { event.preventDefault(); navigate(`/odoo/${resolution.slug}/new`); }
+      if (isForm && pagerIndex >= 0) {
+        const step = key === 'arrowright' ? 1 : key === 'arrowleft' ? -1 : 0;
+        const target = step ? pagerIds[pagerIndex + step] : undefined;
+        if (target) { event.preventDefault(); navigate(`/odoo/${resolution.slug}/${target}`); }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [views.form, isSettings, isForm, pagerIndex, pagerIds, resolution.slug, navigate]);
+
+  // Hover prefetch: the record a pointer rests on (and the pager neighbours) is
+  // read into the RPC cache with the form's own specification, so opening it
+  // costs no round trip.
+  const formSpec = useMemo(() => (views.form?.arch.type === 'form' ? formSpecification(views.form.arch, fields).spec : null), [views.form, fields]);
+  const prefetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prefetch = useCallback((id: number, delay = 120) => {
+    if (!formSpec || !action.model) return;
+    if (prefetchTimer.current) clearTimeout(prefetchTimer.current);
+    prefetchTimer.current = setTimeout(() => {
+      rpc('webRead', action.model!, { ids: [id], specification: formSpec }, { silent: true, context: actionContext, cacheMs: RECORD_CACHE_MS }).catch(() => undefined);
+    }, delay);
+  }, [formSpec, action.model, actionContext]);
+  useEffect(() => {
+    if (!isForm || pagerIndex < 0) return;
+    for (const neighbour of [pagerIds[pagerIndex + 1], pagerIds[pagerIndex - 1]]) if (neighbour) prefetch(neighbour, 400);
+  }, [isForm, pagerIndex, pagerIds, prefetch]);
+
+  // Printable reports bound to the model (form ⚙ › Print, list Actions › Print).
+  const [reports, setReports] = useState<{ reportName: string; name: { en: string; ar: string } }[]>([]);
+  useEffect(() => {
+    if (!action.model || isSettings) return;
+    rpc<{ reportName: string; name: { en: string; ar: string } }[]>('listReports', action.model, {}, { silent: true, cacheMs: 30 * 60_000 }).then(setReports).catch(() => setReports([]));
+  }, [action.model, isSettings]);
+  const openReport = (reportName: string, ids: number[]) => window.open(`/report/${encodeURIComponent(reportName)}/${ids.join(',')}?print=1`, '_blank');
 
   // Favorites are `ir.filters` rows scoped by model and action slug.
   useEffect(() => {
@@ -71,7 +142,7 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
     rpc<{ id: number; name: string; context: string; is_default: boolean; user_id: unknown }[]>('searchRead', 'ir.filters', {
       domain: [['model_id', '=', action.model], '|', ['user_id', '=', user.uid], ['user_id', '=', false]],
       fields: ['name', 'context', 'is_default', 'user_id'], order: 'name asc',
-    }, { silent: true }).then((rows) => {
+    }, { silent: true, cacheMs: 60_000 }).then((rows) => {
       if (cancelled) return;
       const mine = rows.map((row) => {
         let parsed: { action?: string; state?: SearchState } = {};
@@ -87,7 +158,6 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
   }, [action.model, resolution.slug, user.uid, isForm]);
 
   const facets = useMemo(() => facetsFromState(state, search, env, today, lang), [state, search, env, today, lang]);
-  const idsParam = useSearchParams().get('ids');
   const domain = useMemo<Domain>(() => {
     const parts: Domain[] = [actionDomain];
     if (idsParam) parts.push([['id', 'in', idsParam.split(',').map(Number).filter((id) => id > 0)]]);
@@ -171,9 +241,9 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
     if (activeFavorite === favorite.id) { setActiveFavorite(null); setState(EMPTY_STATE); }
   };
 
-  const goTo = (viewType: ViewType) => router.push(`/odoo/${resolution.slug}?view_type=${viewType}`);
-  const openRecord = (id: number) => router.push(`/odoo/${resolution.slug}/${id}`);
-  const createRecord = () => router.push(`/odoo/${resolution.slug}/new`);
+  const goTo = (viewType: ViewType) => navigate(`/odoo/${resolution.slug}?view_type=${viewType}`);
+  const openRecord = (id: number) => navigate(`/odoo/${resolution.slug}/${id}`);
+  const createRecord = () => navigate(`/odoo/${resolution.slug}/new`);
   const view = views[resolution.viewType];
   const switcher = (action.viewMode ?? []).filter((type) => type !== 'form' && views[type]);
   const headerButtons = view?.arch.type === 'list' ? view.arch.headerButtons : [];
@@ -181,13 +251,47 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
   const runHeaderButton = async (button: (typeof headerButtons)[number]) => {
     if (selected.length === 0) { ui.notify({ message: { en: 'Select records first.', ar: 'حدد السجلات أولاً.' }, type: 'warning' }); return; }
     if (button.type === 'action' && button.name) {
-      await doAction(button.name, { activeIds: selected, activeId: selected[0], activeModel: action.model, onClose: () => setState((current) => ({ ...current })) });
+      await doAction(button.name, { activeIds: selected, activeId: selected[0], activeModel: action.model, onClose: refresh });
     } else if (button.type === 'object' && button.name && action.model) {
       const result = await rpc<Record<string, unknown> | false>('callButton', action.model, { ids: selected, method: button.name }).catch(() => false);
       if (result && typeof result === 'object') await doAction(result, { activeIds: selected, activeModel: action.model });
-      setState((current) => ({ ...current }));
+      refresh();
     }
   };
+
+  /** Pivot / graph click-through: open the list on exactly those records. */
+  const drill = async (cellDomain: Domain, title: string) => {
+    const ids = await rpc<number[]>('search', action.model!, { domain: cellDomain, limit: 2000 }, { silent: true }).catch(() => [] as number[]);
+    if (ids.length === 0) { ui.notify({ type: 'info', message: { en: `No records for ${title}.`, ar: `لا توجد سجلات لـ ${title}.` } }); return; }
+    navigate(`/odoo/${resolution.slug}?view_type=list&ids=${ids.join(',')}`);
+  };
+
+  /** Form ⚙ menu: duplicate, archive/unarchive, delete. */
+  const formMenu = resolution.recordId && action.model ? (
+    <Dropdown toggle={() => <button type="button" className="btn btn-link text-muted px-2" title={t('Actions')}><i className="fa fa-cog" /></button>}>
+      {reports.length > 0 && <div className="o_dropdown_header"><i className="fa fa-print me-1" />{t('Print')}</div>}
+      {reports.map((report) => <button key={report.reportName} type="button" className="o_dropdown_item ps-4" onClick={() => openReport(report.reportName, [resolution.recordId!])}>{t(report.name)}</button>)}
+      {reports.length > 0 && <div className="o_dropdown_divider" />}
+      <button type="button" className="o_dropdown_item" onClick={async () => { const id = await rpc<number>('copy', action.model!, { id: resolution.recordId }); navigate(`/odoo/${resolution.slug}/${id}`); }}><i className="fa fa-clone me-2 text-muted" />{t('Duplicate')}</button>
+      {fields.active && (
+        <button type="button" className="o_dropdown_item" onClick={async () => {
+          const [row] = await rpc<{ active: boolean }[]>('read', action.model!, { ids: [resolution.recordId], fields: ['active'] });
+          await rpc('write', action.model!, { ids: [resolution.recordId], values: { active: !row?.active } });
+          ui.notify({ type: 'success', message: row?.active ? { en: 'Record archived.', ar: 'تمت أرشفة السجل.' } : { en: 'Record unarchived.', ar: 'تم إلغاء أرشفة السجل.' },
+            action: { label: { en: 'Undo', ar: 'تراجع' }, onClick: async () => { await rpc('write', action.model!, { ids: [resolution.recordId], values: { active: Boolean(row?.active) } }); reloadPage(); } } });
+          reloadPage();
+        }}><i className="fa fa-archive me-2 text-muted" />{t('Archive')} / {t('Unarchive')}</button>
+      )}
+      <div className="o_dropdown_divider" />
+      <button type="button" className="o_dropdown_item text-danger" onClick={async () => {
+        if (!(await ui.confirm({ message: { en: 'Are you sure you want to delete this record?', ar: 'هل أنت متأكد من حذف هذا السجل؟' }, confirmLabel: { en: 'Delete', ar: 'حذف' } }))) return;
+        await rpc('unlink', action.model!, { ids: [resolution.recordId] });
+        const next = pagerIds.filter((id) => id !== resolution.recordId);
+        rememberPage(next);
+        navigate(next[pagerIndex] ? `/odoo/${resolution.slug}/${next[pagerIndex]}` : `/odoo/${resolution.slug}`);
+      }}><i className="fa fa-trash-o me-2" />{t('Delete')}</button>
+    </Dropdown>
+  ) : null;
 
   const displayFacets = activeFavorite
     ? [{ id: `favorite:${activeFavorite}`, kind: 'favorite' as const, label: favorites.find((f) => f.id === activeFavorite)?.name ?? '', values: [favorites.find((f) => f.id === activeFavorite)?.name ?? ''] }]
@@ -201,9 +305,9 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
             {!isForm && action.type === 'act_window' && views.form && (
               <button type="button" className="btn btn-primary" onClick={createRecord} accessKey="c">{t('New')}</button>
             )}
-            {isForm && views.form && <button type="button" className="btn btn-outline-primary" onClick={createRecord}>{t('New')}</button>}
+            {isForm && views.form && !isSettings && <button type="button" className="btn btn-outline-primary" onClick={createRecord}>{t('New')}</button>}
             <div className="o_breadcrumb">
-              {isForm ? (
+              {isForm && !isSettings ? (
                 <>
                   <Link href={`/odoo/${resolution.slug}`}>{t(action.name)}</Link>
                   <span className="o_breadcrumb_sep">/</span>
@@ -211,9 +315,13 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
                 </>
               ) : <span className="active">{t(action.name)}</span>}
             </div>
+            {isForm && !isSettings && formMenu}
             {!isForm && headerButtons.map((button, index) => (
               <button key={index} type="button" className={`btn ${/btn-primary/.test(button.class ?? '') ? 'btn-primary' : 'btn-secondary'}`} onClick={() => runHeaderButton(button)}>{t(button.string)}</button>
             ))}
+            {!isForm && selected.length > 0 && action.model && view?.arch.type === 'list' && (
+              <ListActions model={action.model} fields={fields} selected={selected} allMatching={allMatching} domain={domain} columns={listFieldNames(view.arch)} onDone={refresh} reports={reports} onPrint={(reportName, ids) => openReport(reportName, ids)} />
+            )}
           </div>
           {!isForm && search && (
             <div className="o_cp_searchview">
@@ -222,6 +330,13 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
                 search={search} state={state} onToggleFilter={toggleFilter} onTogglePeriod={togglePeriod} onToggleGroupBy={toggleGroupBy}
                 favorites={favorites} activeFavorite={activeFavorite} onSaveFavorite={saveFavorite} onApplyFavorite={applyFavorite} onDeleteFavorite={deleteFavorite}
                 periods={periodOptions(today, lang)} />
+            </div>
+          )}
+          {isForm && pagerIndex >= 0 && pagerIds.length > 1 && (
+            <div className="o_cp_pager">
+              <span className="o_pager_value">{pagerIndex + 1} / {pagerIds.length}</span>
+              <button type="button" className="o_pager_button" disabled={pagerIndex === 0} onClick={() => navigate(`/odoo/${resolution.slug}/${pagerIds[pagerIndex - 1]}`)} aria-label="Previous"><i className="fa fa-chevron-left" /></button>
+              <button type="button" className="o_pager_button" disabled={pagerIndex >= pagerIds.length - 1} onClick={() => navigate(`/odoo/${resolution.slug}/${pagerIds[pagerIndex + 1]}`)} aria-label="Next"><i className="fa fa-chevron-right" /></button>
             </div>
           )}
           {!isForm && (
@@ -247,11 +362,21 @@ export function ActionContainer({ resolution, user }: { resolution: ResolvedActi
       <div className="o_view_container">
         {!view ? <UnsupportedView type={resolution.viewType} />
           : view.arch.type === 'list' ? (
-            <ListView key={JSON.stringify([domain, groupBy, offset])} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} onSelect={setSelected} user={user} context={actionContext} help={action.help} />
+            <ListView key={JSON.stringify([domain, groupBy, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord}
+              onSelect={(ids, all) => { setSelected(ids); setAllMatching(all); }} onRecords={rememberPage} onHover={prefetch} user={user} context={actionContext} help={action.help} />
           ) : view.arch.type === 'kanban' ? (
-            <KanbanView key={JSON.stringify([domain, groupBy, offset])} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} user={user} context={actionContext} help={action.help} />
+            <KanbanView key={JSON.stringify([domain, groupBy, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} onHover={prefetch} user={user} context={actionContext} help={action.help} />
           ) : view.arch.type === 'form' ? (
             <FormView arch={view.arch} fields={fields} relatedFields={resolution.relatedFields} model={action.model!} recordId={resolution.recordId} context={actionContext} user={user} slug={resolution.slug} />
+          ) : view.arch.type === 'pivot' ? (
+            <PivotView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} context={actionContext} onDrill={drill} />
+          ) : view.arch.type === 'graph' ? (
+            <GraphView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} context={actionContext} onDrill={drill} />
+          ) : view.arch.type === 'calendar' ? (
+            <CalendarView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} onOpen={openRecord}
+              onCreate={(defaults) => navigate(`/odoo/${resolution.slug}/new?defaults=${encodeURIComponent(JSON.stringify(defaults))}`)} />
+          ) : view.arch.type === 'activity' ? (
+            <ActivityView key={JSON.stringify([domain, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} />
           ) : <UnsupportedView type={view.arch.type} />}
       </div>
     </CurrencyProvider>

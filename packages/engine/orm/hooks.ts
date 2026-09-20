@@ -44,6 +44,10 @@ export interface ModelHooks {
   searchFields?: string[];
   /** Custom display name (e.g. "[CODE] Name"); receives the read record. */
   displayName?: (env: Environment, record: Values) => string;
+  /** Columns the display name needs (keeps the lookup to those columns). */
+  displayNameFields?: string[];
+  /** SQL expression of the display name (alias = the model's table), so parents can inline it. */
+  displayNameSql?: (alias: string) => string;
   /** Adjust values before the insert (sequence numbers, derived defaults). */
   beforeCreate?: (env: Environment, vals: Values) => Promise<Values> | Values;
   /** Adjust values before the update; return the values to write. */

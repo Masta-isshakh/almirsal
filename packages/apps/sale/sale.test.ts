@@ -101,12 +101,14 @@ describe('sales', () => {
     expect((await orders.read(id, ['state', 'invoice_status']))[0]).toMatchObject({ state: 'draft', invoice_status: 'no' });
   });
 
-  it('marks a quotation as sent and returns a notification', async () => {
+  it('"Send" opens the email composer; the quotation is marked sent once the mail goes out', async () => {
     const partner = await env.model('res.partner').create({ name: 'Sender' });
     const orders = env.model('sale.order');
     const id = await orders.create({ partner_id: partner });
     const result = await orders.callButton(id, 'action_quotation_send');
-    expect(result).toMatchObject({ type: 'ir.actions.client', tag: 'display_notification' });
+    expect(result).toMatchObject({ type: 'ir.actions.client', tag: 'mail.compose', params: { model: 'sale.order', res_id: id } });
+    expect((await orders.read(id, ['state']))[0].state).toBe('draft');
+    await orders.callButton(id, 'message_sent');
     expect((await orders.read(id, ['state']))[0].state).toBe('sent');
   });
 

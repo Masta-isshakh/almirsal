@@ -72,6 +72,11 @@ dominated by Aurora compute hours.
    carries the Data API + secret permissions.
 3. Set `RODEO_SESSION_SECRET` (any long random string) in **App settings →
    Environment variables** so local sessions are signed with a private key.
+   To send email (quotations, invoices), verify a sender in **Amazon SES →
+   Identities** (an address or your domain, Mumbai region) and set
+   `RODEO_MAIL_FROM` to it in the same place; while the SES account is in the
+   sandbox only verified recipients receive mail — request production access
+   once. SES costs $0.10 per 1,000 emails, nothing when idle.
 4. The database is initialised during the deployment itself by the
    `rodeo-migrate` Lambda (a CloudFormation trigger runs it after the cluster
    is created and whenever the migration code changes; ~1 minute on a fresh

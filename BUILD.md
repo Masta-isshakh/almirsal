@@ -235,6 +235,74 @@ handlers on Amplify Hosting — no AppSync, no separate RPC Lambda.
   note, feed with tracking values, activities with Schedule / Mark Done /
   Done & Schedule Next / Edit / Cancel), systray Messages and Activities
   panels (Late / Today / Future per document model).
+- Reporting views: **pivot** (row/column group-bys with sub-totals at every
+  level, several measures, collapsible headers, flip axis, expand all,
+  click-through to the records, CSV download — `components/views/PivotView`),
+  **graph** (bar / stacked / line / pie in plain SVG, two group-bys, measure
+  and order selectors, hover values, drill-down — `GraphView`), **calendar**
+  (day / week / month / year, colour legend with filters, quick create,
+  ←/→ and `t` keys — `CalendarView`), **activity** (records × activity types
+  — `ActivityView`). `components/views/groups.ts` holds the shared
+  group-label / measure helpers; `export.ts` the CSV / Excel downloads.
+- List ⚙ **Actions** on a selection (Export with a field picker in CSV or
+  Excel, Archive / Unarchive with an **Undo** toast, Duplicate, Delete) and
+  "select all N matching records"; form ⚙ menu (Duplicate, Archive, Delete)
+  and a **record pager** (prev / next over the list page you came from).
+- **Command palette** (Ctrl+K, or the search icon): fuzzy jump to any menu,
+  record search across the models that have menus in one round trip
+  (`globalSearch`), commands (new record, home, language, theme, log out),
+  `/` `@` `>` prefixes, recent picks.
+- **Dark mode** (user menu › Theme: light / dark / system; applied before
+  first paint) — `components/webclient/theme.tsx`, tokens in `tokens.css`.
+- Field polish: localised date / datetime inputs with a picker button and
+  lenient typing (`20/9`, `+3`), tax totals block, tax-mode pill, empty text
+  reads as `''` in view expressions, `column_invisible` evaluated against
+  the parent record, `<widget>` list cells skipped.
+- **Client-side routing** (`lib/client/navigation.tsx`): after the first
+  server-rendered page every `/odoo/…` move is a `pushState` — action
+  descriptions (~230 KB for Sales) are fetched once per action and cached,
+  records are read into a 20 s cache when the pointer rests on a row (and
+  for the pager neighbours), so list → form takes ~130 ms and breadcrumb /
+  browser back ~40 ms instead of a 385 KB page per click. A top progress
+  bar and list / form skeletons cover the remaining waits; Alt+N, Alt+←/→,
+  `?` shortcuts sheet.
+- **RPC batching**: calls made in the same tick travel in one request
+  (`{calls: [...]}`, run concurrently server-side) — one session lookup and
+  one SSR compute instance instead of six when a form opens; reference reads
+  (currencies, activity types, groups, reports, favorites) are cached on the
+  client and, for static models, in server memory (5 min, cleared on write).
+- **ORM reads**: plain many2one names come back as subqueries in the same
+  SELECT, every x2many field of a read is one UNION ALL query, the record's
+  own display name rides along, hook models declare `displayNameSql` /
+  `displayNameFields` — a full quotation form is 5 queries / ~0.35 s over
+  the Data API (was 25 queries / 1.2 s); `web_search_read` counts with a
+  window function in the same query as the page. `RODEO_SQL_TRACE=1` logs
+  every statement with its duration.
+- **Settings engine** (C-6, `components/views/form/Settings.tsx` +
+  `packages/apps/base/settings.ts`): the 13-app settings page with the app
+  sidebar, live search, hash anchors, setting cards (toggle, label, help,
+  documentation link, dependent fields); values persist in
+  `ir.config_parameter` (`rodeo.settings.<field>`, company-backed fields on
+  `res.company`), only changes are written, `getSetting()` serves other apps.
+- **Printable reports** (`lib/server/reports.ts`, `app/report/[report]/[ids]`):
+  quotation / order / pro-forma and invoice / credit note documents as A4
+  HTML with print CSS — the browser's "Save as PDF" makes the PDF, Arabic
+  shaping and RTL come for free. Form ⚙ › Print and list Actions › Print,
+  `ir.actions.report` and `sale.action_report_saleorder`-style buttons all
+  open it; Preview buttons open the same page.
+- **Send by email** (`lib/server/mail.ts`, `components/webclient/Composer.tsx`):
+  the Send buttons open a composer (recipients with addresses, subject, body,
+  document inline); Amazon SES v2 sends when `RODEO_MAIL_FROM` is a verified
+  sender, otherwise the email is logged in the chatter and the user told; the
+  quotation moves to "Sent" / the invoice to `is_move_sent`.
+- **Payments** (`packages/apps/account/payment.ts`): the Pay button opens
+  the Register Payment wizard (journal, method, date, amount, memo);
+  `account.payment` numbered `PBNK1/2026/00001` with a balanced bank ↔
+  receivable entry, invoices get `amount_residual` / `payment_state`
+  (partial → paid); posted entries cannot be deleted.
+- Kanban: drag cards between columns (writes the group field, optimistic),
+  quick-create in a column, fold columns; default form/list views are
+  synthesized for the 70 models the export captured without views.
 - `/api/rpc` dispatching the A-4 surface; local password sessions or Cognito.
 
 Verified over HTTP on the seeded database: login → home menu → Sales →
@@ -246,7 +314,13 @@ balanced items; Settings › Users creates a user, provisions the Cognito
 account (sandbox pool), archive disables it; activities update the order's
 `activity_state` and Mark Done logs the note.
 
-**171 tests pass; `tsc --noEmit` and `next build` are clean.**
+Browser scenario (headless Chrome, `playwright-core` installed ad hoc, not a
+dependency): list selection → Actions → Export dialog, select-all, form
+pager + ⚙ menu, Ctrl+K menus and records, dark mode, pivot drill-down,
+graph pie/line, calendar week/year, activity view — all green, no RPC
+errors, in English and Arabic.
+
+**176 tests pass; `tsc --noEmit` and `next build` are clean.**
 
 ## Next — J-1 build phases
 
@@ -271,9 +345,9 @@ J-1 fixes the order and the gate for each phase:
 5. **Cross-app flows** integration tests (D).
 6. **Polish** — empty states, shortcuts, PWA, performance, a11y, mobile.
 
-Phase 1 is complete. Phase 2 is functionally complete (ORM, list/kanban/
-form, editable lines + catalog, invoice wizard → `account.move`, dialogs,
-search dates + favorites, systray panels, widgets, Settings › Users with
-Cognito provisioning); what remains for its gate is the pixel-parity
-screenshot pass. Next: Phase 3 (calendar/pivot/graph/activity views, the
-settings engine, PDF reports, SES mail, cron).
+Phases 1 and 2 are complete. Phase 3 is complete except gantt / cohort /
+map / grid views and cron: the generic views (pivot, graph, calendar,
+activity), the settings engine (C-6), printable reports and email (SES) are
+in, plus list actions, record pager, command palette, dark mode, kanban
+drag & drop and payments. Next: Phase 4 apps in the J-1 order (Discuss,
+Calendar, Appointments, To-do, Knowledge, …), each with its Part D methods.

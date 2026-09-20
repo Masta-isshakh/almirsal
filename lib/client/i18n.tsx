@@ -34,6 +34,8 @@ export function useT(): (value: I18n | string | undefined | null) => string {
   return (value) => {
     if (value == null) return '';
     if (typeof value === 'string') return lang === 'ar_001' ? (catalog[value] ?? value) : value;
+    // An export string without Arabic (or with the English copied over) still gets the catalog.
+    if (lang === 'ar_001' && (!value.ar || value.ar === value.en) && catalog[value.en]) return catalog[value.en];
     return resolve(value, lang);
   };
 }

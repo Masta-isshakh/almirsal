@@ -344,6 +344,10 @@
     "knowledge.article.template.category": {
       "name": "Article Template Category ⇔ فئة قالب المقال",
       "transient": false
+    },
+    "account.payment.register": {
+      "name": "Register Payment ⇔ تسجيل الدفع",
+      "transient": true
     }
   },
   "models": {
@@ -4863,6 +4867,125 @@
         "ar": "التسلسل الآمن",
         "t": "many2one",
         "rel": "ir.sequence"
+      }
+    },
+    "account.payment.register": {
+      "payment_date": {
+        "s": "Payment Date",
+        "ar": "تاريخ الدفع",
+        "t": "date",
+        "req": 1
+      },
+      "amount": {
+        "s": "Amount",
+        "ar": "المبلغ",
+        "t": "monetary",
+        "req": 1
+      },
+      "currency_id": {
+        "s": "Currency",
+        "ar": "العملة",
+        "t": "many2one",
+        "rel": "res.currency"
+      },
+      "journal_id": {
+        "s": "Journal",
+        "ar": "دفتر اليومية",
+        "t": "many2one",
+        "rel": "account.journal",
+        "req": 1
+      },
+      "payment_method_line_id": {
+        "s": "Payment Method",
+        "ar": "طريقة الدفع",
+        "t": "many2one",
+        "rel": "account.payment.method.line"
+      },
+      "communication": {
+        "s": "Memo",
+        "ar": "المذكرة",
+        "t": "char"
+      },
+      "partner_id": {
+        "s": "Customer/Vendor",
+        "ar": "العميل/المورد",
+        "t": "many2one",
+        "rel": "res.partner"
+      },
+      "partner_type": {
+        "s": "Partner Type",
+        "ar": "نوع الشريك",
+        "t": "selection",
+        "sel": [
+          "customer=Customer ⇔ العميل",
+          "supplier=Vendor ⇔ المورد"
+        ]
+      },
+      "payment_type": {
+        "s": "Payment Type",
+        "ar": "نوع الدفع",
+        "t": "selection",
+        "sel": [
+          "inbound=Receive ⇔ استلام",
+          "outbound=Send ⇔ إرسال"
+        ]
+      },
+      "company_id": {
+        "s": "Company",
+        "ar": "الشركة",
+        "t": "many2one",
+        "rel": "res.company"
+      },
+      "source_amount": {
+        "s": "Amount to Pay",
+        "ar": "المبلغ المستحق",
+        "t": "monetary",
+        "ro": 1
+      },
+      "payment_difference": {
+        "s": "Difference",
+        "ar": "الفرق",
+        "t": "monetary",
+        "ro": 1
+      },
+      "payment_difference_handling": {
+        "s": "Payment Difference Handling",
+        "ar": "معالجة فرق الدفع",
+        "t": "selection",
+        "sel": [
+          "open=Keep open ⇔ إبقاؤها مفتوحة",
+          "reconcile=Mark as fully paid ⇔ تحديد كمدفوعة بالكامل"
+        ]
+      },
+      "writeoff_label": {
+        "s": "Journal Item Label",
+        "ar": "عنوان بند اليومية",
+        "t": "char"
+      },
+      "line_ids": {
+        "s": "Journal items",
+        "ar": "بنود اليومية",
+        "t": "many2many",
+        "rel": "account.move.line"
+      },
+      "can_edit_wizard": {
+        "s": "Can Edit Wizard",
+        "ar": "يمكن تعديل المعالج",
+        "t": "boolean",
+        "ro": 1
+      },
+      "group_payment": {
+        "s": "Group Payments",
+        "ar": "تجميع الدفعات",
+        "t": "boolean"
+      }
+    },
+    "account.payment": {
+      "reconciled_invoice_ids": {
+        "s": "Reconciled Invoices",
+        "ar": "الفواتير المسوّاة",
+        "t": "many2many",
+        "rel": "account.move"
       }
     }
   }

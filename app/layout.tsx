@@ -7,6 +7,7 @@ import '@/styles/webclient.css';
 import { I18nProvider } from '@/lib/client/i18n';
 import { getCatalog } from '@/lib/server/catalog';
 import { getRequestLang, getSessionUser } from '@/lib/server/session';
+import { THEME_BOOT_SCRIPT } from '@/components/webclient/theme';
 
 export const metadata: Metadata = {
   title: 'Rodeo ERP',
@@ -25,8 +26,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const lang = await getRequestLang(user);
   const dir = lang === 'ar_001' ? 'rtl' : 'ltr';
   return (
-    <html lang={lang === 'ar_001' ? 'ar' : 'en'} dir={dir} data-lang={lang}>
+    <html lang={lang === 'ar_001' ? 'ar' : 'en'} dir={dir} data-lang={lang} suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         {dir === 'rtl' && <link rel="stylesheet" href="/vendor/bootstrap.rtl.min.css" />}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Sans+Arabic:wght@400;500;700&display=swap" />

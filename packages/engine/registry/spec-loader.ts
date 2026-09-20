@@ -519,7 +519,8 @@ function convertList(raw: Raw): ListArch {
     defaultOrder: strOf(attrs.default_order),
     limit: numOf(attrs.limit),
     decorations: decorationsOf(attrs),
-    columns: ((raw.columns ?? []) as Raw[]).map(convertListColumn),
+    // `<widget>` cells (qty-at-date, section state) carry no field: skipped.
+    columns: ((raw.columns ?? []) as Raw[]).filter((column) => column.btn || column.name !== undefined).map(convertListColumn),
     headerButtons: ((raw.header_buttons ?? []) as Raw[]).map(convertButton),
     groupby: convertGroupByHeaders(raw.groupby),
     control: convertChildren(raw.control),

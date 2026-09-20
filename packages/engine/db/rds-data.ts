@@ -44,17 +44,23 @@ function toParameter(name: string, value: unknown): SqlParameter {
 /** Rewrite `$n` placeholders to named parameters, expanding arrays. */
 export function prepare(text: string, params: unknown[]): { sql: string; parameters: SqlParameter[] } {
   const parameters: SqlParameter[] = [];
+  const expanded = new Map<string, string>();
   const sql = text.replace(/\$(\d+)/g, (_match, index: string) => {
     const position = Number(index) - 1;
     const value = params[position];
     if (Array.isArray(value)) {
       if (value.length === 0) return `'{}'`;
+      // The same array placeholder may appear several times (UNION ALL parts).
+      const seen = expanded.get(index);
+      if (seen) return seen;
       const names = value.map((item, i) => {
         const name = `p${index}_${i}`;
         parameters.push(toParameter(name, item));
         return `:${name}`;
       });
-      return `ARRAY[${names.join(', ')}]`;
+      const list = `ARRAY[${names.join(', ')}]`;
+      expanded.set(index, list);
+      return list;
     }
     const name = `p${index}`;
     if (!parameters.some((parameter) => parameter.name === name)) parameters.push(toParameter(name, value));
@@ -94,8 +100,10 @@ async function withResume<T>(fn: () => Promise<T>): Promise<T> {
 export function rdsDataDatabase(options: RdsDataOptions): Database {
   const client = options.client ?? new RDSDataClient({ region: options.region });
 
+  const trace = process.env.RODEO_SQL_TRACE === '1';
   const execute = async <T extends Row>(text: string, params: unknown[], transactionId?: string): Promise<QueryResult<T>> => {
     const { sql, parameters } = prepare(text, params);
+    const started = Date.now();
     const response = await withResume(() => client.send(new ExecuteStatementCommand({
       resourceArn: options.clusterArn,
       secretArn: options.secretArn,
@@ -107,6 +115,7 @@ export function rdsDataDatabase(options: RdsDataOptions): Database {
       continueAfterTimeout: false,
     })));
     const rows = response.formattedRecords ? (JSON.parse(response.formattedRecords) as T[]) : [];
+    if (trace) console.log(`[sql] ${String(Date.now() - started).padStart(4)}ms ${sql.replace(/s+/g, ' ').slice(0, 110)}`);
     return { rows, rowCount: response.numberOfRecordsUpdated ?? rows.length };
   };
 

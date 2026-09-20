@@ -54,6 +54,8 @@ function isEmail(text: string): boolean {
 export function registerUsers(): void {
   registerModelHooks('res.users', {
     displayName: (_env, record) => String(record.name || record.login || record.id),
+    displayNameFields: ['name', 'login'],
+    displayNameSql: (alias) => `coalesce(nullif(${alias}."name", ''), ${alias}."login")`,
     searchFields: ['login', 'email'],
     defaults: async (env) => ({
       lang: env.lang,

@@ -7,6 +7,7 @@ import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
 import { isInvisible, isReadonly, isRequired, makeRecordScope } from '@/lib/client/arch';
+import { evalCondition } from '@engine/expr/evaluate';
 import { Field } from '../../fields/Field';
 import { useUi } from '../../webclient/ui';
 import { useSession } from '../../webclient/session';
@@ -39,8 +40,11 @@ export function EmbeddedList({ node, field, arch, comodelFields, rows, parent, r
   const [editing, setEditing] = useState<number | null>(null);
 
   const comodel = field.relation ?? '';
+  // column_invisible is evaluated against the parent record (`parent.x` in the arch reads as `x` here).
+  const parentScope = makeRecordScope(parent, { uid: user.uid, companyIds: user.companyIds, parent });
   const columns = arch.columns.filter((column): column is FieldNode =>
-    column.kind === 'field' && !column.hidden && column.columnInvisible !== true && column.optional !== 'hide' && column.widget !== 'handle' && Boolean(comodelFields[column.name]));
+    column.kind === 'field' && !column.hidden && column.optional !== 'hide' && column.widget !== 'handle' && Boolean(comodelFields[column.name])
+    && !(column.columnInvisible === true || (typeof column.columnInvisible === 'string' && evalCondition(column.columnInvisible.replace(/parent./g, ''), parentScope, false))));
   const visible = rows.filter((row) => !row.deleted);
   const editable = !readonly && arch.editable !== undefined;
   const isSection = (row: LineRow) => typeof row.values.display_type === 'string' && String(row.values.display_type).startsWith('line_');
@@ -150,7 +154,7 @@ export function EmbeddedList({ node, field, arch, comodelFields, rows, parent, r
         </thead>
         <tbody>
           {visible.map((row) => {
-            const scope = makeRecordScope(row.values, { uid: user.uid, companyIds: user.companyIds, parent });
+            const scope = makeRecordScope(row.values, { uid: user.uid, companyIds: user.companyIds, parent, fields: comodelFields });
             const isEditing = editable && editing === row.key;
             if (isSection(row)) {
               const note = row.values.display_type === 'line_note';

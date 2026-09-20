@@ -157,13 +157,14 @@ export function registerSale(): void {
           await orders.recompute([order.id as number], ['order_line'], false);
         }
       },
-      action_quotation_send: async (env, ids) => {
+      /** "Send": the email composer (Part G); the state moves to "sent" once the mail goes out. */
+      action_quotation_send: async (_env, ids) => ({ type: 'ir.actions.client', tag: 'mail.compose', params: { model: 'sale.order', res_id: ids[0] } }),
+      message_sent: async (env, ids) => {
         const orders = env.model('sale.order');
         for (const id of ids) {
           const [order] = await orders.read(id, ['state']);
           if (order.state === 'draft') await orders.write(id, { state: 'sent' });
         }
-        return { type: 'ir.actions.client', tag: 'display_notification', params: { title: 'Quotation sent', message: 'The quotation has been marked as sent.', type: 'success' } };
       },
       action_cancel: async (env, ids) => {
         await env.model('sale.order').write(ids, { state: 'cancel' });
@@ -178,7 +179,8 @@ export function registerSale(): void {
       },
       action_lock: async (env, ids) => { await env.model('sale.order').write(ids, { locked: true }); },
       action_unlock: async (env, ids) => { await env.model('sale.order').write(ids, { locked: false }); },
-      action_preview_sale_order: async (_env, ids) => ({ type: 'ir.actions.act_url', url: `/my/orders/${ids[0]}`, target: 'new' }),
+      action_preview_sale_order: async (_env, ids) => ({ type: 'ir.actions.act_url', url: `/report/sale.report_saleorder/${ids[0]}`, target: 'new' }),
+      action_print_quotation: async (_env, ids) => ({ type: 'ir.actions.report', report_name: 'sale.report_saleorder', context: { active_ids: ids } }),
       action_reopen_order: async (env, ids) => { await env.model('sale.order').write(ids, { invoicing_closed: false }); },
     },
   });

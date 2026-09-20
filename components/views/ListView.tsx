@@ -11,6 +11,7 @@ import { badgeClass, decorationClasses, listColumns, listFieldNames, makeRecordS
 import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
 import type { SessionInfo } from '../webclient/WebClient';
 import { EmptyState } from './EmptyState';
+import { ListSkeleton } from './Skeleton';
 
 type Rec = Record<string, unknown>;
 
@@ -24,7 +25,11 @@ interface Props {
   limit: number;
   onTotal: (total: number) => void;
   onOpen: (id: number) => void;
-  onSelect?: (ids: number[]) => void;
+  onSelect?: (ids: number[], allMatching: boolean) => void;
+  /** Ids of the loaded page, for the form pager. */
+  onRecords?: (ids: number[]) => void;
+  /** Pointer rests on a row: prefetch it. */
+  onHover?: (id: number) => void;
   user: SessionInfo;
   context: Record<string, unknown>;
   help?: I18n;
@@ -36,7 +41,7 @@ interface Props {
  * sums (folded until clicked), sample-data empty state.
  */
 export function ListView(props: Props) {
-  const { arch, fields, model, domain, groupBy, offset, limit, onTotal, onOpen, onSelect, user, context, help } = props;
+  const { arch, fields, model, domain, groupBy, offset, limit, onTotal, onOpen, onSelect, onRecords, onHover, user, context, help } = props;
   const t = useT();
   const lang = useLang();
   const currencies = useCurrencies();
@@ -48,7 +53,9 @@ export function ListView(props: Props) {
   const [totals, setTotals] = useState<Rec | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const select = (next: Set<number>) => { setSelected(next); onSelect?.([...next]); };
+  const [allMatching, setAllMatching] = useState(false);
+  const [total, setTotal] = useState(0);
+  const select = (next: Set<number>, all = false) => { setSelected(next); setAllMatching(all); onSelect?.([...next], all); };
   const toggleSelected = (id: number) => { const next = new Set(selected); if (next.has(id)) next.delete(id); else next.add(id); select(next); };
 
   const columns = useMemo(() => listColumns(arch, optional), [arch, optional]);
@@ -75,6 +82,8 @@ export function ListView(props: Props) {
         setRecords(result.records);
         setGroups(null);
         select(new Set());
+        onRecords?.(result.records.map((record) => record.id as number));
+        setTotal(result.length);
         onTotal(result.length);
         if (sumColumns.length && result.length) {
           const agg = await rpc<ReadGroupRow[]>('readGroup', model, { domain, fields: sumColumns.map((c) => `${c.name}:${c.avg ? 'avg' : 'sum'}`), groupby: [] });
@@ -104,10 +113,10 @@ export function ListView(props: Props) {
   const isEmpty = !loading && ((records && records.length === 0) || (groups && groups.length === 0));
 
   const renderRow = (record: Rec) => {
-    const scope = makeRecordScope(record, { uid: user.uid, context, companyIds: user.companyIds });
+    const scope = makeRecordScope(record, { uid: user.uid, context, companyIds: user.companyIds, fields });
     const rowClass = decorationClasses(arch.decorations, scope);
     return (
-      <tr key={record.id as number} className={rowClass} onClick={() => onOpen(record.id as number)}>
+      <tr key={record.id as number} className={`${rowClass} ${selected.has(record.id as number) ? 'o_selected' : ''}`} onClick={() => onOpen(record.id as number)} onMouseEnter={() => onHover?.(record.id as number)}>
         <td className="o_list_record_selector" onClick={(event) => event.stopPropagation()}><input type="checkbox" className="form-check-input" checked={selected.has(record.id as number)} onChange={() => toggleSelected(record.id as number)} /></td>
         {columns.map((column) => <Cell key={column.name} column={column} field={fields[column.name]} record={record} scope={scope} />)}
         <td />
@@ -118,7 +127,8 @@ export function ListView(props: Props) {
   return (
     <div className="o_list_view">
       {loading && <div className="o_loading_indicator" />}
-      <table className={`o_list_table ${isEmpty && arch.sample ? 'o_sample_data' : ''}`}>
+      {loading && records === null && groups === null && <ListSkeleton columns={Math.min(8, columns.length)} />}
+      <table className={`o_list_table ${isEmpty && arch.sample ? 'o_sample_data' : ''}`} hidden={loading && records === null && groups === null}>
         <thead>
           <tr>
             <th className="o_list_record_selector"><input type="checkbox" className="form-check-input" aria-label="Select all" checked={Boolean(records?.length) && selected.size === records?.length}
@@ -168,6 +178,13 @@ export function ListView(props: Props) {
         )}
       </table>
       {isEmpty && <EmptyState help={help} />}
+      {records && selected.size > 0 && selected.size === records.length && total > records.length && (
+        <div className="o_list_selection_box small">
+          {allMatching
+            ? <span>{t('All')} {total} {t('records selected.')} <a href="#none" onClick={(event) => { event.preventDefault(); select(new Set()); }}>{t('Clear selection')}</a></span>
+            : <span>{t('All')} {records.length} {t('records on this page are selected.')} <a href="#all" onClick={(event) => { event.preventDefault(); select(new Set(records.map((r) => r.id as number)), true); }}>{t('Select all')} {total}</a></span>}
+        </div>
+      )}
     </div>
   );
 }

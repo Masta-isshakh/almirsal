@@ -1,11 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import type { ActionDef, FieldDef, ViewDef, ViewType } from '@engine/registry/types';
 import { rpc } from './rpc';
+import { useNavigation } from './navigation';
 import { useUi } from '@/components/webclient/ui';
 import { ActionDialog } from '@/components/webclient/ActionDialog';
+import { Composer } from '@/components/webclient/Composer';
 
 /**
  * The action manager's `doAction` (A-4 §1, C-4): runs whatever a menu,
@@ -39,6 +40,12 @@ export interface DoActionOptions {
   onClose?: (changed: boolean) => void;
 }
 
+/** Action names arrive as `{en, ar}` from hooks or as plain strings. */
+function i18nName(value: unknown): { en: string; ar: string } {
+  if (value && typeof value === 'object' && 'en' in (value as object)) { const v = value as { en: string; ar?: string }; return { en: v.en, ar: v.ar ?? v.en }; }
+  return { en: String(value ?? ''), ar: String(value ?? '') };
+}
+
 export type ActionLike = number | string | ActionDef | Record<string, unknown> | false | null | undefined;
 
 interface ActionRunner {
@@ -54,7 +61,7 @@ function idsQuery(domain: unknown): string {
 }
 
 export function ActionRunnerProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const ui = useUi();
 
   const doAction = useCallback(async (raw: ActionLike, options: DoActionOptions = {}): Promise<void> => {
@@ -81,12 +88,28 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
       options.onClose?.(true);
       return;
     }
+    if (type === 'ir.actions.client' && result.tag === 'mail.compose') {
+      const params = (result.params ?? {}) as { model?: string; res_id?: number };
+      const model = params.model ?? options.activeModel ?? '';
+      const resId = Number(params.res_id ?? options.activeId ?? 0);
+      let dialogId = 0;
+      dialogId = ui.openDialog({
+        title: { en: 'Send by Email', ar: 'إرسال عبر البريد الإلكتروني' }, size: 'lg', footer: null,
+        body: <Composer model={model} resId={resId} onDone={(sent) => { ui.closeDialog(dialogId); options.onClose?.(sent); }} />,
+      });
+      return;
+    }
+    if (type === 'ir.actions.client' && result.tag === 'reload') { options.onClose?.(true); window.location.reload(); return; }
     if (type === 'ir.actions.act_url') {
       window.open(String(result.url), result.target === 'self' ? '_self' : '_blank');
       return;
     }
     if (type === 'ir.actions.report') {
-      ui.notify({ message: 'PDF reports arrive with the reporting phase.', type: 'info' });
+      const ctx = (result.context as Record<string, unknown>) ?? {};
+      const ids = options.activeIds?.length ? options.activeIds : Array.isArray(ctx.active_ids) ? (ctx.active_ids as number[]) : options.activeId ? [options.activeId] : [];
+      if (ids.length === 0) { ui.notify({ message: { en: 'Select records first.', ar: 'حدد السجلات أولاً.' }, type: 'warning' }); return; }
+      window.open(`/report/${encodeURIComponent(String(result.report_name))}/${ids.join(',')}${result.print === false ? '' : '?print=1'}`, '_blank');
+      options.onClose?.(true);
       return;
     }
     if (type === 'ir.actions.act_window' || result.res_model) {
@@ -98,14 +121,14 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
       const context = { ...baseContext, ...((result.context as Record<string, unknown>) ?? {}) };
       if (result.target === 'new') {
         const described = await rpc<Omit<ActionDescription, 'action' | 'slug'>>('loadModelViews', model, { viewTypes: ['form'] });
-        openDialog({ ...described, action: { id: `m:${model}`, xmlId: '', type: 'act_window', name: { en: String(result.name ?? ''), ar: String(result.name ?? '') }, model, target: 'new' }, slug: `m/${model}` }, context, options);
+        openDialog({ ...described, action: { id: `m:${model}`, xmlId: '', type: 'act_window', name: i18nName(result.name), model, target: 'new' }, slug: `m/${model}` }, context, options);
         return;
       }
       const found = await rpc<ActionDescription | null>('findAction', model, { context });
       const slug = found?.slug ?? `m/${model}`;
       const resId = result.res_id ? Number(result.res_id) : null;
       options.onClose?.(true);
-      router.push(resId ? `/odoo/${slug}/${resId}` : `/odoo/${slug}${idsQuery(result.domain)}`);
+      navigate(resId ? `/odoo/${slug}/${resId}` : `/odoo/${slug}${idsQuery(result.domain)}`);
       return;
     }
     if (type === 'ir.actions.server') {
@@ -115,11 +138,16 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
     function openDescribed(description: ActionDescription, context: Record<string, unknown>, opts: DoActionOptions, override?: Record<string, unknown>): void {
       const { action } = description;
       if (action.type === 'url') { window.open(String(action.url), '_blank'); return; }
+      if (action.type === 'report') {
+        const ids = opts.activeIds?.length ? opts.activeIds : opts.activeId ? [opts.activeId] : [];
+        if (ids.length && action.reportName) window.open(`/report/${encodeURIComponent(action.reportName)}/${ids.join(',')}?print=1`, '_blank');
+        return;
+      }
       if (action.type !== 'act_window') { ui.notify({ message: `Client action "${action.name.en}" is not available yet.`, type: 'warning' }); return; }
       if (action.target === 'new') { openDialog(description, context, opts); return; }
       const resId = override?.res_id ? Number(override.res_id) : null;
       opts.onClose?.(true);
-      router.push(resId ? `/odoo/${description.slug}/${resId}` : `/odoo/${description.slug}${idsQuery(override?.domain)}`);
+      navigate(resId ? `/odoo/${description.slug}/${resId}` : `/odoo/${description.slug}${idsQuery(override?.domain)}`);
     }
 
     function openDialog(description: ActionDescription, context: Record<string, unknown>, opts: DoActionOptions): void {
@@ -138,7 +166,7 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
         onClose: () => opts.onClose?.(false),
       });
     }
-  }, [router, ui]);
+  }, [navigate, ui]);
 
   const value = useMemo(() => ({ doAction }), [doAction]);
   return <ActionContext.Provider value={value}>{children}</ActionContext.Provider>;

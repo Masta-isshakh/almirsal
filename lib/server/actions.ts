@@ -139,7 +139,7 @@ export function viewsForAction(action: ActionDef): { views: Partial<Record<ViewT
   // View modes without an explicit binding fall back to the model's default view of that type.
   for (const type of action.viewMode ?? []) {
     if (!views[type]) {
-      const fallback = Object.values(registry.views).find((view) => view.model === action.model && view.type === type);
+      const fallback = Object.values(registry.views).find((view) => view.model === action.model && view.type === type) ?? (action.model ? defaultView(action.model, type) : null);
       if (fallback) views[type] = fallback;
     }
   }
@@ -221,7 +221,7 @@ export function describeModel(model: string, viewTypes: ViewType[]) {
   const registry = getRegistry();
   const views: Partial<Record<ViewType, ViewDef>> = {};
   for (const type of viewTypes) {
-    const view = Object.values(registry.views).find((candidate) => candidate.model === model && candidate.type === type);
+    const view = Object.values(registry.views).find((candidate) => candidate.model === model && candidate.type === type) ?? defaultView(model, type);
     if (view) views[type] = view;
   }
   const searchView = Object.values(registry.views).find((view) => view.model === model && view.type === 'search') ?? null;
@@ -229,3 +229,29 @@ export function describeModel(model: string, viewTypes: ViewType[]) {
 }
 
 export { ROOT_SLUGS };
+
+const TECHNICAL_FIELDS = new Set(['id', 'display_name', 'create_uid', 'create_date', 'write_uid', 'write_date', 'message_ids', 'message_follower_ids', 'activity_ids', 'website_message_ids', 'message_main_attachment_id', 'activity_state', 'activity_user_id', 'activity_type_id', 'activity_date_deadline', 'activity_summary', 'message_is_follower', 'message_needaction', 'message_has_error', 'message_attachment_count', 'my_activity_date_deadline', 'has_message', 'rating_ids', 'message_partner_ids']);
+
+/**
+ * Default views for models the export captured without one (Odoo generates
+ * the same): a form with every editable field in one two-column group and a
+ * chatter when the model has one; a list of the first eight plain fields.
+ */
+export function defaultView(model: string, type: ViewType): ViewDef | null {
+  const registry = getRegistry();
+  const def = registry.models[model];
+  if (!def || (type !== 'form' && type !== 'list')) return null;
+  const plain = Object.values(def.fields).filter((field) => !TECHNICAL_FIELDS.has(field.name) && !['one2many', 'binary', 'json', 'properties', 'properties_definition'].includes(field.type));
+  const first = def.fields[def.recName] ? [def.fields[def.recName]] : [];
+  const ordered = [...first, ...plain.filter((field) => field.name !== def.recName)];
+  const fieldNode = (name: string, extra: Record<string, unknown> = {}) => ({ kind: 'field' as const, name, decorations: {}, attrs: {}, ...extra });
+  if (type === 'form') {
+    const body = [
+      { kind: 'sheet' as const, children: [{ kind: 'group' as const, children: ordered.slice(0, 40).map((field) => fieldNode(field.name, field.type === 'many2many' ? { widget: 'many2many_tags' } : {})) }] },
+      ...(def.fields.message_ids ? [{ kind: 'chatter' as const }] : []),
+    ];
+    return { key: `${model}|form|default`, id: null, model, type, arch: { type: 'form', body, attrs: {} }, toolbar: { print: [], action: [] } };
+  }
+  const columns = ordered.filter((field) => field.type !== 'text' && field.type !== 'html' && field.type !== 'many2many').slice(0, 8).map((field) => fieldNode(field.name));
+  return { key: `${model}|list|default`, id: null, model, type, arch: { type: 'list', decorations: {}, columns, headerButtons: [], groupby: [], control: [], attrs: {} } as ViewDef['arch'], toolbar: { print: [], action: [] } };
+}

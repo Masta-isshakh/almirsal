@@ -103,3 +103,33 @@ describe('users', () => {
     await expect(env.model('res.users').callButton(id, 'action_reset_password')).rejects.toThrow(/No identity provider/);
   });
 });
+
+describe('products', () => {
+  it('deleting a template deletes its variants', async () => {
+    const template = await env.model('product.template').create({ name: 'Throwaway', list_price: 1, type: 'service' });
+    const variants = await env.model('product.product').search([['product_tmpl_id', '=', template]]);
+    expect(variants.length).toBeGreaterThan(0);
+    await env.model('product.template').unlink(template);
+    expect(await env.model('product.product').search([['id', 'in', variants]], { activeTest: false })).toEqual([]);
+  });
+});
+
+describe('settings', () => {
+  it('loads defaults from stored parameters, writes only the changes, and hands them to getSetting()', async () => {
+    const { getSetting } = await import('./settings.js');
+    const defaults = await env.model('res.config.settings').defaultGet();
+    expect(defaults.company_id).toBe(1);
+    expect(defaults.active_user_count).toBeGreaterThan(0);
+    const before = await env.cr.query<{ n: number }>(`SELECT count(*)::int AS n FROM ir_config_parameter WHERE key LIKE 'rodeo.settings.%'`);
+    const id = await env.model('res.config.settings').create({ ...defaults, quotation_validity_days: 45, module_sale_margin: true });
+    expect(id).toBeGreaterThan(0);
+    const after = await env.cr.query<{ n: number }>(`SELECT count(*)::int AS n FROM ir_config_parameter WHERE key LIKE 'rodeo.settings.%'`);
+    expect(after.rows[0].n - before.rows[0].n).toBe(2);
+    expect(await getSetting(env, 'quotation_validity_days', 30)).toBe(45);
+    expect(await getSetting(env, 'module_sale_margin', false)).toBe(true);
+    const reloaded = await env.model('res.config.settings').defaultGet(['quotation_validity_days', 'module_sale_margin']);
+    expect(reloaded).toEqual({ quotation_validity_days: 45, module_sale_margin: true });
+    const result = await env.model('res.config.settings').callButton(id, 'execute');
+    expect(result).toEqual({ type: 'ir.actions.client', tag: 'reload' });
+  });
+});

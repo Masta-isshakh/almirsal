@@ -170,6 +170,21 @@ export class Model {
     return result.rows.map((row) => Number(row.id));
   }
 
+  /** Page of ids plus the total in one round trip (a window count), for `web_search_read`. */
+  async searchWithCount(domain: Domain = [], options: SearchOptions = {}): Promise<{ ids: number[]; total: number }> {
+    this.checkAccess('read');
+    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest)], '&');
+    const alias = 't';
+    const where = this.compileWhere(full, alias);
+    const params = [...where.params];
+    let sql = `SELECT ${alias}."id", count(*) OVER()::int AS total FROM ${quoteIdent(this.table)} ${alias} WHERE ${where.text} ORDER BY ${this.orderClause(options.order, alias)}`;
+    if (options.limit !== undefined) { params.push(options.limit); sql += ` LIMIT $${params.length}`; }
+    if (options.offset) { params.push(options.offset); sql += ` OFFSET $${params.length}`; }
+    const result = await this.env.cr.query<{ id: number; total: number }>(sql, params);
+    if (result.rows.length === 0 && options.offset) return { ids: [], total: await this.searchCount(domain, options) };
+    return { ids: result.rows.map((row) => Number(row.id)), total: Number(result.rows[0]?.total ?? 0) };
+  }
+
   async searchCount(domain: Domain = [], options: Pick<SearchOptions, 'activeTest'> = {}): Promise<number> {
     this.checkAccess('read');
     const full = combineDomains([domain, this.implicitDomain('read', options.activeTest)], '&');
@@ -203,7 +218,20 @@ export class Model {
     // Reads respect record rules too: rows outside the rules simply vanish.
     const rule = combineDomains([[['id', 'in', list]], this.implicitDomain('read', false)], '&');
     const where = this.compileWhere(rule, 't');
-    const selects = ['t."id"', ...scalar.map((field) => `${selectExpr(field, 't')} AS ${quoteIdent(field.name)}`)];
+    // Plain many2one names (comodels without a custom display name) come back
+    // in the same SELECT as scalar subqueries: one round trip instead of one
+    // per relation.
+    const many2one = scalar.filter((field) => field.type === 'many2one');
+    const inline = many2one.filter((field) => this.inlineNameExpr(field) !== null);
+    // The record's own display name rides along too when it can be expressed in SQL.
+    const ownHooks = hooksFor(this.name);
+    const ownNameExpr = !wantDisplay ? null : ownHooks.displayNameSql ? ownHooks.displayNameSql('t') : !ownHooks.displayName && this.fields[this.def.recName] && !X2MANY.has(this.fields[this.def.recName].type) ? selectExpr(this.fields[this.def.recName], 't') : null;
+    const selects = [
+      't."id"',
+      ...scalar.map((field) => `${selectExpr(field, 't')} AS ${quoteIdent(field.name)}`),
+      ...inline.map((field) => `${this.inlineNameExpr(field)} AS ${quoteIdent(`__name_${field.name}`)}`),
+      ...(ownNameExpr ? [`${ownNameExpr} AS "__rec_name"`] : []),
+    ];
     const result = await this.env.cr.query(
       `SELECT ${selects.join(', ')} FROM ${quoteIdent(this.table)} t WHERE ${where.text}`, where.params,
     );
@@ -211,19 +239,81 @@ export class Model {
     for (const row of result.rows) {
       const record: Values = { id: Number(row.id) };
       for (const field of scalar) record[field.name] = fromSql(field, row[field.name]);
+      if (ownNameExpr) record.display_name = row.__rec_name === null || row.__rec_name === undefined ? `${this.name},${record.id}` : String(row.__rec_name);
+      for (const field of inline) {
+        const value = record[field.name];
+        if (typeof value === 'number' && value > 0) {
+          const name = row[`__name_${field.name}`];
+          record[field.name] = [value, name === null || name === undefined ? `${field.relation},${value}` : String(name)];
+        }
+      }
       byId.set(record.id as number, record);
     }
     const records = list.map((id) => byId.get(id)).filter((record): record is Values => Boolean(record));
 
-    for (const field of x2many) await this.readX2Many(records, field);
-    await this.resolveMany2One(records, scalar.filter((field) => field.type === 'many2one'));
-    if (wantDisplay) {
+    // The remaining lookups (all x2many fields in one query, many2ones with a
+    // custom display name) run together outside transactions.
+    const lookups: (() => Promise<void>)[] = this.many2OneLookups(records, many2one.filter((field) => !inline.includes(field)));
+    if (x2many.length) lookups.unshift(() => this.readX2ManyAll(records, x2many));
+    await this.runLookups(lookups);
+    if (wantDisplay && !ownNameExpr) {
       // A custom display name may need columns outside the requested set; re-read then.
-      const preloaded = hooksFor(this.name).displayName && !this.storedFields().every((field) => field.name in (records[0] ?? {})) ? undefined : records;
+      const needed = hooksFor(this.name).displayNameFields ?? this.storedFields().map((field) => field.name);
+      const preloaded = hooksFor(this.name).displayName && !needed.every((name) => name in (records[0] ?? {})) ? undefined : records;
       const displayNames = await this.displayNames(records.map((record) => record.id as number), preloaded);
       for (const record of records) record.display_name = displayNames.get(record.id as number) ?? '';
     }
     return records;
+  }
+
+  /** SQL for a many2one's display name inside the parent SELECT, or null when the comodel needs its hook. */
+  private inlineNameExpr(field: FieldDef): string | null {
+    const comodel = field.relation ? this.env.registry.models[field.relation] : undefined;
+    if (!comodel) return null;
+    const hooks = hooksFor(comodel.name);
+    if (hooks.displayNameSql) return `(SELECT ${hooks.displayNameSql('n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = t.${quoteIdent(field.name)})`;
+    if (hooks.displayName) return null;
+    const recName = comodel.fields[comodel.recName] ? comodel.recName : null;
+    if (!recName || X2MANY.has(comodel.fields[recName].type)) return null;
+    return `(SELECT ${selectExpr(comodel.fields[recName], 'n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = t.${quoteIdent(field.name)})`;
+  }
+
+  /**
+   * Every x2many field of the records in ONE query: each field's child rows
+   * (ordered) are tagged with the field name and unioned.
+   */
+  private async readX2ManyAll(records: Values[], fields: FieldDef[]): Promise<void> {
+    const ids = records.map((record) => record.id as number);
+    const maps = new Map<string, Map<number, number[]>>();
+    const parts: string[] = [];
+    const params: unknown[] = [ids];
+    for (const field of fields) {
+      maps.set(field.name, new Map(ids.map((id) => [id, []])));
+      const comodel = this.env.registry.models[field.relation ?? ''];
+      if (field.type === 'one2many' && comodel && field.inverse) {
+        const co = this.env.model(comodel.name);
+        let extra = '';
+        if (field.inverse === 'res_id') { params.push(this.name); extra += ` AND t."res_model" = $${params.length}`; }
+        if (Array.isArray(field.domain) && field.domain.length) {
+          const compiled = co.compileDomain(field.domain as Domain, 't', params.length);
+          extra += ` AND (${compiled.text})`;
+          params.push(...compiled.params);
+        }
+        if (comodel.fields.active && this.env.context.active_test !== false) extra += ` AND coalesce(t."active", true)`;
+        params.push(field.name);
+        parts.push(`(SELECT $${params.length}::text AS f, t.${quoteIdent(field.inverse)}::int AS parent, t."id"::int AS child, row_number() OVER (ORDER BY ${co.orderClause(undefined, 't')})::int AS seq
+          FROM ${quoteIdent(comodel.table)} t WHERE t.${quoteIdent(field.inverse)} = ANY($1)${extra})`);
+      } else if (field.type === 'many2many' && field.m2mTable && field.m2mColumn1 && field.m2mColumn2) {
+        params.push(field.name);
+        parts.push(`(SELECT $${params.length}::text AS f, ${quoteIdent(field.m2mColumn1)}::int AS parent, ${quoteIdent(field.m2mColumn2)}::int AS child, row_number() OVER (ORDER BY ${quoteIdent(field.m2mColumn2)})::int AS seq
+          FROM ${quoteIdent(field.m2mTable)} WHERE ${quoteIdent(field.m2mColumn1)} = ANY($1))`);
+      }
+    }
+    if (parts.length) {
+      const rows = await this.env.cr.query<{ f: string; parent: number; child: number; seq: number }>(`${parts.join(' UNION ALL ')} ORDER BY f, seq`, params);
+      for (const row of rows.rows) maps.get(row.f)?.get(Number(row.parent))?.push(Number(row.child));
+    }
+    for (const field of fields) for (const record of records) record[field.name] = maps.get(field.name)?.get(record.id as number) ?? [];
   }
 
   private async readX2Many(records: Values[], field: FieldDef): Promise<void> {
@@ -262,19 +352,30 @@ export class Model {
     for (const record of records) record[field.name] = map.get(record.id as number) ?? [];
   }
 
-  private async resolveMany2One(records: Values[], fields: FieldDef[]): Promise<void> {
+  /** Sequential inside a transaction (one connection), concurrent otherwise. */
+  private async runLookups(lookups: (() => Promise<void>)[]): Promise<void> {
+    if (this.env.inTransaction) { for (const lookup of lookups) await lookup(); return; }
+    await Promise.all(lookups.map((lookup) => lookup()));
+  }
+
+  private many2OneLookups(records: Values[], fields: FieldDef[]): (() => Promise<void>)[] {
+    const lookups: (() => Promise<void>)[] = [];
     for (const field of fields) {
       if (!field.relation || !this.env.registry.models[field.relation]) continue;
       const ids = [...new Set(records.map((record) => record[field.name]).filter((value): value is number => typeof value === 'number' && value > 0))];
       if (ids.length === 0) continue;
-      const names = await this.env.sudo().model(field.relation).displayNames(ids);
-      for (const record of records) {
-        const value = record[field.name];
-        if (typeof value === 'number' && value > 0) {
-          record[field.name] = names.has(value) ? [value, names.get(value)] : false;
+      const relation = field.relation;
+      lookups.push(async () => {
+        const names = await this.env.sudo().model(relation).displayNames(ids);
+        for (const record of records) {
+          const value = record[field.name];
+          if (typeof value === 'number' && value > 0) {
+            record[field.name] = names.has(value) ? [value, names.get(value)] : false;
+          }
         }
-      }
+      });
     }
+    return lookups;
   }
 
   async searchRead(domain: Domain = [], fieldNames?: string[], options: SearchOptions = {}): Promise<Values[]> {
@@ -290,36 +391,50 @@ export class Model {
   async webRead(ids: number | number[], specification: ReadSpecification): Promise<Values[]> {
     const names = Object.keys(specification);
     const records = await this.read(ids, names);
+    const lookups: (() => Promise<void>)[] = [];
     for (const name of names) {
       const field = this.fields[name];
       const spec = specification[name] as { fields?: ReadSpecification; limit?: number; order?: string };
       if (!field || !field.relation || !this.env.registry.models[field.relation]) continue;
+      const relation = field.relation;
       if (field.type === 'many2one') {
         for (const record of records) {
           const value = record[name];
           record[name] = Array.isArray(value) ? { id: value[0], display_name: value[1] } : false;
         }
         if (spec.fields && Object.keys(spec.fields).length) {
-          const targetIds = records.map((record) => (record[name] as { id: number } | false)).filter(Boolean).map((v) => (v as { id: number }).id);
-          const nested = await this.env.model(field.relation).webRead(targetIds, spec.fields);
-          const byId = new Map(nested.map((row) => [row.id as number, row]));
-          for (const record of records) {
-            const value = record[name] as { id: number; display_name: string } | false;
-            if (value) record[name] = { ...value, ...(byId.get(value.id) ?? {}) };
-          }
+          lookups.push(async () => {
+            const targetIds = records.map((record) => (record[name] as { id: number } | false)).filter(Boolean).map((v) => (v as { id: number }).id);
+            const nested = await this.env.model(relation).webRead(targetIds, spec.fields!);
+            const byId = new Map(nested.map((row) => [row.id as number, row]));
+            for (const record of records) {
+              const value = record[name] as { id: number; display_name: string } | false;
+              if (value) record[name] = { ...value, ...(byId.get(value.id) ?? {}) };
+            }
+          });
         }
       } else if (X2MANY.has(field.type) && spec.fields) {
-        const co = this.env.model(field.relation);
-        for (const record of records) {
-          let childIds = record[name] as number[];
+        // One nested read for all parents (children are already in the
+        // comodel's default order); per-record only when a custom order asks.
+        lookups.push(async () => {
+          const co = this.env.model(relation);
           if (spec.order) {
-            childIds = await co.search([['id', 'in', childIds]], { order: spec.order, activeTest: false });
+            for (const record of records) {
+              let childIds = await co.search([['id', 'in', record[name] as number[]]], { order: spec.order, activeTest: false });
+              if (spec.limit) childIds = childIds.slice(0, spec.limit);
+              record[name] = await co.webRead(childIds, spec.fields!);
+            }
+            return;
           }
-          if (spec.limit) childIds = childIds.slice(0, spec.limit);
-          record[name] = await co.webRead(childIds, spec.fields);
-        }
+          const perRecord = new Map(records.map((record) => [record.id as number, (spec.limit ? (record[name] as number[]).slice(0, spec.limit) : (record[name] as number[]))]));
+          const allIds = [...new Set([...perRecord.values()].flat())];
+          const rows = allIds.length ? await co.webRead(allIds, spec.fields!) : [];
+          const byId = new Map(rows.map((row) => [row.id as number, row]));
+          for (const record of records) record[name] = (perRecord.get(record.id as number) ?? []).map((id) => byId.get(id)).filter((row): row is Values => Boolean(row));
+        });
       }
     }
+    await this.runLookups(lookups);
     return records;
   }
 
@@ -344,7 +459,7 @@ export class Model {
     const hooks = hooksFor(this.name);
 
     if (hooks.displayName) {
-      const records = preloaded ?? await this.sudoRead(ids);
+      const records = preloaded ?? await this.sudoRead(ids, hooks.displayNameFields);
       for (const record of records) out.set(record.id as number, hooks.displayName(this.env, record));
       return out;
     }
@@ -352,6 +467,14 @@ export class Model {
     const recName = this.fields[this.def.recName] ? this.def.recName : null;
     if (!recName) {
       for (const id of ids) out.set(id, `${this.name},${id}`);
+      return out;
+    }
+    // The record name is already loaded: no query.
+    if (preloaded && preloaded.every((record) => recName in record)) {
+      for (const record of preloaded) {
+        const value = record[recName];
+        out.set(record.id as number, value === false || value === null || value === undefined ? `${this.name},${record.id}` : String(value));
+      }
       return out;
     }
     const field = this.fields[recName];
@@ -366,8 +489,8 @@ export class Model {
   }
 
   /** Raw scalar read without rules, for internal use (display names, tracking). */
-  private async sudoRead(ids: number[]): Promise<Values[]> {
-    const scalar = this.storedFields();
+  private async sudoRead(ids: number[], only?: string[]): Promise<Values[]> {
+    const scalar = this.storedFields().filter((field) => !only || only.includes(field.name));
     const selects = ['t."id"', ...scalar.map((field) => `${selectExpr(field, 't')} AS ${quoteIdent(field.name)}`)];
     const result = await this.env.cr.query(
       `SELECT ${selects.join(', ')} FROM ${quoteIdent(this.table)} t WHERE t."id" = ANY($1)`, [ids],

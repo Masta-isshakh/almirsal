@@ -98,6 +98,7 @@ export function registerActivities(): void {
       };
     },
     displayName: (_env, record) => String(record.summary || record.res_name || 'Activity'),
+    displayNameFields: ['summary', 'res_name'],
     onchange: {
       activity_type_id: async (env, values) => {
         const typeId = m2oId(values.activity_type_id);

@@ -44,6 +44,7 @@ export default async function OdooPage({ params, searchParams }: PageProps) {
       apps={apps}
       menuHrefs={menuHrefs}
       resolution={resolution}
+      href={`/odoo/${path.map(encodeURIComponent).join('/')}${Object.keys(query).length ? `?${new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === 'string')).toString()}` : ''}`}
     />
   );
 }

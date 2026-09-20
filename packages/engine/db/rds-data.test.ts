@@ -62,3 +62,10 @@ describe('auto-pause resume handling', () => {
     await expect(db.query('SELECT')).rejects.toThrow('syntax error');
   });
 });
+
+it('reuses an expanded array when the placeholder repeats (UNION ALL parts)', async () => {
+  const { prepare } = await import('./rds-data.js');
+  const { sql, parameters } = prepare('SELECT 1 WHERE a = ANY($1) UNION ALL SELECT 2 WHERE b = ANY($1) AND c = $2', [[7, 8], 'x']);
+  expect(sql).toBe('SELECT 1 WHERE a = ANY(ARRAY[:p1_0, :p1_1]) UNION ALL SELECT 2 WHERE b = ANY(ARRAY[:p1_0, :p1_1]) AND c = :p2');
+  expect(parameters.map((p) => p.name)).toEqual(['p1_0', 'p1_1', 'p2']);
+});

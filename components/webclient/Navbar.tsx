@@ -6,15 +6,18 @@ import type { MenuDef } from '@engine/registry/types';
 import { useLang, useT } from '@/lib/client/i18n';
 import type { AppEntry, SessionInfo } from './WebClient';
 import { ActivitiesMenu, MessagesMenu } from './Systray';
+import { useTheme } from './theme';
+import { ShortcutsHelp } from './Shortcuts';
+import { useUi } from './ui';
 
 /**
  * C-1: 46px white navbar — app icon (opens the home menu), app name, the
  * app's menu sections as dropdowns, then the systray (messages, activities,
  * user menu with avatar).
  */
-export function Navbar({ user, apps, currentApp, homeOpen, onToggleHome, menuHrefs }: {
+export function Navbar({ user, apps, currentApp, homeOpen, onToggleHome, menuHrefs, onSearch }: {
   user: SessionInfo; apps: AppEntry[]; currentApp: AppEntry | null; homeOpen: boolean; onToggleHome: () => void;
-  menuHrefs?: Record<number, string>;
+  menuHrefs?: Record<number, string>; onSearch?: () => void;
 }) {
   const t = useT();
   return (
@@ -35,6 +38,7 @@ export function Navbar({ user, apps, currentApp, homeOpen, onToggleHome, menuHre
         </>
       )}
       <div className="o_menu_systray">
+        <button type="button" className="o_systray_item" title="Ctrl+K" onClick={onSearch}><i className="fa fa-search fa-lg" /></button>
         <MessagesMenu />
         <ActivitiesMenu user={user} />
         <UserMenu user={user} />
@@ -97,6 +101,8 @@ export function avatarColor(name: string): string {
 function UserMenu({ user }: { user: SessionInfo }) {
   const t = useT();
   const lang = useLang();
+  const { preference, setTheme } = useTheme();
+  const ui = useUi();
 
   async function switchLang(next: 'en_US' | 'ar_001') {
     await fetch('/api/auth/lang', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lang: next }) });
@@ -115,7 +121,12 @@ function UserMenu({ user }: { user: SessionInfo }) {
       </button>
     )}>
       <a className="o_dropdown_item" href="https://www.odoo.com/documentation/19.0/" target="_blank" rel="noreferrer">{t('Documentation')}</a>
-      <button type="button" className="o_dropdown_item">{t('Shortcuts')} <span className="text-muted small ms-2">CTRL+K</span></button>
+      <button type="button" className="o_dropdown_item" onClick={() => ui.openDialog({ title: { en: 'Keyboard Shortcuts', ar: 'اختصارات لوحة المفاتيح' }, size: 'sm', body: <ShortcutsHelp /> })}>{t('Shortcuts')} <span className="text-muted small ms-2">?</span></button>
+      <div className="o_dropdown_divider" />
+      <div className="o_dropdown_header">{t('Theme')}</div>
+      <button type="button" className="o_dropdown_item" onClick={() => setTheme('light')}>{preference === 'light' ? '✓ ' : ''}{t('Light')}</button>
+      <button type="button" className="o_dropdown_item" onClick={() => setTheme('dark')}>{preference === 'dark' ? '✓ ' : ''}{t('Dark')}</button>
+      <button type="button" className="o_dropdown_item" onClick={() => setTheme('system')}>{preference === 'system' ? '✓ ' : ''}{t('System')}</button>
       <div className="o_dropdown_divider" />
       <Link href={`/odoo/m/res.users/${user.uid}`} className="o_dropdown_item">{t('My Preferences')}</Link>
       <div className="o_dropdown_divider" />

@@ -4,6 +4,22 @@ import type { ReadSpecification } from '@engine/orm/model';
 import { evalCondition, makeScope, type EvalScope } from '@engine/expr/evaluate';
 import { PyDateTime } from '@engine/expr/pydate';
 
+/**
+ * The `web_read` specification of a form: every field the arch shows plus
+ * what the tax-totals widget needs. Shared by the form itself and the list's
+ * hover prefetch so both hit the same cache entry.
+ */
+export function formSpecification(arch: FormArch, fields: Record<string, FieldDef>): { names: string[]; nodes: FieldNode[]; spec: ReadSpecification } {
+  const nodes = formFields(arch);
+  const list = nodes.map((node) => node.name);
+  if (nodes.some((node) => node.widget === 'account-tax-totals-field')) list.push('amount_untaxed', 'amount_tax', 'amount_total', 'currency_id');
+  const names = [...new Set(list.filter((name) => fields[name]))];
+  return { names, nodes, spec: specificationFor(names, fields, nodes) };
+}
+
+/** How long a fetched record stays fresh for prefetch / back navigation. */
+export const RECORD_CACHE_MS = 20_000;
+
 /** Walk every node of a form arch. */
 export function walkForm(nodes: FormNode[], visit: (node: FormNode) => void): void {
   for (const node of nodes) {
@@ -33,7 +49,7 @@ export function listColumns(arch: ListArch, optionalShown?: Set<string>): FieldN
 
 /** Column names that participate in a list read (visible + hidden helpers). */
 export function listFieldNames(arch: ListArch): string[] {
-  return arch.columns.filter((column): column is FieldNode => column.kind === 'field').map((column) => column.name);
+  return arch.columns.filter((column): column is FieldNode => column.kind === 'field' && Boolean(column.name)).map((column) => column.name);
 }
 
 /**
@@ -70,11 +86,16 @@ export function specificationFor(names: string[], fields: Record<string, FieldDe
   return spec;
 }
 
+const TEXT_TYPES = new Set(['char', 'text', 'html']);
+
 /** Wire record → values usable by the expression evaluator (m2o → id). */
-export function recordScopeValues(record: Record<string, unknown>): Record<string, unknown> {
+export function recordScopeValues(record: Record<string, unknown>, fields?: Record<string, FieldDef>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
-    if (value && typeof value === 'object' && !Array.isArray(value) && 'id' in (value as object)) {
+    if ((value === false || value === null) && fields && TEXT_TYPES.has(fields[key]?.type ?? '')) {
+      // Empty text reads as '' in view expressions (`warning == ''`), as in Odoo.
+      out[key] = '';
+    } else if (value && typeof value === 'object' && !Array.isArray(value) && 'id' in (value as object)) {
       out[key] = (value as { id: number }).id;
     } else if (Array.isArray(value) && value.length === 2 && typeof value[0] === 'number' && typeof value[1] === 'string') {
       out[key] = value[0];
@@ -92,12 +113,15 @@ export interface ScopeContext {
   context?: Record<string, unknown>;
   companyIds?: number[];
   parent?: Record<string, unknown> | null;
+  /** Field definitions of the record's model (empty text → ''). */
+  fields?: Record<string, FieldDef>;
+  parentFields?: Record<string, FieldDef>;
 }
 
 export function makeRecordScope(record: Record<string, unknown>, ctx: ScopeContext): EvalScope {
   return makeScope({
-    record: recordScopeValues(record),
-    parent: ctx.parent ? recordScopeValues(ctx.parent) : null,
+    record: recordScopeValues(record, ctx.fields),
+    parent: ctx.parent ? recordScopeValues(ctx.parent, ctx.parentFields) : null,
     context: ctx.context ?? {},
     uid: ctx.uid,
     allowedCompanyIds: ctx.companyIds ?? [1],

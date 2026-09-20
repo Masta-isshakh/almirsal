@@ -29,9 +29,9 @@ export function GroupsField({ value, readonly, onChange }: FieldProps) {
     const m2o = (v: unknown) => idOf(v);
     (async () => {
       const [cats, privs, grps] = await Promise.all([
-        rpc<Rec[]>('searchRead', 'ir.module.category', { domain: [], fields: ['name', 'sequence', 'parent_id'], order: 'sequence asc, name asc', limit: 500 }, { silent: true }).catch(() => []),
-        rpc<Rec[]>('searchRead', 'res.groups.privilege', { domain: [], fields: ['name', 'sequence', 'category_id'], order: 'sequence asc, name asc', limit: 500 }, { silent: true }).catch(() => []),
-        rpc<Rec[]>('searchRead', 'res.groups', { domain: [], fields: ['name', 'privilege_id', 'sequence'], order: 'sequence asc, id asc', limit: 1000 }, { silent: true }).catch(() => []),
+        rpc<Rec[]>('searchRead', 'ir.module.category', { domain: [], fields: ['name', 'sequence', 'parent_id'], order: 'sequence asc, name asc', limit: 500 }, { silent: true, cacheMs: 10 * 60_000 }).catch(() => []),
+        rpc<Rec[]>('searchRead', 'res.groups.privilege', { domain: [], fields: ['name', 'sequence', 'category_id'], order: 'sequence asc, name asc', limit: 500 }, { silent: true, cacheMs: 10 * 60_000 }).catch(() => []),
+        rpc<Rec[]>('searchRead', 'res.groups', { domain: [], fields: ['name', 'privilege_id', 'sequence'], order: 'sequence asc, id asc', limit: 1000 }, { silent: true, cacheMs: 10 * 60_000 }).catch(() => []),
       ]);
       if (cancelled) return;
       setCategories(cats.map((row) => ({ id: row.id as number, name: String(row.name), sequence: Number(row.sequence) || 0, parent: m2o(row.parent_id) })));

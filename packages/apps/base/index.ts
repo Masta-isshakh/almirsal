@@ -53,6 +53,8 @@ export function registerBase(): void {
     },
     searchFields: ['default_code', 'barcode'],
     displayName: (_env, record) => (record.default_code ? `[${record.default_code}] ${record.name ?? ''}` : String(record.name ?? '')),
+    displayNameFields: ['name', 'default_code'],
+    displayNameSql: (alias) => `CASE WHEN ${alias}."default_code" IS NOT NULL AND ${alias}."default_code" <> '' THEN '[' || ${alias}."default_code" || '] ' || coalesce(${alias}."name", '') ELSE coalesce(${alias}."name", '') END`,
     onCreate: async (env, ids) => {
       // Every template has at least one variant, as in Odoo.
       for (const id of ids) {
@@ -75,11 +77,18 @@ export function registerBase(): void {
         await env.sudo().model('product.product').write(variants, patch);
       }
     },
+    // Deleting a template deletes its variants, as Odoo's cascade does.
+    onUnlink: async (env, ids) => {
+      const variants = await env.model('product.product').search([['product_tmpl_id', 'in', ids]], { activeTest: false });
+      if (variants.length) await env.model('product.product').unlink(variants);
+    },
   });
 
   registerModelHooks('product.product', {
     searchFields: ['default_code', 'barcode'],
     displayName: (_env, record) => (record.default_code ? `[${record.default_code}] ${record.name ?? ''}` : String(record.name ?? '')),
+    displayNameFields: ['name', 'default_code'],
+    displayNameSql: (alias) => `CASE WHEN ${alias}."default_code" IS NOT NULL AND ${alias}."default_code" <> '' THEN '[' || ${alias}."default_code" || '] ' || coalesce(${alias}."name", '') ELSE coalesce(${alias}."name", '') END`,
   });
 
   registerModelHooks('res.company', {
