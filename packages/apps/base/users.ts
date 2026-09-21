@@ -2,6 +2,9 @@ import { registerModelHooks, type Values } from '../../engine/orm/hooks.js';
 import type { Environment } from '../../engine/orm/env.js';
 import { UserError, ValidationError } from '../../engine/orm/errors.js';
 import { m2oId } from './index.js';
+import type { Registry } from '../../engine/registry/types.js';
+import type { ButtonNode, FormNode } from '../../engine/registry/arch.js';
+import { postMessage } from '../../engine/orm/mail.js';
 
 /**
  * Settings › Users (D-16): a user is a partner plus a login. Creating one
@@ -60,7 +63,25 @@ function isEmail(text: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
 }
 
-export function registerUsers(): void {
+/** The "Send an Invitation Email" button replaces the temporary password: say so before doing it. */
+function confirmResendButton(registry: Registry): void {
+  const visit = (nodes: FormNode[]): void => {
+    for (const node of nodes) {
+      if (node.kind === 'button' && (node as ButtonNode).name === 'action_reset_password' && !(node as ButtonNode).confirm) {
+        (node as ButtonNode).confirm = {
+          en: 'The invitation email was already sent when the user was created. Sending it again generates a NEW temporary password and the previous one stops working. Send a new invitation?',
+          ar: 'تم إرسال دعوة بالفعل عند إنشاء المستخدم. الإرسال مرة أخرى يُنشئ كلمة مرور مؤقتة جديدة وتتوقف السابقة عن العمل. إرسال دعوة جديدة؟',
+        };
+      }
+      if ('children' in node) visit(node.children);
+      if (node.kind === 'notebook') visit(node.pages);
+    }
+  };
+  for (const view of Object.values(registry.views)) if (view.model === 'res.users' && view.arch.type === 'form') visit(view.arch.body);
+}
+
+export function registerUsers(registry?: Registry): void {
+  if (registry) confirmResendButton(registry);
   registerModelHooks('res.users', {
     displayName: (_env, record) => String(record.name || record.login || record.id),
     displayNameFields: ['name', 'login'],
@@ -168,6 +189,7 @@ export function registerUsers(): void {
           const invited = await provider.invite(login, row.name ?? login, {});
           const sub = typeof invited === 'string' ? invited : invited?.sub ?? null;
           if (sub && env.registry.models['res.users'].fields.cognito_sub) await env.cr.query(`UPDATE res_users SET cognito_sub = $2 WHERE id = $1`, [row.id, sub]);
+          await postMessage(env, 'res.users', row.id, { body: `<p>${env.lang === 'ar_001' ? `تم إرسال دعوة بكلمة مرور مؤقتة إلى ${login}.` : `Invitation email with a temporary password sent to ${login}.`}</p>`, messageType: 'notification' }).catch(() => undefined);
         } catch (error) {
           throw new UserError({ en: `The account could not be created in the identity provider: ${(error as Error).message}`, ar: `تعذر إنشاء الحساب في مزود الهوية: ${(error as Error).message}` });
         }
@@ -226,7 +248,7 @@ export function registerUsers(): void {
         }
         return {
           type: 'ir.actions.client', tag: 'display_notification',
-          params: { type: 'success', message: { en: `Invitation sent to ${rows.rows.map((row) => row.login).join(', ')}.`, ar: `تم إرسال الدعوة إلى ${rows.rows.map((row) => row.login).join('، ')}.` } },
+          params: { type: 'success', sticky: true, message: { en: `A new invitation with a new temporary password was emailed to ${rows.rows.map((row) => row.login).join(', ')}. Earlier temporary passwords no longer work.`, ar: `تم إرسال دعوة جديدة بكلمة مرور مؤقتة جديدة إلى ${rows.rows.map((row) => row.login).join('، ')}. كلمات المرور المؤقتة السابقة لم تعد صالحة.` } },
         };
       },
       action_related_contact: async (env, ids) => {

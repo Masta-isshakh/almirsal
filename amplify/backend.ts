@@ -25,9 +25,11 @@ import { AuroraDatabase } from './database/aurora.js';
  */
 const backend = defineBackend({ auth, storage, migrate });
 
-// Invitation-only, like Odoo: users are created from Settings › Users.
+// Invitation-only, like Odoo: users are created from Settings › Users. The
+// invitation template (temporary password email) set in auth/resource.ts lives
+// in the same block, so it is merged, not replaced.
 const { cfnUserPool } = backend.auth.resources.cfnResources;
-cfnUserPool.adminCreateUserConfig = { allowAdminCreateUserOnly: true };
+cfnUserPool.adminCreateUserConfig = { ...(cfnUserPool.adminCreateUserConfig as object), allowAdminCreateUserOnly: true };
 cfnUserPool.userPoolAddOns = { advancedSecurityMode: 'OFF' };
 
 const dbStack = backend.createStack('database');

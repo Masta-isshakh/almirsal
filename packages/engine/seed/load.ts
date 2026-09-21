@@ -299,3 +299,13 @@ export async function brandCompany(db: Queryable, name = 'Almirsal'): Promise<bo
   await setParameter(db, marker, name);
   return true;
 }
+
+/**
+ * Logins are unique whatever the case (`Jane@x` = `jane@x`): a functional
+ * unique index the schema generator does not know about. Existing duplicates
+ * (older provisioning races) are merged onto the lowest id first.
+ */
+export async function ensureLoginUnique(db: Queryable): Promise<void> {
+  await db.query(`DELETE FROM res_users u USING res_users k WHERE lower(u.login) = lower(k.login) AND u.id > k.id`).catch(() => undefined);
+  await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS res_users_login_unique ON res_users (lower(login))`).catch(() => undefined);
+}

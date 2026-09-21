@@ -19,7 +19,7 @@ export const auth = defineAuth({
       userInvitation: {
         emailSubject: 'Almirsal — your account is ready',
         emailBody: (createUsername: () => string, createCode: () => string) =>
-          `Hello,\n\nAn Almirsal account has been created for you.\n\nLogin: ${createUsername()}\nTemporary password: ${createCode()}\n\nSign in with it; you will be asked to choose your own password on the first login.\n\n— Almirsal`,
+          `Hello,\n\nAn Almirsal account has been created for you.\n\nLogin: ${createUsername()} (your email address)\nTemporary password: ${createCode()}\n\nSign in with them at the Almirsal login page; you will be asked to choose your own password on the first login. Keep this email until you have signed in: asking for a new invitation replaces this temporary password.\n\n— Almirsal`,
       },
     },
   },

@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Database } from '@engine/db/types';
 import { syncSchema } from '@engine/schema/ddl';
-import { brandCompany, loadSeed } from '@engine/seed/load';
+import { brandCompany, ensureLoginUnique, loadSeed } from '@engine/seed/load';
 import { getRegistry } from './registry';
 import { registerApps } from '@/packages/apps/index';
 import { setIdentityProvider, setTemporaryPasswordMailer } from '@/packages/apps/base/users';
@@ -87,6 +87,7 @@ async function connect(): Promise<Database> {
     await syncSchema(db, registry);
     await loadSeed(db, registry);
     await brandCompany(db);
+    await ensureLoginUnique(db);
   }
   return db;
 }

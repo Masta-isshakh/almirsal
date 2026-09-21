@@ -1,7 +1,7 @@
 import { rdsDataDatabase } from '../../../packages/engine/db/rds-data.js';
 import { loadRegistry, type ExtraModels, type RawSpec } from '../../../packages/engine/registry/spec-loader.js';
 import { syncSchema } from '../../../packages/engine/schema/ddl.js';
-import { brandCompany, loadSeed } from '../../../packages/engine/seed/load.js';
+import { brandCompany, ensureLoginUnique, loadSeed } from '../../../packages/engine/seed/load.js';
 import spec from '../../../registry/odoo_spec.json';
 import extra from '../../../registry/extra-models.json';
 
@@ -23,6 +23,7 @@ export const handler = async (): Promise<Record<string, unknown>> => {
   const schema = await syncSchema(db, registry);
   const seed = await loadSeed(db, registry);
   await brandCompany(db);
+  await ensureLoginUnique(db);
   const summary = {
     seconds: Math.round((Date.now() - started) / 1000),
     schema: { skipped: schema.skipped, tablesCreated: schema.tablesCreated.length, columnsAdded: schema.columnsAdded.length, foreignKeysAdded: schema.foreignKeysAdded },

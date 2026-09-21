@@ -222,7 +222,20 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return loadUser('lower(u.login) = lower($1)', identity.email);
 }
 
-async function provisionUser(identity: { email: string; name: string | null; sub: string | null }): Promise<boolean> {
+const provisioning = new Map<string, Promise<boolean>>();
+
+/** One provisioning per address at a time: the layout and the page resolve the session concurrently. */
+function provisionUser(identity: { email: string; name: string | null; sub: string | null }): Promise<boolean> {
+  const key = identity.email.toLowerCase();
+  let pending = provisioning.get(key);
+  if (!pending) {
+    pending = provisionOnce(identity).finally(() => provisioning.delete(key));
+    provisioning.set(key, pending);
+  }
+  return pending;
+}
+
+async function provisionOnce(identity: { email: string; name: string | null; sub: string | null }): Promise<boolean> {
   try {
     const db = await getDatabase();
     const registry = getRegistry();

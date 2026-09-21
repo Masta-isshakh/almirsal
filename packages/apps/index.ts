@@ -15,7 +15,7 @@ import { registerAccount } from './account/index.js';
 export function registerApps(registry: Registry): void {
   if (hooksFor('sale.order').methods) return;
   registerBase();
-  registerUsers();
+  registerUsers(registry);
   registerActivities();
   registerSettings(registry);
   registerAccount(registry);

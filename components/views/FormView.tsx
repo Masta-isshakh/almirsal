@@ -155,6 +155,10 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
       for (const name of lineFields) next[name] = rowsFromRecords(saved[name]);
       setLines(next);
       if (!recordId && mode === 'page') navigate(`/odoo/${slug}/${saved.id}`, { replace: true });
+      // A new user is invited the moment it is saved: say so, nothing else to click.
+      if (!recordId && model === 'res.users' && user.authConfig) {
+        ui.notify({ type: 'success', sticky: true, message: { en: `Invitation email with a temporary password sent to ${String(saved.login ?? '')}. They sign in with it and choose their own password.`, ar: `تم إرسال دعوة بكلمة مرور مؤقتة إلى ${String(saved.login ?? '')}. يسجل الدخول بها ثم يختار كلمة مروره.` } });
+      }
       return saved.id as number;
     } catch {
       return null;
