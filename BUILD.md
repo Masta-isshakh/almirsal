@@ -328,8 +328,21 @@ Email" to an already-confirmed account sets a new temporary password and
 mails it through SES or, without a mail server, shows it to the
 administrator. Users created directly in the Cognito console are
 provisioned in the app on their first sign-in (`provisionUser` in
-`lib/server/session.ts`). `/web/reset_password` runs Cognito's code flow;
-"Log out" clears the Cognito token cookies too.
+`lib/server/session.ts`; concurrent first requests share one in-flight
+provisioning per email, and `ensureLoginUnique` keeps a unique index on
+`lower(login)`). `/web/reset_password` runs Cognito's code flow; "Log out"
+clears the Cognito token cookies too.
+
+One invitation, one password: `amplify/backend.ts` merges
+`allowAdminCreateUserOnly` into the generated `AdminCreateUserConfig`
+instead of replacing it (the earlier replacement dropped the branded
+`InviteMessageTemplate`, so the pool fell back to Cognito's default text).
+Every re-invite ("Send an Invitation Email") regenerates the temporary
+password and invalidates the previous one, so the button now asks for
+confirmation, the form shows a sticky "invitation sent" toast right after
+the user is created, the chatter logs it, and the notification after a
+resend says the earlier password stopped working. A user must sign in with
+the password from the **latest** email.
 
 **177 tests pass; `tsc --noEmit` and `next build` are clean.**
 
