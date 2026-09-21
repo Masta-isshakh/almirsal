@@ -11,8 +11,12 @@ import { m2oId } from './index.js';
  */
 
 export interface IdentityProvider {
-  /** Create the account and send the invitation; resolve to the provider's user id. */
-  invite(email: string, name: string, options: { resend?: boolean }): Promise<string | null>;
+  /**
+   * Create the account and send the invitation; resolve to the provider's user
+   * id, or to `{sub, temporaryPassword}` when the provider issued a new temporary
+   * password without mailing it (the app then mails or shows it).
+   */
+  invite(email: string, name: string, options: { resend?: boolean }): Promise<string | null | { sub: string | null; temporaryPassword: string }>;
   /** Enable / disable sign-in. */
   setEnabled(email: string, enabled: boolean): Promise<void>;
   /** Set a permanent password (local admin resets). */
@@ -20,6 +24,11 @@ export interface IdentityProvider {
 }
 
 let provider: IdentityProvider | null = null;
+
+/** Sends a temporary password by email (SES); resolves to false when no transport is configured. */
+export type TemporaryPasswordMailer = (env: Environment, email: string, name: string, password: string) => Promise<boolean>;
+let mailer: TemporaryPasswordMailer | null = null;
+export function setTemporaryPasswordMailer(next: TemporaryPasswordMailer | null): void { mailer = next; }
 
 export function setIdentityProvider(next: IdentityProvider | null): void {
   provider = next;
@@ -156,7 +165,8 @@ export function registerUsers(): void {
         const login = String(row.login ?? '');
         if (!isEmail(login)) continue;
         try {
-          const sub = await provider.invite(login, row.name ?? login, {});
+          const invited = await provider.invite(login, row.name ?? login, {});
+          const sub = typeof invited === 'string' ? invited : invited?.sub ?? null;
           if (sub && env.registry.models['res.users'].fields.cognito_sub) await env.cr.query(`UPDATE res_users SET cognito_sub = $2 WHERE id = $1`, [row.id, sub]);
         } catch (error) {
           throw new UserError({ en: `The account could not be created in the identity provider: ${(error as Error).message}`, ar: `تعذر إنشاء الحساب في مزود الهوية: ${(error as Error).message}` });
@@ -195,10 +205,24 @@ export function registerUsers(): void {
             ar: 'لم يتم إعداد مزود هوية: يسجل المستخدم الدخول بكلمة المرور المحددة في هذا النموذج أو بأول كلمة مرور يكتبها.',
           });
         }
+        const handed: string[] = [];
         for (const row of rows.rows) {
           if (!isEmail(row.login)) throw new UserError({ en: `"${row.login}" is not an email address.`, ar: `"${row.login}" ليس عنوان بريد إلكتروني.` });
-          const sub = await provider.invite(row.login, row.name ?? row.login, { resend: true });
+          const invited = await provider.invite(row.login, row.name ?? row.login, { resend: true });
+          const sub = typeof invited === 'string' ? invited : invited?.sub ?? null;
           if (sub && env.registry.models['res.users'].fields.cognito_sub) await env.cr.query(`UPDATE res_users SET cognito_sub = $2 WHERE id = $1`, [row.id, sub]);
+          if (invited && typeof invited === 'object') {
+            // A confirmed account got a new temporary password: mail it through the
+            // app's own transport, or show it to the administrator when there is none.
+            const sent = mailer ? await mailer(env, row.login, row.name ?? row.login, invited.temporaryPassword).catch(() => false) : false;
+            if (!sent) handed.push(`${row.login}: ${invited.temporaryPassword}`);
+          }
+        }
+        if (handed.length) {
+          return {
+            type: 'ir.actions.client', tag: 'display_notification',
+            params: { type: 'warning', sticky: true, message: { en: `No outgoing mail server: give this temporary password to the user (they must change it at login) — ${handed.join(' · ')}`, ar: `لا يوجد خادم بريد صادر: أعطِ كلمة المرور المؤقتة هذه للمستخدم (يجب تغييرها عند الدخول) — ${handed.join(' · ')}` } },
+          };
         }
         return {
           type: 'ir.actions.client', tag: 'display_notification',

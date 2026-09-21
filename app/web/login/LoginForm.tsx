@@ -6,7 +6,7 @@ import { useT } from '@/lib/client/i18n';
 /**
  * B-10: centered white card on the lavender background — logo placeholder,
  * Email, Password with "Reset Password" link and eye toggle, full-width
- * "Log in", "- or -" and the passkey button, "Powered by Rodeo Drive".
+ * "Log in", "- or -" and the passkey button, the Almirsal footer.
  */
 export function LoginForm({ authConfig, redirectTo }: { authConfig: Record<string, unknown> | null; redirectTo: string }) {
   const cognito = authConfig !== null;
@@ -62,7 +62,7 @@ export function LoginForm({ authConfig, redirectTo }: { authConfig: Record<strin
   return (
     <div className="o_login_page">
       <form className="o_login_card" onSubmit={submit} noValidate>
-        <div className="o_login_logo" aria-label="Your logo">📷 {t('Your logo')}</div>
+        <div className="o_login_logo"><span className="o_login_brand">Almirsal</span><span className="o_login_tagline">{t('Business management')}</span></div>
         <hr />
         {error && <div className="alert alert-danger py-2" role="alert">{error}</div>}
         <div className="mb-3">
@@ -98,7 +98,7 @@ export function LoginForm({ authConfig, redirectTo }: { authConfig: Record<strin
         </button>
         <div className="o_login_footer">
           <hr className="mb-2" />
-          {t('Powered by')} <a href="https://rodeo.drive" target="_blank" rel="noreferrer">Rodeo Drive</a>
+          © {new Date().getFullYear()} Almirsal
         </div>
       </form>
     </div>

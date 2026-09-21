@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { randomInt } from 'node:crypto';
 import { resolve } from 'node:path';
 import type { IdentityProvider } from '@/packages/apps/base/users';
 
 /**
  * Cognito as the identity provider behind Settings › Users. Creating a user
- * in Rodeo calls AdminCreateUser, which emails the invitation with a
+ * in Almirsal calls AdminCreateUser, which emails the invitation with a
  * temporary password (the pool is invitation-only). Archiving disables the
  * account; "Send an Invitation Email" resends it.
  *
@@ -27,6 +28,28 @@ function poolConfig(): PoolConfig | null {
   }
 }
 
+/** A temporary password that satisfies the pool policy (upper, lower, digit, symbol, 12+). */
+function temporaryPassword(): string {
+  const pick = (chars: string) => chars[randomInt(chars.length)];
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; const lower = 'abcdefghijkmnpqrstuvwxyz'; const digits = '23456789'; const symbols = '!@#$%&*';
+  const all = upper + lower + digits + symbols;
+  const chars = [pick(upper), pick(lower), pick(digits), pick(symbols), ...Array.from({ length: 8 }, () => pick(all))];
+  for (let i = chars.length - 1; i > 0; i -= 1) { const j = randomInt(i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
+  return chars.join('');
+}
+
+/** Cognito's attributes for a signed-in user (name, sub), read by the JIT provisioning. */
+export async function cognitoUserAttributes(email: string): Promise<{ name?: string; sub?: string } | null> {
+  const config = poolConfig();
+  if (!config) return null;
+  try {
+    const m = await import('@aws-sdk/client-cognito-identity-provider');
+    const c = new m.CognitoIdentityProviderClient({ region: config.region });
+    const user = await c.send(new m.AdminGetUserCommand({ UserPoolId: config.userPoolId, Username: email }));
+    return { name: user.UserAttributes?.find((a) => a.Name === 'name')?.Value, sub: user.UserAttributes?.find((a) => a.Name === 'sub')?.Value };
+  } catch { return null; }
+}
+
 export function cognitoIdentityProvider(): IdentityProvider | null {
   const config = poolConfig();
   if (!config) return null;
@@ -38,7 +61,7 @@ export function cognitoIdentityProvider(): IdentityProvider | null {
     async invite(email, name, options) {
       const m = await sdk();
       const c = await client();
-      const attributes = [{ Name: 'email', Value: email }, { Name: 'email_verified', Value: 'true' }, { Name: 'name', Value: name }];
+      const attributes = [{ Name: 'email', Value: email }, { Name: 'email_verified', Value: 'true' }, ...(name ? [{ Name: 'name', Value: name }] : [])];
       try {
         const created = await c.send(new m.AdminCreateUserCommand({
           UserPoolId: config.userPoolId, Username: email, UserAttributes: attributes, DesiredDeliveryMediums: ['EMAIL'],
@@ -46,18 +69,20 @@ export function cognitoIdentityProvider(): IdentityProvider | null {
         return created.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? created.User?.Username ?? null;
       } catch (error) {
         if ((error as { name?: string }).name !== 'UsernameExistsException') throw error;
-        if (options.resend) {
-          // Resend only works while the account still has its temporary password.
-          const existing = await c.send(new m.AdminGetUserCommand({ UserPoolId: config.userPoolId, Username: email }));
-          if (existing.UserStatus === 'FORCE_CHANGE_PASSWORD') {
-            await c.send(new m.AdminCreateUserCommand({ UserPoolId: config.userPoolId, Username: email, MessageAction: 'RESEND', DesiredDeliveryMediums: ['EMAIL'] }));
-          } else {
-            await c.send(new m.AdminResetUserPasswordCommand({ UserPoolId: config.userPoolId, Username: email }));
-          }
-          return existing.UserAttributes?.find((a) => a.Name === 'sub')?.Value ?? null;
-        }
         const existing = await c.send(new m.AdminGetUserCommand({ UserPoolId: config.userPoolId, Username: email }));
-        return existing.UserAttributes?.find((a) => a.Name === 'sub')?.Value ?? null;
+        const sub = existing.UserAttributes?.find((a) => a.Name === 'sub')?.Value ?? null;
+        if (!options.resend) return sub;
+        if (existing.UserStatus === 'FORCE_CHANGE_PASSWORD') {
+          // Still on the temporary password: Cognito re-sends the invitation with a fresh one.
+          await c.send(new m.AdminCreateUserCommand({ UserPoolId: config.userPoolId, Username: email, MessageAction: 'RESEND', DesiredDeliveryMediums: ['EMAIL'] }));
+          return sub;
+        }
+        // Already confirmed: issue a new temporary password (the user must change it at
+        // the next login) and hand it back so the app can mail or show it — Cognito
+        // itself would only send a reset *code* here.
+        const temporary = temporaryPassword();
+        await c.send(new m.AdminSetUserPasswordCommand({ UserPoolId: config.userPoolId, Username: email, Password: temporary, Permanent: false }));
+        return { sub, temporaryPassword: temporary };
       }
     },
     async setEnabled(email, enabled) {

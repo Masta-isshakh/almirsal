@@ -133,3 +133,26 @@ describe('settings', () => {
     expect(result).toEqual({ type: 'ir.actions.client', tag: 'reload' });
   });
 });
+
+describe('invitations', () => {
+  it('hands a temporary password to the administrator when the provider issues one and no mail server exists', async () => {
+    const { setIdentityProvider: setProvider, setTemporaryPasswordMailer } = await import('./users.js');
+    setProvider({
+      invite: async (email, _name, options) => (options.resend ? { sub: 'sub-x', temporaryPassword: 'Temp#12345ab' } : `sub-${email}`),
+      setEnabled: async () => undefined,
+    });
+    setTemporaryPasswordMailer(null);
+    const id = await env.model('res.users').create({ name: 'Confirmed Person', login: 'confirmed@example.com' });
+    const result = await env.model('res.users').callButton(id, 'action_reset_password') as { params: { type: string; message: { en: string } } };
+    expect(result.params.type).toBe('warning');
+    expect(result.params.message.en).toContain('confirmed@example.com: Temp#12345ab');
+    // With a mailer the password travels by email and the admin only sees "sent".
+    const mailed: string[] = [];
+    setTemporaryPasswordMailer(async (_env, email, _name, password) => { mailed.push(`${email}:${password}`); return true; });
+    const sent = await env.model('res.users').callButton(id, 'action_reset_password') as { params: { type: string } };
+    expect(sent.params.type).toBe('success');
+    expect(mailed).toEqual(['confirmed@example.com:Temp#12345ab']);
+    setTemporaryPasswordMailer(null);
+    setProvider(null);
+  });
+});

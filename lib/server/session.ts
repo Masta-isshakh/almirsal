@@ -108,7 +108,7 @@ export function clientAuthConfig(): Record<string, unknown> | null {
   return { version: outputs.version ?? '1', auth: outputs.auth };
 }
 
-async function cognitoEmail(): Promise<string | null> {
+async function cognitoEmail(): Promise<{ email: string; name: string | null; sub: string | null } | null> {
   const outputs = amplifyOutputs();
   if (!outputs) return null;
   try {
@@ -119,8 +119,10 @@ async function cognitoEmail(): Promise<string | null> {
       nextServerContext: { cookies },
       operation: (contextSpec) => fetchAuthSession(contextSpec),
     });
-    const email = session.tokens?.idToken?.payload.email;
-    return typeof email === 'string' ? email : null;
+    const payload = session.tokens?.idToken?.payload ?? {};
+    const email = payload.email;
+    if (typeof email !== 'string') return null;
+    return { email, name: typeof payload.name === 'string' ? payload.name : null, sub: typeof payload.sub === 'string' ? payload.sub : null };
   } catch {
     return null;
   }
@@ -208,9 +210,34 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const jar = await cookies();
   const uid = decodeSession(jar.get(SESSION_COOKIE)?.value);
   if (uid) return loadUser('u.id = $1', uid);
-  const email = await cognitoEmail();
-  if (email) return loadUser('lower(u.login) = lower($1)', email);
-  return null;
+  const identity = await cognitoEmail();
+  if (!identity) return null;
+  const known = await loadUser('lower(u.login) = lower($1)', identity.email);
+  if (known) return known;
+  // A user created directly in the Cognito console: provision the app-side
+  // user on first sign-in (name from the token or the address, default groups).
+  const created = await provisionUser(identity);
+  if (!created) return null;
+  invalidateSessionCache();
+  return loadUser('lower(u.login) = lower($1)', identity.email);
+}
+
+async function provisionUser(identity: { email: string; name: string | null; sub: string | null }): Promise<boolean> {
+  try {
+    const db = await getDatabase();
+    const registry = getRegistry();
+    const env = new Environment({ registry, db, uid: 2, lang: 'en_US', tz: 'Asia/Riyadh', companyIds: [1], groupIds: [], superuser: true });
+    const local = identity.email.split('@')[0];
+    const name = identity.name?.trim() || local.split(/[._-]+/).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+    const values: Record<string, unknown> = { name, login: identity.email, email: identity.email, state: 'active' };
+    if (identity.sub && registry.models['res.users'].fields.cognito_sub) values.cognito_sub = identity.sub;
+    await env.model('res.users').create(values);
+    console.log(`[auth] provisioned ${identity.email} from Cognito`);
+    return true;
+  } catch (error) {
+    console.error('[auth] could not provision the Cognito user', error);
+    return false;
+  }
 }
 
 /** Language for this request: the cookie override wins over the user's setting. */

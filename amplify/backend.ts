@@ -38,7 +38,7 @@ const database = new AuroraDatabase(dbStack, 'Aurora', { production: branch === 
 // Names are left to CloudFormation: a nested stack's name is ~80 characters,
 // which would push a hand-built IAM role name past the 64-character limit.
 const dataApiPolicy = new iam.ManagedPolicy(dbStack, 'DataApiAccess', {
-  description: 'Rodeo ERP: Aurora Data API and DB secret access for the Amplify Hosting compute role',
+  description: 'Almirsal: Aurora Data API and DB secret access for the Amplify Hosting compute role',
   statements: [
     new iam.PolicyStatement({
       actions: [
@@ -61,7 +61,7 @@ const dataApiPolicy = new iam.ManagedPolicy(dbStack, 'DataApiAccess', {
  * reads the cluster details from amplify_outputs.
  */
 const computeRole = new iam.Role(dbStack, 'ComputeRole', {
-  description: 'Rodeo ERP: assumed by Amplify Hosting SSR compute (select it under App settings > IAM roles)',
+  description: 'Almirsal: assumed by Amplify Hosting SSR compute (select it under App settings > IAM roles)',
   assumedBy: new iam.ServicePrincipal('amplify.amazonaws.com'),
   managedPolicies: [dataApiPolicy],
 });

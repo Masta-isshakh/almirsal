@@ -5617,5 +5617,21 @@
   "The current password is wrong.": "كلمة المرور الحالية غير صحيحة.",
   "Could not change the password": "تعذر تغيير كلمة المرور",
   "Keyboard Shortcuts": "اختصارات لوحة المفاتيح",
-  "Shortcuts": "الاختصارات"
+  "Shortcuts": "الاختصارات",
+  "Business management": "إدارة الأعمال",
+  "Reset Password": "إعادة تعيين كلمة المرور",
+  "No account uses this email address.": "لا يوجد حساب بهذا البريد الإلكتروني.",
+  "Too many attempts, try again later.": "محاولات كثيرة، حاول لاحقاً.",
+  "The code is wrong.": "الرمز غير صحيح.",
+  "The code has expired, request a new one.": "انتهت صلاحية الرمز، اطلب رمزاً جديداً.",
+  "Passwords are managed by your administrator: ask them to set a new one for you (Settings › Users).": "يدير المسؤول كلمات المرور: اطلب منه تعيين كلمة مرور جديدة لك (الإعدادات › المستخدمون).",
+  "We will email you a code to choose a new password.": "سنرسل لك رمزاً بالبريد لاختيار كلمة مرور جديدة.",
+  "Send the code": "إرسال الرمز",
+  "A code was sent to": "تم إرسال رمز إلى",
+  "Request another code": "طلب رمز آخر",
+  "Your password has been changed. You can log in now.": "تم تغيير كلمة المرور. يمكنك تسجيل الدخول الآن.",
+  "Back to login": "العودة إلى تسجيل الدخول",
+  "Configure how this app works for your company.": "اضبط طريقة عمل هذا التطبيق لشركتك.",
+  "Unsaved changes": "تغييرات غير محفوظة",
+  "New Password": "كلمة المرور الجديدة"
 }

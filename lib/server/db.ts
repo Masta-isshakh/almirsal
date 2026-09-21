@@ -2,10 +2,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Database } from '@engine/db/types';
 import { syncSchema } from '@engine/schema/ddl';
-import { loadSeed } from '@engine/seed/load';
+import { brandCompany, loadSeed } from '@engine/seed/load';
 import { getRegistry } from './registry';
 import { registerApps } from '@/packages/apps/index';
-import { setIdentityProvider } from '@/packages/apps/base/users';
+import { setIdentityProvider, setTemporaryPasswordMailer } from '@/packages/apps/base/users';
+import { sendPlainMail } from './mail';
 import { cognitoIdentityProvider } from './cognito';
 
 /**
@@ -55,6 +56,13 @@ async function connect(): Promise<Database> {
   registerApps(registry);
   // Settings › Users provisions Cognito accounts when a user pool is configured.
   setIdentityProvider(cognitoIdentityProvider());
+  setTemporaryPasswordMailer((env, email, name, password) => sendPlainMail(env, {
+    to: email, name,
+    subject: env.lang === 'ar_001' ? 'المرسال — كلمة المرور المؤقتة' : 'Almirsal — your temporary password',
+    html: env.lang === 'ar_001'
+      ? `<p>مرحباً ${name}،</p><p>كلمة المرور المؤقتة لحسابك في المرسال هي: <strong>${password}</strong></p><p>سجّل الدخول بها وسيُطلب منك اختيار كلمة مرور جديدة.</p>`
+      : `<p>Hello ${name},</p><p>Your temporary Almirsal password is: <strong>${password}</strong></p><p>Sign in with it; you will be asked to choose a new password.</p>`,
+  }));
   let db: Database;
 
   const aurora = auroraConfig();
@@ -78,6 +86,7 @@ async function connect(): Promise<Database> {
   if (process.env.RODEO_SKIP_MIGRATE !== '1') {
     await syncSchema(db, registry);
     await loadSeed(db, registry);
+    await brandCompany(db);
   }
   return db;
 }

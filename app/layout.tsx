@@ -10,8 +10,8 @@ import { getRequestLang, getSessionUser } from '@/lib/server/session';
 import { THEME_BOOT_SCRIPT } from '@/components/webclient/theme';
 
 export const metadata: Metadata = {
-  title: 'Rodeo ERP',
-  description: 'Rodeo ERP',
+  title: 'Almirsal',
+  description: 'Almirsal — business management',
 };
 
 export const dynamic = 'force-dynamic';

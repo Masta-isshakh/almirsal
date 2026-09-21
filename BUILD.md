@@ -320,7 +320,18 @@ pager + ⚙ menu, Ctrl+K menus and records, dark mode, pivot drill-down,
 graph pie/line, calendar week/year, activity view — all green, no RPC
 errors, in English and Arabic.
 
-**176 tests pass; `tsc --noEmit` and `next build` are clean.**
+Identity (latest): the product is branded **Almirsal** (title, login card,
+company record renamed once by `brandCompany`, Cognito invitation and
+reset emails). Settings › Users invites through `AdminCreateUser` (the pool's
+invitation template carries the temporary password); "Send an Invitation
+Email" to an already-confirmed account sets a new temporary password and
+mails it through SES or, without a mail server, shows it to the
+administrator. Users created directly in the Cognito console are
+provisioned in the app on their first sign-in (`provisionUser` in
+`lib/server/session.ts`). `/web/reset_password` runs Cognito's code flow;
+"Log out" clears the Cognito token cookies too.
+
+**177 tests pass; `tsc --noEmit` and `next build` are clean.**
 
 ## Next — J-1 build phases
 

@@ -285,3 +285,17 @@ export async function loadSeed(db: Database, registry: Registry, options: { uid?
   report.ignoredFields = [...ignored].sort();
   return report;
 }
+
+/**
+ * The export's company is the demo user's own name ("masta"); the deployment
+ * is Almirsal's, so the company (and its partner) is named once, then the
+ * marker keeps every later start from touching what the user may have edited.
+ */
+export async function brandCompany(db: Queryable, name = 'Almirsal'): Promise<boolean> {
+  const marker = 'rodeo.company.branded';
+  if (await getParameter(db, marker)) return false;
+  await db.query(`UPDATE res_company SET name = $1 WHERE id = 1 AND name = 'masta'`, [name]);
+  await db.query(`UPDATE res_partner SET name = $1 WHERE name = 'masta' AND id = (SELECT partner_id FROM res_company WHERE id = 1)`, [name]).catch(() => undefined);
+  await setParameter(db, marker, name);
+  return true;
+}

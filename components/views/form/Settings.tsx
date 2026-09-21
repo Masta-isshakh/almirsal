@@ -60,8 +60,9 @@ export function SettingsPage({ arch, fields, scope, renderNode, dirty, saving, o
   return (
     <div className="o_settings">
       <div className="o_settings_topbar">
-        <button type="button" className="btn btn-primary" onClick={onSave} disabled={saving}>{saving ? t('Saving...') : t('Save')}</button>
+        <button type="button" className="btn btn-primary" onClick={onSave} disabled={saving}><i className={`fa ${saving ? 'fa-spinner fa-spin' : 'fa-check'} me-1`} />{saving ? t('Saving...') : t('Save')}</button>
         <button type="button" className="btn btn-secondary" onClick={onDiscard} disabled={!dirty}>{t('Discard')}</button>
+        {dirty && <span className="o_settings_dirty text-muted small"><i className="fa fa-circle me-1" />{t('Unsaved changes')}</span>}
         <div className="o_settings_search ms-auto">
           <i className="fa fa-search text-muted" />
           <input value={query} placeholder={t('Search...')} onChange={(event) => setQuery(event.target.value)} />
@@ -79,7 +80,13 @@ export function SettingsPage({ arch, fields, scope, renderNode, dirty, saving, o
         <div className="o_settings_content" ref={container}>
           {apps.map((app) => (
             <section key={app.name} className="o_settings_app" data-app={app.name} id={app.name} hidden={app.name !== active}>
-              <h2 className="o_settings_app_title">{t(app.string)}</h2>
+              <header className="o_settings_app_header">
+                <img src={`/icons/apps/${APP_ICONS[app.name] ?? 'settings'}.svg`} alt="" onError={(event) => { (event.target as HTMLImageElement).style.display = 'none'; }} />
+                <div>
+                  <h2 className="o_settings_app_title">{t(app.string)}</h2>
+                  <div className="o_settings_app_subtitle">{t('Configure how this app works for your company.')}</div>
+                </div>
+              </header>
               {app.children.map((child, index) => <SettingsNode key={index} node={child} fields={fields} scope={scope} renderNode={renderNode} />)}
             </section>
           ))}
@@ -88,6 +95,14 @@ export function SettingsPage({ arch, fields, scope, renderNode, dirty, saving, o
       </div>
     </div>
   );
+}
+
+function findField(nodes: FormNode[]): FieldNode | null {
+  for (const node of nodes) {
+    if (node.kind === 'field' && !node.hidden) return node;
+    if ('children' in node) { const found = findField(node.children); if (found) return found; }
+  }
+  return null;
 }
 
 function containsSettings(node: FormNode): boolean {
@@ -131,11 +146,13 @@ function SettingBox({ node, fields, scope, renderNode }: Omit<NodeProps, 'node'>
   const first = children[0];
   const toggle = first && first.kind === 'field' && !first.hidden && fields[first.name]?.type === 'boolean' ? (first as FieldNode) : null;
   const rest = toggle ? children.slice(1) : children;
-  // `title` on a setting is Odoo's tooltip, not the label.
-  const title = node.string ?? (toggle ? fields[toggle.name]?.label : node.title);
+  // `title` on a setting is Odoo's tooltip, not the label: the label is the setting's own
+  // string, else the first field's label.
+  const firstField = toggle ?? findField(children);
+  const title = node.string ?? (firstField ? fields[firstField.name]?.label : node.title);
   return (
     <div className="o_setting_box" id={node.id}>
-      {toggle && <div className="o_setting_left">{renderNode(toggle, 0)}</div>}
+      {toggle && <div className="o_setting_left">{renderNode({ ...toggle, widget: toggle.widget ?? 'boolean_toggle' }, 0)}</div>}
       <div className="o_setting_right">
         {(title || toggle) && (
           <div className="o_setting_label" title={node.title ? t(node.title) : undefined}>

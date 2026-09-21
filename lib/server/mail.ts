@@ -54,6 +54,17 @@ export function mailConfigured(): boolean {
   return Boolean(senderAddress());
 }
 
+/** A plain transactional email (temporary passwords, invitations); false when no transport is configured. */
+export async function sendPlainMail(env: Environment, options: { to: string; name?: string; subject: string; html: string }): Promise<boolean> {
+  const active = await sesTransport();
+  const from = senderAddress();
+  if (!active || !from) return false;
+  const company = await env.sudo().model('res.company').read(env.companyId, ['name']).catch(() => []);
+  const html = `<div dir="${env.lang === 'ar_001' ? 'rtl' : 'ltr'}" style="font-family:Noto Sans,system-ui,sans-serif;font-size:14px;color:#111827">${options.html}<p style="color:#6b7280;font-size:12px;margin-top:24px">${String(company[0]?.name ?? 'Almirsal')}</p></div>`;
+  await active.send({ from, to: [{ email: options.to, name: options.name }], subject: options.subject, html });
+  return true;
+}
+
 export interface SendDocumentOptions {
   model: string;
   id: number;
