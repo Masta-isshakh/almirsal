@@ -276,8 +276,8 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
             )}
           </span>
         </div>
-        {header?.children.filter((node): node is FieldNode => node.kind === 'field' && node.widget === 'statusbar').map((node) => (
-          <StatusBar key={node.name} node={node} field={fields[node.name]} value={values[node.name]} />
+        {header?.children.filter((node): node is FieldNode => node.kind === 'field' && node.widget === 'statusbar').map((node, index) => (
+          <StatusBar key={`${node.name}-${index}`} node={node} field={fields[node.name]} value={values[node.name]} />
         ))}
       </div>
       <div className={hasChatter ? 'o_form_renderer_with_chatter' : ''}>
@@ -344,7 +344,8 @@ function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
       if (node.tag === 'i' || node.tag === 'em') return <em className={classes}>{children}</em>;
       if (node.tag === 'small') return <small className={classes}>{children}</small>;
       if (node.tag === 'span' || node.tag === 'a' || node.tag === 'label') return <span className={classes}>{children}</span>;
-      if (node.tag === 'p') return <p className={classes}>{children}</p>;
+      // Form <p> often wraps fields (block elements): a div keeps the DOM valid.
+      if (node.tag === 'p') return <div className={`o_form_p ${classes}`}>{children}</div>;
       return <div className={classes}>{children}</div>;
     }
     case 'group': return <Group node={node} ctx={ctx} />;

@@ -37,8 +37,18 @@ export function toCommands(value: unknown): X2ManyCommand[] {
 }
 
 /** SELECT expression that yields the wire representation of a column. */
-export function selectExpr(field: FieldDef, alias: string): string {
-  const column = `${alias}.${quoteIdent(field.name)}`;
+/** Context for SQL-computed fields (`FieldDef.sqlExpr` placeholders). */
+export interface SqlExprContext { uid: number; model: string }
+
+/** Expand a `sqlExpr` template for the given row alias and request. */
+export function expandSqlExpr(template: string, alias: string, ctx?: SqlExprContext): string {
+  const uid = Number.isInteger(ctx?.uid) ? String(ctx!.uid) : '0';
+  const model = `'${(ctx?.model ?? '').replace(/'/g, "''")}'`;
+  return `(${template.replace(/\{alias\}/g, alias).replace(/\{uid\}/g, uid).replace(/\{model\}/g, model)})`;
+}
+
+export function selectExpr(field: FieldDef, alias: string, ctx?: SqlExprContext): string {
+  const column = field.sqlExpr ? expandSqlExpr(field.sqlExpr, alias, ctx) : `${alias}.${quoteIdent(field.name)}`;
   switch (field.type) {
     case 'date':
       return `to_char(${column}, 'YYYY-MM-DD')`;

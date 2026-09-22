@@ -6,6 +6,7 @@ import type { MenuDef } from '@engine/registry/types';
 import { useLang, useT } from '@/lib/client/i18n';
 import type { AppEntry, SessionInfo } from './WebClient';
 import { ActivitiesMenu, MessagesMenu } from './Systray';
+import { AttendanceMenu } from './AttendanceMenu';
 import { useTheme } from './theme';
 import { ShortcutsHelp } from './Shortcuts';
 import { logout as signOutEverywhere } from '@/lib/client/auth';
@@ -41,6 +42,7 @@ export function Navbar({ user, apps, currentApp, homeOpen, onToggleHome, menuHre
       )}
       <div className="o_menu_systray">
         <button type="button" className="o_systray_item" title="Ctrl+K" onClick={onSearch}><i className="fa fa-search fa-lg" /></button>
+        <AttendanceMenu />
         <MessagesMenu />
         <ActivitiesMenu user={user} />
         <UserMenu user={user} />

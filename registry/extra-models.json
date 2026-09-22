@@ -1478,6 +1478,12 @@
         "s": "Sequence",
         "ar": "التسلسل",
         "t": "integer"
+      },
+      "is_course": {
+        "s": "Is Course",
+        "ar": "دورة",
+        "t": "boolean",
+        "def": false
       }
     },
     "iap.service": {
@@ -4280,6 +4286,12 @@
         "s": "Last Updated on",
         "ar": "آخر تحديث في",
         "t": "datetime"
+      },
+      "account_audit_log_restricted": {
+        "s": "Audit Log Restricted",
+        "ar": "مقيد بسجل التدقيق",
+        "t": "boolean",
+        "sql": "FALSE"
       }
     },
     "mail.followers": {
@@ -4486,6 +4498,18 @@
         "s": "Message for Invoice",
         "ar": "رسالة الفاتورة",
         "t": "text"
+      },
+      "employee": {
+        "s": "Employee",
+        "ar": "موظف",
+        "t": "boolean",
+        "def": false
+      },
+      "complete_name": {
+        "s": "Complete Name",
+        "ar": "الاسم الكامل",
+        "t": "char",
+        "sql": "coalesce((SELECT par.name || ', ' FROM res_partner par WHERE par.id = {alias}.parent_id), '') || coalesce({alias}.name, '')"
       }
     },
     "product.category": {
@@ -4506,6 +4530,12 @@
         "s": "Parent Path",
         "ar": "مسار الأصل",
         "t": "char"
+      },
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
       }
     },
     "discuss.channel": {
@@ -4514,6 +4544,12 @@
         "ar": "عدد الأعضاء",
         "t": "integer",
         "ro": 1
+      },
+      "is_member": {
+        "s": "Is Member",
+        "ar": "عضو",
+        "t": "boolean",
+        "sql": "EXISTS (SELECT 1 FROM discuss_channel_member cm WHERE cm.discuss_channel_id = {alias}.\"id\" AND cm.partner_id = (SELECT u.partner_id FROM res_users u WHERE u.id = {uid}))"
       }
     },
     "documents.document": {
@@ -4526,6 +4562,12 @@
         "s": "Is Folder",
         "ar": "مجلد",
         "t": "boolean"
+      },
+      "user_root": {
+        "s": "Root",
+        "ar": "الجذر",
+        "t": "boolean",
+        "sql": "FALSE"
       }
     },
     "documents.tag": {
@@ -4553,6 +4595,12 @@
         "ar": "عملة الحساب",
         "t": "many2one",
         "rel": "res.currency"
+      },
+      "used": {
+        "s": "Used",
+        "ar": "مستخدم",
+        "t": "boolean",
+        "sql": "EXISTS (SELECT 1 FROM account_move_line l WHERE l.account_id = {alias}.\"id\")"
       }
     },
     "res.company": {
@@ -4647,6 +4695,18 @@
         "ar": "فئة القالب",
         "t": "many2one",
         "rel": "knowledge.article.template.category"
+      },
+      "user_has_write_access": {
+        "s": "User Has Write Access",
+        "ar": "المستخدم لديه صلاحية الكتابة",
+        "t": "boolean",
+        "sql": "TRUE"
+      },
+      "is_listed_in_templates_gallery": {
+        "s": "Listed in Templates Gallery",
+        "ar": "مدرج في معرض القوالب",
+        "t": "boolean",
+        "def": false
       }
     },
     "knowledge.article.template.category": {
@@ -4737,6 +4797,12 @@
         "ar": "المبلغ المفوتر",
         "t": "monetary",
         "ro": 1
+      },
+      "is_expired": {
+        "s": "Is Expired",
+        "ar": "منتهي الصلاحية",
+        "t": "boolean",
+        "sql": "({alias}.validity_date IS NOT NULL AND {alias}.validity_date < CURRENT_DATE AND {alias}.state IN ('draft', 'sent'))"
       }
     },
     "sale.order.line": {
@@ -4775,6 +4841,49 @@
         "ar": "المبلغ المفوتر غير الشامل للضريبة",
         "t": "monetary",
         "ro": 1
+      },
+      "country_id": {
+        "s": "Country",
+        "ar": "الدولة",
+        "t": "many2one",
+        "rel": "res.country",
+        "related": "order_id.partner_id.country_id"
+      },
+      "invoice_policy": {
+        "s": "Invoicing Policy",
+        "ar": "سياسة الفوترة",
+        "t": "selection",
+        "sel": [
+          "order=Ordered quantities ⇔ الكميات المطلوبة",
+          "delivery=Delivered quantities ⇔ الكميات المسلمة"
+        ],
+        "related": "product_id.invoice_policy"
+      },
+      "categ_id": {
+        "s": "Product Category",
+        "ar": "فئة المنتج",
+        "t": "many2one",
+        "rel": "product.category",
+        "related": "product_id.categ_id"
+      },
+      "team_id": {
+        "s": "Sales Team",
+        "ar": "فريق المبيعات",
+        "t": "many2one",
+        "rel": "crm.team",
+        "related": "order_id.team_id"
+      },
+      "invoice_to_be_issued": {
+        "s": "Invoice To Be Issued",
+        "ar": "فاتورة يجب إصدارها",
+        "t": "boolean",
+        "sql": "coalesce({alias}.qty_to_invoice, 0) > 0"
+      },
+      "deferred_revenue": {
+        "s": "Deferred Revenue",
+        "ar": "إيراد مؤجل",
+        "t": "boolean",
+        "sql": "FALSE"
       }
     },
     "account.move.line": {
@@ -4783,6 +4892,12 @@
         "ar": "بنود أمر البيع",
         "t": "many2many",
         "rel": "sale.order.line"
+      },
+      "payment_id": {
+        "s": "Originator Payment",
+        "ar": "الدفعة الأصلية",
+        "t": "many2one",
+        "rel": "account.payment"
       }
     },
     "account.move": {
@@ -4803,6 +4918,12 @@
         "ar": "الإجمالي",
         "t": "monetary",
         "ro": 1
+      },
+      "sequence_prefix": {
+        "s": "Sequence Prefix",
+        "ar": "بادئة التسلسل",
+        "t": "char",
+        "sql": "regexp_replace(coalesce({alias}.name, ''), '[0-9]+$', '')"
       }
     },
     "sale.advance.payment.inv": {
@@ -4859,6 +4980,13 @@
         "ar": "حساب المصروف",
         "t": "many2one",
         "rel": "account.account"
+      },
+      "product_variant_ids": {
+        "s": "Products",
+        "ar": "المنتجات",
+        "t": "one2many",
+        "rel": "product.product",
+        "inverse": "product_tmpl_id"
       }
     },
     "account.journal": {
@@ -4986,6 +5114,565 @@
         "ar": "الفواتير المسوّاة",
         "t": "many2many",
         "rel": "account.move"
+      }
+    },
+    "account.invoice.report": {
+      "state": {
+        "s": "Invoice Status",
+        "ar": "حالة الفاتورة",
+        "t": "selection",
+        "sel": [
+          "draft=Draft ⇔ مسودة",
+          "posted=Open ⇔ مفتوح",
+          "cancel=Cancelled ⇔ ملغي"
+        ]
+      },
+      "move_type": {
+        "s": "Type",
+        "ar": "النوع",
+        "t": "selection",
+        "sel": [
+          "out_invoice=Customer Invoice ⇔ فاتورة العميل",
+          "in_invoice=Vendor Bill ⇔ فاتورة المورد",
+          "out_refund=Customer Credit Note ⇔ إشعار دائن للعميل",
+          "in_refund=Vendor Credit Note ⇔ إشعار دائن للمورد",
+          "out_receipt=Sales Receipt ⇔ إيصال المبيعات",
+          "in_receipt=Purchase Receipt ⇔ إيصال الشراء",
+          "entry=Journal Entry ⇔ قيد اليومية"
+        ]
+      },
+      "invoice_date_due": {
+        "s": "Due Date",
+        "ar": "تاريخ الاستحقاق",
+        "t": "date"
+      },
+      "source_id": {
+        "s": "Source",
+        "ar": "المصدر",
+        "t": "many2one",
+        "rel": "utm.source"
+      }
+    },
+    "account.analytic.line": {
+      "fiscal_year_search": {
+        "s": "This Fiscal Year",
+        "ar": "هذه السنة المالية",
+        "t": "boolean",
+        "sql": "EXTRACT(YEAR FROM {alias}.date) = EXTRACT(YEAR FROM CURRENT_DATE)"
+      },
+      "category": {
+        "s": "Category",
+        "ar": "الفئة",
+        "t": "selection",
+        "sel": [
+          "other=Other ⇔ أخرى",
+          "invoice=Customer Invoice ⇔ فاتورة العميل",
+          "vendor_bill=Vendor Bill ⇔ فاتورة المورد",
+          "manual=Manual ⇔ يدوي"
+        ],
+        "def": "other"
+      }
+    },
+    "account.tax": {
+      "is_domestic": {
+        "s": "Domestic",
+        "ar": "محلي",
+        "t": "boolean",
+        "sql": "TRUE"
+      }
+    },
+    "account.fiscal.position": {
+      "is_domestic": {
+        "s": "Domestic",
+        "ar": "محلي",
+        "t": "boolean",
+        "sql": "TRUE"
+      }
+    },
+    "account.return": {
+      "audit_status": {
+        "s": "Audit Status",
+        "ar": "حالة التدقيق",
+        "t": "selection",
+        "sel": [
+          "new=To Do ⇔ للقيام به",
+          "in_progress=In Progress ⇔ قيد التنفيذ",
+          "paused=Paused ⇔ متوقف مؤقتاً",
+          "done=Done ⇔ منتهي"
+        ]
+      },
+      "return_type_category": {
+        "s": "Return Type Category",
+        "ar": "فئة نوع الإقرار",
+        "t": "char",
+        "related": "type_id.category"
+      }
+    },
+    "sign.template": {
+      "is_one_time_request": {
+        "s": "One Time Request",
+        "ar": "طلب لمرة واحدة",
+        "t": "boolean",
+        "def": false
+      }
+    },
+    "hr.employee": {
+      "departure_date": {
+        "s": "Departure Date",
+        "ar": "تاريخ المغادرة",
+        "t": "date"
+      },
+      "birthday_month": {
+        "s": "Birthday Month",
+        "ar": "شهر الميلاد",
+        "t": "integer",
+        "sql": "EXTRACT(MONTH FROM {alias}.birthday)::int"
+      },
+      "member_of_department": {
+        "s": "Member of department",
+        "ar": "عضو في القسم",
+        "t": "boolean",
+        "sql": "EXISTS (SELECT 1 FROM hr_employee e WHERE e.user_id = {uid} AND e.department_id IS NOT NULL AND e.department_id = {alias}.department_id)"
+      }
+    },
+    "hr.version": {
+      "contract_date_start": {
+        "s": "Contract Start Date",
+        "ar": "تاريخ بدء العقد",
+        "t": "date"
+      },
+      "contract_date_end": {
+        "s": "Contract End Date",
+        "ar": "تاريخ انتهاء العقد",
+        "t": "date"
+      },
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
+      }
+    },
+    "project.project": {
+      "favorite_user_ids": {
+        "s": "Members",
+        "ar": "الأعضاء",
+        "t": "many2many",
+        "rel": "res.users"
+      }
+    },
+    "report.project.task.user": {
+      "is_closed": {
+        "s": "Closed",
+        "ar": "مغلق",
+        "t": "boolean"
+      },
+      "has_template_ancestor": {
+        "s": "Has Template Ancestor",
+        "ar": "له سلف قالب",
+        "t": "boolean"
+      },
+      "priority": {
+        "s": "Priority",
+        "ar": "الأولوية",
+        "t": "selection",
+        "sel": [
+          "0=Low ⇔ منخفضة",
+          "1=High ⇔ عالية"
+        ]
+      },
+      "has_project_template": {
+        "s": "Has Project Template",
+        "ar": "له قالب مشروع",
+        "t": "boolean"
+      }
+    },
+    "hr.employee.skill.report": {
+      "job_id": {
+        "s": "Job Position",
+        "ar": "المسمى الوظيفي",
+        "t": "many2one",
+        "rel": "hr.job"
+      },
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
+      }
+    },
+    "planning.analysis.report": {
+      "user_ids": {
+        "s": "Users",
+        "ar": "المستخدمون",
+        "t": "many2many",
+        "rel": "res.users"
+      },
+      "employee_ids": {
+        "s": "Employees",
+        "ar": "الموظفون",
+        "t": "many2many",
+        "rel": "hr.employee"
+      },
+      "end_datetime": {
+        "s": "End Date",
+        "ar": "تاريخ الانتهاء",
+        "t": "datetime"
+      },
+      "sale_line_id": {
+        "s": "Sales Order Item",
+        "ar": "بند أمر البيع",
+        "t": "many2one",
+        "rel": "sale.order.line"
+      },
+      "partner_id": {
+        "s": "Customer",
+        "ar": "العميل",
+        "t": "many2one",
+        "rel": "res.partner"
+      }
+    },
+    "planning.slot": {
+      "partner_id": {
+        "s": "Customer",
+        "ar": "العميل",
+        "t": "many2one",
+        "rel": "res.partner",
+        "related": "sale_line_id.order_id.partner_id"
+      }
+    },
+    "account.loan.line": {
+      "loan_state": {
+        "s": "Loan State",
+        "ar": "حالة القرض",
+        "t": "selection",
+        "sel": [
+          "draft=Draft ⇔ مسودة",
+          "running=Running ⇔ جارٍ",
+          "closed=Closed ⇔ مغلق",
+          "cancelled=Cancelled ⇔ ملغي"
+        ],
+        "related": "loan_id.state"
+      },
+      "loan_asset_group_id": {
+        "s": "Asset Group",
+        "ar": "مجموعة الأصول",
+        "t": "many2one",
+        "rel": "account.asset.group",
+        "related": "loan_id.asset_group_id"
+      }
+    },
+    "fleet.vehicle.log.services": {
+      "model_id": {
+        "s": "Model",
+        "ar": "الطراز",
+        "t": "many2one",
+        "rel": "fleet.vehicle.model",
+        "related": "vehicle_id.model_id"
+      },
+      "brand_id": {
+        "s": "Manufacturer",
+        "ar": "الشركة المصنعة",
+        "t": "many2one",
+        "rel": "fleet.vehicle.model.brand",
+        "related": "vehicle_id.model_id.brand_id"
+      },
+      "manager_id": {
+        "s": "Fleet Manager",
+        "ar": "مدير الأسطول",
+        "t": "many2one",
+        "rel": "res.users",
+        "related": "vehicle_id.manager_id"
+      }
+    },
+    "hr.attendance": {
+      "manager_id": {
+        "s": "Manager",
+        "ar": "المدير",
+        "t": "many2one",
+        "rel": "hr.employee",
+        "related": "employee_id.parent_id"
+      }
+    },
+    "fleet.vehicle.cost.report": {
+      "service_type": {
+        "s": "Service Type",
+        "ar": "نوع الخدمة",
+        "t": "many2one",
+        "rel": "fleet.service.type"
+      }
+    },
+    "helpdesk.ticket": {
+      "unanswered": {
+        "s": "Unanswered",
+        "ar": "دون رد",
+        "t": "boolean",
+        "sql": "NOT EXISTS (SELECT 1 FROM mail_message m WHERE m.model = {model} AND m.res_id = {alias}.\"id\" AND m.author_id = (SELECT u.partner_id FROM res_users u WHERE u.id = {uid}))"
+      },
+      "partner_email": {
+        "s": "Customer Email",
+        "ar": "البريد الإلكتروني للعميل",
+        "t": "char",
+        "related": "partner_id.email"
+      },
+      "partner_name": {
+        "s": "Customer Name",
+        "ar": "اسم العميل",
+        "t": "char",
+        "related": "partner_id.name"
+      }
+    },
+    "helpdesk.ticket.report.analysis": {
+      "partner_email": {
+        "s": "Customer Email",
+        "ar": "البريد الإلكتروني للعميل",
+        "t": "char"
+      },
+      "sale_order_id": {
+        "s": "Sales Order",
+        "ar": "أمر البيع",
+        "t": "many2one",
+        "rel": "sale.order"
+      },
+      "ticket_ref": {
+        "s": "Ticket IDs Sequence",
+        "ar": "تسلسل التذاكر",
+        "t": "char"
+      },
+      "kanban_state": {
+        "s": "Kanban State",
+        "ar": "حالة كانبان",
+        "t": "selection",
+        "sel": [
+          "normal=In Progress ⇔ قيد التنفيذ",
+          "done=Ready ⇔ جاهز",
+          "blocked=Blocked ⇔ محظور"
+        ]
+      },
+      "sla_deadline": {
+        "s": "SLA Deadline",
+        "ar": "الموعد النهائي لاتفاقية مستوى الخدمة",
+        "t": "datetime"
+      },
+      "company_id": {
+        "s": "Company",
+        "ar": "الشركة",
+        "t": "many2one",
+        "rel": "res.company"
+      },
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
+      },
+      "partner_name": {
+        "s": "Customer Name",
+        "ar": "اسم العميل",
+        "t": "char"
+      },
+      "partner_phone": {
+        "s": "Customer Phone",
+        "ar": "هاتف العميل",
+        "t": "char"
+      }
+    },
+    "helpdesk.sla.report.analysis": {
+      "partner_email": {
+        "s": "Customer Email",
+        "ar": "البريد الإلكتروني للعميل",
+        "t": "char"
+      },
+      "sale_order_id": {
+        "s": "Sales Order",
+        "ar": "أمر البيع",
+        "t": "many2one",
+        "rel": "sale.order"
+      },
+      "ticket_ref": {
+        "s": "Ticket IDs Sequence",
+        "ar": "تسلسل التذاكر",
+        "t": "char"
+      },
+      "kanban_state": {
+        "s": "Kanban State",
+        "ar": "حالة كانبان",
+        "t": "selection",
+        "sel": [
+          "normal=In Progress ⇔ قيد التنفيذ",
+          "done=Ready ⇔ جاهز",
+          "blocked=Blocked ⇔ محظور"
+        ]
+      },
+      "sla_deadline": {
+        "s": "SLA Deadline",
+        "ar": "الموعد النهائي لاتفاقية مستوى الخدمة",
+        "t": "datetime"
+      },
+      "company_id": {
+        "s": "Company",
+        "ar": "الشركة",
+        "t": "many2one",
+        "rel": "res.company"
+      },
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
+      },
+      "partner_name": {
+        "s": "Customer Name",
+        "ar": "اسم العميل",
+        "t": "char"
+      },
+      "partner_phone": {
+        "s": "Customer Phone",
+        "ar": "هاتف العميل",
+        "t": "char"
+      }
+    },
+    "purchase.order": {
+      "is_late": {
+        "s": "Is Late",
+        "ar": "متأخر",
+        "t": "boolean",
+        "sql": "({alias}.date_planned IS NOT NULL AND {alias}.date_planned < now() AND {alias}.state IN ('purchase', 'done'))"
+      }
+    },
+    "purchase.report": {
+      "state": {
+        "s": "Status",
+        "ar": "الحالة",
+        "t": "selection",
+        "sel": [
+          "draft=Draft RFQ ⇔ مسودة طلب عرض سعر",
+          "sent=RFQ Sent ⇔ تم إرسال طلب عرض السعر",
+          "to approve=To Approve ⇔ بانتظار الموافقة",
+          "purchase=Purchase Order ⇔ أمر الشراء",
+          "done=Done ⇔ منتهي",
+          "cancel=Cancelled ⇔ ملغي"
+        ]
+      },
+      "country_id": {
+        "s": "Partner Country",
+        "ar": "دولة الشريك",
+        "t": "many2one",
+        "rel": "res.country"
+      },
+      "date_order": {
+        "s": "Order Date",
+        "ar": "تاريخ الطلب",
+        "t": "datetime"
+      },
+      "user_id": {
+        "s": "Buyer",
+        "ar": "المشتري",
+        "t": "many2one",
+        "rel": "res.users"
+      }
+    },
+    "purchase.order.line": {
+      "date_order": {
+        "s": "Order Date",
+        "ar": "تاريخ الطلب",
+        "t": "datetime",
+        "related": "order_id.date_order"
+      },
+      "product_categ_id": {
+        "s": "Product Category",
+        "ar": "فئة المنتج",
+        "t": "many2one",
+        "rel": "product.category",
+        "related": "product_id.categ_id"
+      },
+      "bill_to_receive": {
+        "s": "Bill To Receive",
+        "ar": "فاتورة للاستلام",
+        "t": "boolean",
+        "sql": "coalesce({alias}.qty_received, 0) > coalesce({alias}.qty_invoiced, 0)"
+      },
+      "prepaid_expense": {
+        "s": "Prepaid Expense",
+        "ar": "مصروف مدفوع مقدماً",
+        "t": "boolean",
+        "sql": "FALSE"
+      }
+    },
+    "sale.rental.report": {
+      "state": {
+        "s": "Status",
+        "ar": "الحالة",
+        "t": "selection",
+        "sel": [
+          "draft=Quotation ⇔ عرض سعر",
+          "sent=Quotation Sent ⇔ تم إرسال عرض السعر",
+          "sale=Sales Order ⇔ أمر البيع",
+          "cancel=Cancelled ⇔ ملغي"
+        ]
+      }
+    },
+    "certificate.certificate": {
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
+      }
+    },
+    "certificate.key": {
+      "active": {
+        "s": "Active",
+        "ar": "نشط",
+        "t": "boolean",
+        "def": true
+      },
+      "pem_key": {
+        "s": "PEM Key",
+        "ar": "مفتاح PEM",
+        "t": "binary"
+      },
+      "public": {
+        "s": "Public Key",
+        "ar": "مفتاح عام",
+        "t": "boolean",
+        "sql": "coalesce({alias}.content, '') LIKE '%PUBLIC KEY%'"
+      }
+    },
+    "hr.department": {
+      "has_read_access": {
+        "s": "Has Read Access",
+        "ar": "لديه صلاحية القراءة",
+        "t": "boolean",
+        "sql": "TRUE"
+      }
+    },
+    "rating.rating": {
+      "parent_res_model": {
+        "s": "Parent Document Model",
+        "ar": "نموذج المستند الأصل",
+        "t": "char"
+      },
+      "res_model": {
+        "s": "Related Document Model",
+        "ar": "نموذج المستند المرتبط",
+        "t": "char"
+      }
+    },
+    "survey.user_input": {
+      "lang_id": {
+        "s": "Language",
+        "ar": "اللغة",
+        "t": "many2one",
+        "rel": "res.lang"
+      }
+    },
+    "survey.user_input.line": {
+      "lang_id": {
+        "s": "Language",
+        "ar": "اللغة",
+        "t": "many2one",
+        "rel": "res.lang"
       }
     }
   }

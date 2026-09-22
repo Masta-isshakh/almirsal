@@ -4,7 +4,7 @@ import { combineDomains } from '../domain/normalize.js';
 import { quoteIdent } from '../schema/ddl.js';
 import type { Model } from './model.js';
 import { ValidationError } from './errors.js';
-import { fromSql } from './values.js';
+import { expandSqlExpr, fromSql } from './values.js';
 
 /**
  * `read_group`: the aggregation behind list group headers, kanban columns,
@@ -47,13 +47,20 @@ interface GroupSpec {
   expr: string;
 }
 
-function parseGroup(model: Model, item: string): GroupSpec {
+function parseGroup(model: Model, item: string, joins: string[]): GroupSpec {
   const [name, intervalText] = item.split(':');
   const field = model.field(name);
-  if (field.type === 'one2many' || field.type === 'many2many') {
-    throw new ValidationError(`Cannot group by x2many field ${name}`);
+  if (field.type === 'one2many') {
+    throw new ValidationError(`Cannot group by one2many field ${name}`);
   }
-  const column = `t.${quoteIdent(name)}`;
+  if (field.type === 'many2many') {
+    // A record with several tags appears under each of them, as in Odoo.
+    if (!field.m2mTable || !field.m2mColumn1 || !field.m2mColumn2) throw new ValidationError(`Cannot group by ${name}: no relation table`);
+    const alias = `m${joins.length + 1}`;
+    joins.push(`LEFT JOIN ${quoteIdent(field.m2mTable)} ${alias} ON ${alias}.${quoteIdent(field.m2mColumn1)} = t."id"`);
+    return { key: name, field, expr: `${alias}.${quoteIdent(field.m2mColumn2)}` };
+  }
+  const column = field.sqlExpr ? expandSqlExpr(field.sqlExpr, 't', { uid: model.env.uid, model: model.name }) : `t.${quoteIdent(name)}`;
   if (field.type === 'date' || field.type === 'datetime') {
     const interval = (intervalText && INTERVALS.has(intervalText as Interval) ? intervalText : 'month') as Interval;
     return { key: `${name}:${interval}`, field, interval, expr: `to_char(date_trunc('${interval}', ${column}), 'YYYY-MM-DD')` };
@@ -99,7 +106,7 @@ function parseAggregate(model: Model, item: string): AggregateSpec | null {
   const source = match[3] ?? (operator ? alias : alias);
   const field = model.fields[source];
   if (!field) return null;
-  const column = `t.${quoteIdent(source)}`;
+  const column = field.sqlExpr ? expandSqlExpr(field.sqlExpr, 't', { uid: model.env.uid, model: model.name }) : `t.${quoteIdent(source)}`;
   const numeric = ['integer', 'float', 'monetary'].includes(field.type);
   const op = operator ?? (numeric ? 'sum' : null);
   if (!op) return null;
@@ -119,7 +126,8 @@ export async function readGroup(
   const lazy = options.lazy ?? true;
   const active = lazy ? groupby.slice(0, 1) : groupby;
   const rest = lazy ? groupby.slice(1) : [];
-  const groups = active.map((item) => parseGroup(model, item));
+  const joins: string[] = [];
+  const groups = active.map((item) => parseGroup(model, item, joins));
   const aggregates = fields.map((item) => parseAggregate(model, item)).filter((agg): agg is AggregateSpec => Boolean(agg))
     .filter((agg) => !groups.some((group) => group.field.name === agg.alias));
 
@@ -132,7 +140,7 @@ export async function readGroup(
     ...aggregates.map((agg) => `${agg.expr} AS ${quoteIdent(agg.alias)}`),
   ];
   const params = [...where.params];
-  let sql = `SELECT ${selects.join(', ')} FROM ${quoteIdent(model.table)} t WHERE ${where.text}`;
+  let sql = `SELECT ${selects.join(', ')} FROM ${quoteIdent(model.table)} t${joins.length ? ' ' + joins.join(' ') : ''} WHERE ${where.text}`;
   if (groups.length) sql += ` GROUP BY ${groups.map((group) => group.expr).join(', ')}`;
 
   // Ordering: explicit orderby on aggregates/groups, else by group value.
@@ -148,10 +156,10 @@ export async function readGroup(
   }
   if (orderParts.length === 0) {
     groups.forEach((group, index) => {
-      if (group.field.type === 'many2one' && group.field.relation) {
+      if ((group.field.type === 'many2one' || group.field.type === 'many2many') && group.field.relation) {
         const comodel = model.env.registry.models[group.field.relation];
-        if (comodel && comodel.fields[comodel.recName]) {
-          orderParts.push(`(SELECT c.${quoteIdent(comodel.recName)} FROM ${quoteIdent(comodel.table)} c WHERE c."id" = ${group.expr}) ASC NULLS LAST`);
+        if (comodel) {
+          orderParts.push(`(SELECT ${model.nameSqlFor(comodel, 'c')} FROM ${quoteIdent(comodel.table)} c WHERE c."id" = ${group.expr}) ASC NULLS LAST`);
           return;
         }
       }
@@ -167,7 +175,7 @@ export async function readGroup(
   // Resolve many2one group values to [id, display_name] in one query per comodel.
   const nameMaps = new Map<string, Map<number, string>>();
   for (const group of groups) {
-    if (group.field.type !== 'many2one' || !group.field.relation) continue;
+    if ((group.field.type !== 'many2one' && group.field.type !== 'many2many') || !group.field.relation) continue;
     const ids = [...new Set(result.rows.map((row) => row[`g${groups.indexOf(group)}`]).filter((v) => v != null).map(Number))];
     nameMaps.set(group.field.name, await model.env.sudo().model(group.field.relation).displayNames(ids));
   }
@@ -196,11 +204,11 @@ export async function readGroup(
         leaves.push([name, '>=', from], [name, '<', to]);
         return;
       }
-      if (group.field.type === 'many2one') {
+      if (group.field.type === 'many2one' || group.field.type === 'many2many') {
         if (raw == null) { out[name] = false; leaves.push([name, '=', false]); return; }
         const id = Number(raw);
         out[name] = [id, nameMaps.get(name)?.get(id) ?? `${group.field.relation},${id}`];
-        leaves.push([name, '=', id]);
+        leaves.push([name, group.field.type === 'many2many' ? 'in' : '=', group.field.type === 'many2many' ? [id] : id]);
         return;
       }
       const value = fromSql(group.field, raw);

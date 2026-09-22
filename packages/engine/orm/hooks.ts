@@ -96,6 +96,23 @@ export function hooksFor(model: string): ModelHooks {
   return HOOKS.get(model) ?? {};
 }
 
+/**
+ * Resolver for button methods no module registered explicitly (smart
+ * buttons such as `action_view_invoices` that open related records). It
+ * returns `undefined` when it cannot help, and the ORM raises as before.
+ */
+export type MethodFallback = (env: Environment, model: string, ids: number[], method: string, context: Values) => Promise<ActionResult | void | undefined>;
+
+let fallback: MethodFallback | null = null;
+
+export function setMethodFallback(resolver: MethodFallback | null): void {
+  fallback = resolver;
+}
+
+export function methodFallback(): MethodFallback | null {
+  return fallback;
+}
+
 /** Test helper. */
 export function clearModelHooks(): void {
   HOOKS.clear();

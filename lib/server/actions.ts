@@ -184,6 +184,12 @@ export function resolvePath(segments: string[], searchParams: Record<string, str
   const requested = typeof searchParams.view_type === 'string' ? (searchParams.view_type as ViewType) : undefined;
   const viewMode = action.viewMode ?? ['list', 'form'];
   let viewType: ViewType = (recordId || isNew) ? 'form' : (requested && views[requested] ? requested : viewMode[0]);
+  // A record URL always opens a form, even for list-only actions (API keys,
+  // journal items…): fall back to the model's form view or a generated one.
+  if (viewType === 'form' && !views.form && action.model) {
+    const fallback = Object.values(registry.views).find((view) => view.model === action.model && view.type === 'form') ?? defaultView(action.model, 'form');
+    if (fallback) views.form = fallback;
+  }
   if (!views[viewType] && viewMode.length) viewType = viewMode[0];
 
   return {

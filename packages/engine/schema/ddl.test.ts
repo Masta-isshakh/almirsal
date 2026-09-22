@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pgliteDatabase } from '../db/pglite.js';
 import { testRegistry } from '../testing/registry.js';
-import { allTables, generateDdl, sqlTypeOf, syncSchema } from './ddl.js';
+import { allTables, generateDdl, sqlTypeOf, syncSchema, viewDdl } from './ddl.js';
 
 describe('schema', () => {
   const registry = testRegistry();
@@ -54,9 +54,16 @@ describe('schema', () => {
       expect(forced.foreignKeysAdded).toBe(0);
 
       const count = await db.query<{ n: string }>(
-        `SELECT count(*)::text AS n FROM information_schema.tables WHERE table_schema = current_schema()`,
+        `SELECT count(*)::text AS n FROM information_schema.tables WHERE table_schema = current_schema() AND table_type = 'BASE TABLE'`,
       );
       expect(Number(count.rows[0].n)).toBe(allTables(registry).length);
+      // Reporting models are views over the business tables, recreated on every sync.
+      const views = await db.query<{ n: string }>(`SELECT count(*)::text AS n FROM information_schema.views WHERE table_schema = current_schema()`);
+      expect(Number(views.rows[0].n)).toBe(viewDdl(registry).length);
+      expect(viewDdl(registry).length).toBeGreaterThan(10);
+      expect(forced.viewsCreated).toBe(viewDdl(registry).length);
+      const analysis = await db.query<{ n: string }>(`SELECT count(*)::text AS n FROM sale_report`);
+      expect(analysis.rows[0].n).toBe('0');
     } finally {
       await db.close?.();
     }

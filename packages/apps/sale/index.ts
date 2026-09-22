@@ -57,6 +57,8 @@ async function currencyRounding(env: Environment, orderId: number): Promise<numb
 
 export function registerSale(): void {
   registerModelHooks('sale.order', {
+    // A duplicated order is a fresh quotation: new number, draft, unsigned, uninvoiced.
+    noCopy: ['name', 'state', 'locked', 'invoice_ids', 'invoice_status', 'date_order', 'signature', 'signed_by', 'signed_on', 'client_order_ref', 'access_token', 'message_ids', 'activity_ids', 'amount_to_invoice', 'amount_invoiced'],
     defaults: (env) => ({
       name: 'New',
       state: 'draft',

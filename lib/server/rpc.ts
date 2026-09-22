@@ -10,6 +10,12 @@ import type { ViewType } from '@engine/registry/types';
 import { postMessage } from '@engine/orm/mail';
 import { findReport, reportsFor } from './reports';
 import { composerDefaults, mailConfigured, sendDocumentMail } from './mail';
+import { computeAccountReport } from '@/packages/apps/account/reports';
+import { runServerAction } from './server-actions';
+import { journalDashboard } from '@/packages/apps/account/dashboard';
+import { computeDashboard } from '@/packages/apps/dashboards';
+import { attendanceStatus, attendanceToggle } from '@/packages/apps/hr/attendance';
+import { discussChat, discussCreateChannel, discussInit, discussJoin, discussLeave, discussMarkRead, discussPoll, discussPost, discussStar, discussThread, discussUnstarAll } from './discuss';
 
 /**
  * The RPC surface of A-4, dispatched from `/api/rpc`. Every method takes the
@@ -179,6 +185,57 @@ const HANDLERS: Record<string, Handler> = {
   /** Printable reports bound to a model (form ⚙ › Print). */
   async listReports(_env, model) {
     return reportsFor(model);
+  },
+  /** Financial reports (Accounting › Reporting): computed from the journal items. */
+  async accountReport(env, _model, p) {
+    return computeAccountReport(env, {
+      reportId: Number(p.reportId), dateFrom: (p.dateFrom as string | null) ?? null, dateTo: String(p.dateTo ?? new Date().toISOString().slice(0, 10)),
+      includeDraft: Boolean(p.includeDraft), journalIds: Array.isArray(p.journalIds) ? (p.journalIds as number[]) : [], partnerIds: Array.isArray(p.partnerIds) ? (p.partnerIds as number[]) : [],
+      unfoldAll: Boolean(p.unfoldAll), hideZero: Boolean(p.hideZero), unfold: (p.unfold as string | null) ?? null,
+      compareFrom: (p.compareFrom as string | null) ?? null, compareTo: (p.compareTo as string | null) ?? null,
+    });
+  },
+  /* Discuss (C-8.1) */
+  async discussInit(env) { return discussInit(env); },
+  async discussThread(env, _model, p) { return discussThread(env, String(p.box ?? 'inbox'), p.channelId ? num(p.channelId) : undefined, p.after ? num(p.after) : undefined); },
+  async discussPost(env, _model, p) { return discussPost(env, num(p.channelId), String(p.body ?? '')); },
+  async discussJoin(env, _model, p) { await discussJoin(env, num(p.channelId)); return true; },
+  async discussLeave(env, _model, p) { await discussLeave(env, num(p.channelId)); return true; },
+  async discussCreateChannel(env, _model, p) { return discussCreateChannel(env, String(p.name ?? ''), p.type === 'group' ? 'group' : 'channel', Array.isArray(p.partnerIds) ? (p.partnerIds as number[]) : []); },
+  async discussChat(env, _model, p) { return discussChat(env, num(p.partnerId)); },
+  async discussStar(env, _model, p) { return discussStar(env, num(p.messageId)); },
+  async discussMarkRead(env, _model, p) { await discussMarkRead(env, Array.isArray(p.notificationIds) ? (p.notificationIds as number[]) : undefined); return true; },
+  async discussUnstarAll(env) { await discussUnstarAll(env); return true; },
+  async discussPoll(env) { return discussPoll(env); },
+  async discussAddMember(env, _model, p) {
+    const exists = await env.cr.query<{ n: number }>(`SELECT count(*)::int AS n FROM discuss_channel_member WHERE discuss_channel_id = $1 AND partner_id = $2`, [num(p.channelId), num(p.partnerId)]);
+    if (!exists.rows[0]?.n) await env.sudo().model('discuss.channel.member').create({ discuss_channel_id: num(p.channelId), partner_id: num(p.partnerId) });
+    return true;
+  },
+  /** Attendances systray (D-8): the current employee's state, and the check-in / check-out toggle. */
+  async attendanceStatus(env) { return attendanceStatus(env); },
+  async attendanceToggle(env, _model, p) { return attendanceToggle(env, (p.geo as { latitude?: number; longitude?: number } | undefined) ?? undefined); },
+  /** Dashboards app (C-8.3): a dashboard computed from live data for a period. */
+  async dashboardData(env, _model, p) { return computeDashboard(env, String(p.name ?? 'Sales'), String(p.from), String(p.to)); },
+  /** Accounting dashboard cards (journals with their live numbers). */
+  async journalDashboard(env, _model, p) {
+    return journalDashboard(env, Array.isArray(p.ids) ? (p.ids as number[]) : undefined);
+  },
+  /** `ir.actions.server` bound to a menu or button. */
+  async runServerAction(env, _model, p) {
+    return runServerAction(env, String(p.id));
+  },
+  /** Per-user UI preferences (Discuss notification / call settings), kept in ir.config_parameter. */
+  async getUserPrefs(env, _model, p) {
+    const row = await env.cr.query<{ value: string }>(`SELECT value FROM ir_config_parameter WHERE key = $1`, [`${String(p.key)}.${env.uid}`]);
+    try { return row.rows[0] ? JSON.parse(row.rows[0].value) : {}; } catch { return {}; }
+  },
+  async setUserPrefs(env, _model, p) {
+    const key = `${String(p.key)}.${env.uid}`;
+    const value = JSON.stringify(p.values ?? {});
+    const updated = await env.cr.query(`UPDATE ir_config_parameter SET value = $2, write_date = now() WHERE key = $1`, [key, value]);
+    if (updated.rowCount === 0) await env.cr.query(`INSERT INTO ir_config_parameter (key, value, create_date, write_date) VALUES ($1, $2, now(), now())`, [key, value]);
+    return true;
   },
   async fieldsGet(env, model) {
     return getRegistry().models[model]?.fields ?? {};

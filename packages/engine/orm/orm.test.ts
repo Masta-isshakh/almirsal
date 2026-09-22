@@ -372,19 +372,30 @@ describe('read_group', () => {
 });
 
 describe('records', () => {
-  it('copies a record with a "(copy)" suffix and skips lines', async () => {
+  it('copies a record with its copy=True lines and a "(copy)" suffix on plain models', async () => {
     const orderModel = env.model('sale.order');
     const id = await orderModel.create({
       partner_id: partnerId, partner_invoice_id: partnerId, client_order_ref: 'orig',
       order_line: [[0, 0, { name: 'A', product_uom_qty: 1, price_unit: 10 }]],
     });
     const copyId = await orderModel.copy(id);
-    const [copy] = await orderModel.read(copyId, ['name', 'client_order_ref', 'order_line', 'partner_id']);
-    const [original] = await orderModel.read(id, ['name']);
-    expect(copy.name).toBe(`${original.name} (copy)`);
+    const [copy] = await orderModel.read(copyId, ['name', 'client_order_ref', 'order_line', 'partner_id', 'state']);
+    const [original] = await orderModel.read(id, ['name', 'order_line']);
+    // Sales orders are numbered: the copy is a new draft quotation with its own number and copied lines.
+    expect(copy.name).not.toBe(original.name);
+    expect(copy.state).toBe('draft');
+    // Plain fields are copied by the engine; the sale app's hooks (not registered here) blank the customer reference.
     expect(copy.client_order_ref).toBe('orig');
-    expect(copy.order_line).toEqual([]);
+    expect((copy.order_line as number[]).length).toBe((original.order_line as number[]).length);
     expect(copy.partner_id).toEqual([partnerId, 'Azure Interior']);
+    const [line] = await env.model('sale.order.line').read((copy.order_line as number[])[0], ['name', 'price_unit', 'order_id']);
+    expect(line).toMatchObject({ name: 'A', price_unit: 10, order_id: [copyId, expect.any(String)] });
+
+    // A plain model without a sequence gets the "(copy)" suffix.
+    const partnerModel = env.model('res.partner');
+    const partnerCopy = await partnerModel.copy(partnerId);
+    const [p] = await partnerModel.read(partnerCopy, ['name']);
+    expect(p.name).toBe('Azure Interior (copy)');
   });
 
   it('deletes a record with its lines and chatter', async () => {

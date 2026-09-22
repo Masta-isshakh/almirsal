@@ -1,5 +1,6 @@
 import { registerModelHooks, type Values } from '../../engine/orm/hooks.js';
 import type { Environment } from '../../engine/orm/env.js';
+import { kioskKey } from '../common.js';
 import type { Registry } from '../../engine/registry/types.js';
 import { getParameter, setParameter } from '../../engine/schema/ddl.js';
 
@@ -56,6 +57,7 @@ export function registerSettings(registry: Registry): void {
       if (!settings.fields[name]) continue;
       try { out[name] = JSON.parse(row.value); } catch { out[name] = row.value; }
     }
+    if (settings.fields.attendance_kiosk_url) out.attendance_kiosk_url = `/kiosk/${await kioskKey(env)}`;
     for (const field of Object.values(settings.fields)) {
       if (field.type === 'boolean' && !(field.name in out)) out[field.name] = false;
       // Required selections / integers that were never saved start at Odoo's defaults.

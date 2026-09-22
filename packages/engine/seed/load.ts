@@ -101,7 +101,7 @@ async function resolveReference(cr: Queryable, comodel: ModelDef, value: string,
   if (cache.has(key)) return cache.get(key) ?? null;
 
   const candidates: string[] = [];
-  const has = (name: string) => Boolean(comodel.fields[name]);
+  const has = (name: string) => Boolean(comodel.fields[name]) && !comodel.fields[name].sqlExpr;
   if (has('name')) candidates.push(`"name" = $1`);
   if (has('complete_name')) candidates.push(`"complete_name" = $1`);
   if (has('code') && has('name')) candidates.push(`("code" || ' ' || "name") = $1`);

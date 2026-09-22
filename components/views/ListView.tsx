@@ -118,7 +118,7 @@ export function ListView(props: Props) {
     return (
       <tr key={record.id as number} className={`${rowClass} ${selected.has(record.id as number) ? 'o_selected' : ''}`} onClick={() => onOpen(record.id as number)} onMouseEnter={() => onHover?.(record.id as number)}>
         <td className="o_list_record_selector" onClick={(event) => event.stopPropagation()}><input type="checkbox" className="form-check-input" checked={selected.has(record.id as number)} onChange={() => toggleSelected(record.id as number)} /></td>
-        {columns.map((column) => <Cell key={column.name} column={column} field={fields[column.name]} record={record} scope={scope} />)}
+        {columns.map((column, index) => <Cell key={`${column.name}-${index}`} column={column} field={fields[column.name]} record={record} scope={scope} />)}
         <td />
       </tr>
     );
@@ -133,11 +133,11 @@ export function ListView(props: Props) {
           <tr>
             <th className="o_list_record_selector"><input type="checkbox" className="form-check-input" aria-label="Select all" checked={Boolean(records?.length) && selected.size === records?.length}
               onChange={() => select(records && selected.size !== records.length ? new Set(records.map((r) => r.id as number)) : new Set())} /></th>
-            {columns.map((column) => {
+            {columns.map((column, index) => {
               const field = fields[column.name];
               const numeric = field && ['integer', 'float', 'monetary'].includes(field.type);
               return (
-                <th key={column.name} className={`o_column_sortable ${numeric ? 'o_list_number_th' : ''}`} onClick={() => toggleSort(column)}>
+                <th key={`${column.name}-${index}`} className={`o_column_sortable ${numeric ? 'o_list_number_th' : ''}`} onClick={() => toggleSort(column)}>
                   {t(column.string ?? field?.label ?? column.name)}
                   {sortField[0] === column.name && <i className={`fa ${sortField[1] === 'desc' ? 'fa-angle-down' : 'fa-angle-up'}`} />}
                 </th>
@@ -167,8 +167,8 @@ export function ListView(props: Props) {
           <tfoot>
             <tr>
               <td />
-              {columns.map((column) => (
-                <td key={column.name} className={column.sum || column.avg ? 'o_list_number' : ''} title={column.sum ? t(column.sum) : column.avg ? t(column.avg) : undefined}>
+              {columns.map((column, index) => (
+                <td key={`${column.name}-${index}`} className={column.sum || column.avg ? 'o_list_number' : ''} title={column.sum ? t(column.sum) : column.avg ? t(column.avg) : undefined}>
                   {column.sum || column.avg ? formatValue(fields[column.name], totals[column.name], { lang, record: {}, currencies }) : ''}
                 </td>
               ))}
@@ -197,8 +197,8 @@ function GroupRows({ label, count, row, columns, fields, expanded, onToggle, ren
     <>
       <tr className="o_group_header" onClick={onToggle}>
         <td colSpan={2} className="o_group_name"><i className={`fa ${expanded ? 'fa-caret-down' : 'fa-caret-right'}`} /> {label} ({count})</td>
-        {columns.slice(1).map((column) => (
-          <td key={column.name} className={column.sum ? 'o_list_number' : ''}>
+        {columns.slice(1).map((column, index) => (
+          <td key={`${column.name}-${index}`} className={column.sum ? 'o_list_number' : ''}>
             {column.sum && row[column.name] !== undefined ? formatValue(fields[column.name], row[column.name], { lang, record: {}, currencies }) : ''}
           </td>
         ))}
@@ -258,7 +258,7 @@ function OptionalColumns({ columns, fields, shown, onToggle }: { columns: FieldN
       <button type="button" className="btn btn-link p-0" onClick={() => setOpen((v) => !v)} title={t('Optional columns')}><i className="fa fa-cog" /></button>
       {open && (
         <div className="o_dropdown_menu o_dropdown_end" style={{ maxHeight: 400, overflow: 'auto' }}>
-          {columns.map((column) => (
+          {columns.map((column, index) => (
             <label key={column.name} className="o_dropdown_item d-flex gap-2 align-items-center" style={{ cursor: 'pointer' }}>
               <input type="checkbox" className="form-check-input m-0" checked={shown.has(column.name)} onChange={() => onToggle(column.name)} />
               {t(column.string ?? fields[column.name]?.label ?? column.name)}
@@ -279,10 +279,10 @@ function SampleRows({ columns, fields }: { columns: FieldNode[]; fields: Record<
       {SAMPLE_NAMES.map((name, index) => (
         <tr key={name}>
           <td />
-          {columns.map((column) => {
+          {columns.map((column, index) => {
             const field = fields[column.name];
             const numeric = field && ['integer', 'float', 'monetary'].includes(field.type);
-            return <td key={column.name} className={numeric ? 'o_list_number' : ''}>{numeric ? `${(10 + index * 9).toLocaleString()},${String(index * 137 % 1000).padStart(3, '0')}.00` : field?.type === 'date' || field?.type === 'datetime' ? '09/19/2026' : name}</td>;
+            return <td key={`${column.name}-${index}`} className={numeric ? 'o_list_number' : ''}>{numeric ? `${(10 + index * 9).toLocaleString()},${String(index * 137 % 1000).padStart(3, '0')}.00` : field?.type === 'date' || field?.type === 'datetime' ? '09/19/2026' : name}</td>;
           })}
           <td />
         </tr>

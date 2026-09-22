@@ -12,6 +12,11 @@ import { formatValue, nameOf, useCurrencies } from '@/lib/client/display';
 import { groupKey, groupLabel } from './groups';
 import type { SessionInfo } from '../webclient/WebClient';
 import { EmptyState } from './EmptyState';
+import { AccountingDashboard } from './AccountingDashboard';
+import { useActions } from '@/lib/client/actions';
+import { Dropdown } from '../webclient/Navbar';
+
+interface CardButton { name?: string; type?: string; string?: I18n; class?: string }
 
 type Rec = Record<string, unknown>;
 
@@ -32,6 +37,7 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
   const t = useT();
   const lang = useLang();
   const currencies = useCurrencies();
+  const { doAction } = useActions();
   const card = arch.templates.card;
   const cardFields = useMemo(() => {
     const names = new Set<string>(card?.fields ?? []);
@@ -131,11 +137,40 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
 
   const isEmpty = !loading && ((records && records.length === 0) || (columns && columns.length === 0));
 
+  // Dashboards with their own layout (C-8.7).
+  if (arch.jsClass === 'account_dashboard_kanban') return <AccountingDashboard domain={domain} />;
+
+  const cardButtons = ((card?.buttons ?? []) as CardButton[]).filter((b) => b.name && (b.type === 'object' || b.type === 'action'));
+  const menuButtons = (((arch.templates as Record<string, { buttons?: CardButton[] }>).menu?.buttons ?? []) as CardButton[]).filter((b) => (b.type === 'object' || b.type === 'action') && b.name || b.type === 'archive' || b.type === 'unarchive' || b.type === 'open' || b.type === 'edit');
+  /** A card button: object method, registry action, archive/unarchive, or open the form. */
+  const runButton = async (record: Rec, button: CardButton) => {
+    const id = record.id as number;
+    if (button.type === 'open' || button.type === 'edit') { onOpen(id); return; }
+    if (button.type === 'archive' || button.type === 'unarchive') { await rpc('toggleActive', model, { ids: [id] }); setReload((n) => n + 1); return; }
+    if (button.type === 'object' && button.name) {
+      const result = await rpc<Record<string, unknown> | false>('callButton', model, { ids: [id], method: button.name, context: { ...context, active_id: id, active_ids: [id], active_model: model } }, { context });
+      if (result && typeof result === 'object') await doAction(result, { activeId: id, activeIds: [id], activeModel: model, onClose: () => setReload((n) => n + 1) });
+      else setReload((n) => n + 1);
+      return;
+    }
+    if (button.type === 'action' && button.name) {
+      const description = await rpc<{ action: Record<string, unknown> }>('loadAction', null, { id: button.name });
+      await doAction({ ...description.action, id: button.name, context: { ...context, active_id: id, active_ids: [id], active_model: model } }, { activeId: id, activeIds: [id], activeModel: model, onClose: () => setReload((n) => n + 1) });
+    }
+  };
+  const openCard = (record: Rec) => {
+    const id = record.id as number;
+    if (arch.action && arch.actionType === 'object') { void runButton(record, { type: 'object', name: arch.action }); return; }
+    if (arch.action && arch.actionType === 'action') { void runButton(record, { type: 'action', name: arch.action }); return; }
+    if (arch.canOpen === false || arch.canOpen === 'false') return;
+    onOpen(id);
+  };
+
   const renderCard = (record: Rec, column = '') => {
     const title = typeof record.name === 'string' ? record.name : nameOf(record.display_name) || String(record.display_name ?? '');
     const color = arch.highlightColor ? Number(record[arch.highlightColor]) : 0;
     return (
-      <div key={record.id as number} className={`o_kanban_record ${dragging?.id === record.id ? 'o_kanban_dragging' : ''}`} onClick={() => onOpen(record.id as number)} onMouseEnter={() => onHover?.(record.id as number)}
+      <div key={record.id as number} className={`o_kanban_record ${dragging?.id === record.id ? 'o_kanban_dragging' : ''}`} onClick={() => openCard(record)} onMouseEnter={() => onHover?.(record.id as number)}
         draggable={canDrag} onDragStart={(event) => { if (!canDrag) return; event.dataTransfer.effectAllowed = 'move'; setDragging({ id: record.id as number, from: column }); }} onDragEnd={() => { setDragging(null); setOver(null); }}>
         {color > 0 && <span className="o_kanban_color_stripe" style={{ background: `var(--o-color-${color})` }} />}
         <div className="o_kanban_title">{title}</div>
@@ -153,6 +188,27 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
           if (!text) return null;
           return <div key={name} className={`small ${field.type === 'monetary' ? 'fw-bold' : 'text-muted'}`}>{text}</div>;
         })}
+        {cardButtons.length > 0 && (
+          <div className="o_kanban_card_buttons" onClick={(event) => event.stopPropagation()}>
+            {cardButtons.map((button, index) => (
+              <button key={index} type="button" className={`btn btn-sm ${button.class?.includes('btn-primary') ? 'btn-primary' : button.class?.includes('btn-link') ? 'btn-link' : 'btn-secondary'}`} onClick={() => void runButton(record, button)}>
+                {t(button.string ?? button.name ?? '')}
+                {/^\s*to review/i.test(String(button.string?.en ?? '')) && typeof record.request_to_validate_count === 'number' ? ` ${record.request_to_validate_count}` : ''}
+              </button>
+            ))}
+          </div>
+        )}
+        {menuButtons.length > 0 && (
+          <div onClick={(event) => event.stopPropagation()}>
+            <Dropdown end toggle={() => <span className="o_kanban_menu_toggle"><i className="fa fa-ellipsis-v" /></span>}>
+              {menuButtons.map((button, index) => (
+                <button key={index} type="button" className="o_dropdown_item" onClick={() => void runButton(record, button)}>
+                  {t(button.string ?? (button.type === 'archive' ? 'Archive' : button.type === 'unarchive' ? 'Unarchive' : button.type === 'open' || button.type === 'edit' ? 'Edit' : button.name ?? ''))}
+                </button>
+              ))}
+            </Dropdown>
+          </div>
+        )}
       </div>
     );
   };

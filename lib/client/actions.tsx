@@ -7,6 +7,7 @@ import { useNavigation } from './navigation';
 import { useUi } from '@/components/webclient/ui';
 import { ActionDialog } from '@/components/webclient/ActionDialog';
 import { Composer } from '@/components/webclient/Composer';
+import { ClientAction } from '@/components/clientactions';
 
 /**
  * The action manager's `doAction` (A-4 §1, C-4): runs whatever a menu,
@@ -83,8 +84,10 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
 
     if (type === 'ir.actions.act_window_close') { options.onClose?.(true); return; }
     if (type === 'ir.actions.client' && result.tag === 'display_notification') {
-      const params = (result.params ?? {}) as { title?: string; message?: string; type?: 'success' | 'warning' | 'danger' | 'info'; sticky?: boolean };
+      const params = (result.params ?? {}) as { title?: string; message?: string; type?: 'success' | 'warning' | 'danger' | 'info'; sticky?: boolean; next?: Record<string, unknown> };
       ui.notify({ title: params.title, message: params.message ?? '', type: params.type ?? 'info', sticky: params.sticky });
+      // Odoo's `next`: the action to run after the toast (close the wizard, open a record…).
+      if (params.next && typeof params.next === 'object') { await doAction(params.next, options); return; }
       options.onClose?.(true);
       return;
     }
@@ -143,7 +146,25 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
         if (ids.length && action.reportName) window.open(`/report/${encodeURIComponent(action.reportName)}/${ids.join(',')}?print=1`, '_blank');
         return;
       }
-      if (action.type !== 'act_window') { ui.notify({ message: `Client action "${action.name.en}" is not available yet.`, type: 'warning' }); return; }
+      if (action.type === 'client') {
+        if (action.target === 'new') {
+          let dialogId = 0;
+          dialogId = ui.openDialog({
+            title: action.name, size: 'md', footer: null,
+            body: <ClientAction action={action} context={context} onDone={(changed) => { ui.closeDialog(dialogId); opts.onClose?.(changed); }} />,
+            onClose: () => opts.onClose?.(false),
+          });
+          return;
+        }
+        opts.onClose?.(true);
+        navigate(`/odoo/${description.slug}`);
+        return;
+      }
+      if (action.type === 'server') {
+        rpc<Record<string, unknown>>('runServerAction', null, { id: String(action.id) }).then((result) => doAction(result, opts)).catch((error) => ui.notify({ type: 'warning', message: String((error as Error).message ?? error) }));
+        return;
+      }
+      if (action.type !== 'act_window') { ui.notify({ message: `Action "${action.name.en}" is not available.`, type: 'warning' }); return; }
       if (action.target === 'new') { openDialog(description, context, opts); return; }
       const resId = override?.res_id ? Number(override.res_id) : null;
       opts.onClose?.(true);

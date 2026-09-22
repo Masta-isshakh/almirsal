@@ -344,6 +344,123 @@ the user is created, the chatter logs it, and the notification after a
 resend says the earlier password stopped working. A user must sign in with
 the password from the **latest** email.
 
+### Verification and gap closing (2026-09-22)
+
+A full pass over the master prompt and the export, done as three rounds of
+**UI crawl → backend verification → workflow scenarios**, fixing everything
+found in between. The tooling is in the repo so it can be re-run:
+
+- `scripts/verify-backend.mts [--db pglite|aurora] [--crud]` — loads the
+  registry on a fresh database, checks every view field and expression,
+  runs `searchRead` / `searchCount` / `defaultGet` / `nameSearch` /
+  `readGroup` on every model, every search filter, field and group-by,
+  every action domain, and (with `--crud`) create → read → write → copy →
+  unlink per model, creating required relations on the fly.
+- `scripts/verify-workflows.mts [--db …]` — 135 checks over the business
+  flows: quote → order → invoice → partial + full payment, lifecycle and
+  copy, vendor bill → payment, journal balance rules, chatter / activities
+  / activity filters, settings round trip, users, search + favorites,
+  concurrent numbering, access control, purchase RFQ → receipt → bill,
+  approvals, smart buttons. Cleans up after itself.
+- `scripts/dev/required-check.mts` — required fields no form can fill (the
+  check that found the missing title block, below); `scripts/dev/cron-check.mts`,
+  `dash-compute.mts`, `buttons.mts`, `view-check.mts`, `eval-check.mts`.
+- A headless-Chrome crawl (playwright-core, ad hoc) visits every action ×
+  view mode × record / new form in English and Arabic and records console
+  errors, failed requests, error toasts and unrendered views.
+
+Engine mechanisms added for the export's computed and related fields:
+
+- `FieldDef.sqlExpr` — a non-stored field defined by a SQL template
+  (`{alias}`, `{uid}`, `{model}`), readable, searchable, groupable and
+  sortable without a column (activity deadlines, `message_is_follower`,
+  `complete_name`, `is_expired`, KPI counters…); `FIELD_SQL` in
+  `registry/sql-views.ts` holds the per-model overrides.
+- `ModelDef.sqlView` — reporting models (`sale.report`,
+  `account.invoice.report`, `purchase.report`, helpdesk / planning / fleet /
+  skills analyses…) are SQL views created by `syncSchema`, read-only.
+- Mixin fields (`message_ids`, followers, activities, ratings, attachments)
+  and audit fields are added to every chatter model; related fields are
+  rewritten to joins on search; relative date literals (`'-365d'`,
+  `'today +1d'`), `display_name` search through the name SQL, many2many
+  group-by, `copy=True` line duplication, `setMethodFallback` for smart
+  buttons the modules do not implement explicitly.
+- The loader now keeps the form title block (`{title: […]}` → `oe_title`):
+  the export wraps `<div class="oe_title"><h1><field name="name"/></h1>`
+  that way and it was being dropped, so 40+ forms (projects, helpdesk teams,
+  vehicles, journals…) had no name field. Required + readonly fields
+  (computed in Odoo) no longer block a create, required `sequence` integers
+  default to 10, and the models Odoo fills in Python got defaults
+  (employees: marital / timezone / distance unit / HR responsible plus the
+  `hr.version` record; documents, service types, resume lines, supplier
+  info, bank statement lines, companies).
+
+Screens and modules added in this round:
+
+- Generic views: **gantt**, **cohort**, **map** (OpenStreetMap embed),
+  **grid** and **hierarchy** (`components/views/*View.tsx`).
+- **Financial reports** (C-13): `packages/apps/account/reports.ts` computes
+  the 19 `account.report` definitions (balance sheet, P&L, cash flow, aged
+  receivable / payable, general ledger, trial balance, tax report, partner
+  ledger, journal audit, …) with period / comparison / journal filters,
+  fold / unfold, drill-down to journal items, print and CSV export
+  (`components/clientactions/AccountReport.tsx`).
+- **Discuss** (`lib/server/discuss.ts`, `components/clientactions/Discuss.tsx`):
+  Inbox / Starred / History, channels and direct messages (create, join,
+  leave, add people), thread grouped by day, star / mark read, composer,
+  8-second polling; notification and call settings dialogs.
+- **Dashboards** (C-8.3, `packages/apps/dashboards.ts`,
+  `components/clientactions/Dashboards.tsx`): the seven seeded dashboards
+  (Sales, Product, Rental, Accounting, Invoicing, Benchmark, Helpdesk)
+  computed from live data for a month / quarter / year / custom period with
+  the previous period as baseline — scorecards, line / bar / pie / stacked
+  charts (inline SVG), tables, KPI tables and benchmark gauges.
+- **Accounting dashboard** (journal cards with live numbers) and kanban card
+  buttons / ⋮ menus; **server actions** (`lib/server/server-actions.ts`)
+  for the export's `ir.actions.server` menus.
+- **Attendances** (D-8): navbar systray check-in / check-out with today's
+  and this week's hours (`AttendanceMenu`), and the public **kiosk** at
+  `/kiosk/<key>` (badge scan with a keyboard-wedge scanner, manual
+  identification with optional PIN, auto-return delay, company clock).
+  Settings › Attendances shows the URL and can regenerate the key;
+  "Try kiosk" / "Open Kiosk Url" open it.
+- **Documents** (`components/clientactions/Documents.tsx`): folder tree
+  (Company / My Drive / Recent / Trash), upload (payload stored as base64
+  in `ir.attachment.datas`, served by `/api/attachment/<id>`), links, new
+  folders, download, open, trash / restore, drag & drop.
+- **Scheduled actions** (`lib/server/cron.ts`, `/api/cron`): digest
+  emails, calendar email reminders, automatic check-out of attendances left
+  open, overdue-invoice reminders (chatter note + `last_reminder`); each run
+  is recorded in `ir_cron`. In production an EventBridge rule calls the
+  route every 15 minutes through an API destination (set `RODEO_CRON_KEY`
+  on the branch; `RODEO_APP_URL` for a custom domain) — no Lambda, no VPC.
+- Part D methods for purchase (full RFQ → order → receipt → bill state
+  machine), approvals, accounting extras (reversals, hash lock, assets,
+  loans, lock dates, accrued entries, reconciliation), HR (employee ↔ user,
+  badges, departures, overtime), project / to-do / helpdesk (numbering,
+  assignment, SLA), calendar / appointments / planning, sign / surveys /
+  fleet, partners (geolocation), settings buttons, digests, gamification,
+  knowledge trash, activity plans; a generic smart-button resolver.
+
+Defects the rounds caught and fixed, for the record: the dropped form
+title block; required + readonly fields blocking creates; missing Python
+defaults (employees, documents, supplier info, …); the Data API rejecting
+the `"char"` column `pg_class.relkind` used by the view sync (cast to text);
+and the Skills History menu opening a model the export has no views for
+(now `hr.employee.skill.report`).
+
+Results of the third round on the final code: unit tests 177/177,
+`tsc --noEmit` and `next build` clean, backend verification 0 failures on
+PGlite and on the Aurora sandbox (`--crud`), workflows 135/135, UI crawl
+(EN + AR, every action × view × record / new form) 0 problems.
+
+Not implemented (honest list): real-time WebRTC calls and screen sharing in
+Discuss, the spreadsheet editor behind dashboards and documents, OCR /
+digitisation, customer / vendor portals and the public survey, appointment
+and sign pages, PDF layouts beyond the print stylesheet, SMS, and website
+modules. Binary payloads live in the database until the S3 attachment
+path (`amplify/storage`) is wired.
+
 **177 tests pass; `tsc --noEmit` and `next build` are clean.**
 
 ## Next — J-1 build phases
@@ -369,9 +486,12 @@ J-1 fixes the order and the gate for each phase:
 5. **Cross-app flows** integration tests (D).
 6. **Polish** — empty states, shortcuts, PWA, performance, a11y, mobile.
 
-Phases 1 and 2 are complete. Phase 3 is complete except gantt / cohort /
-map / grid views and cron: the generic views (pivot, graph, calendar,
-activity), the settings engine (C-6), printable reports and email (SES) are
-in, plus list actions, record pager, command palette, dark mode, kanban
-drag & drop and payments. Next: Phase 4 apps in the J-1 order (Discuss,
-Calendar, Appointments, To-do, Knowledge, …), each with its Part D methods.
+Phases 1–3 are complete: every generic view (list, form, kanban, pivot,
+graph, calendar, activity, gantt, cohort, map, grid, hierarchy), the
+settings engine (C-6), printable reports, email (SES) and scheduled actions
+(EventBridge → `/api/cron`). Phase 4 is done at the level of the export:
+every app's menus, actions, views, Part D methods, seed and settings are in,
+plus the custom screens (Discuss, financial reports, dashboards, documents,
+attendance kiosk). What remains is listed under "Not implemented" above,
+then phases 5 (cross-app integration tests beyond `verify-workflows`) and
+6 (polish: PWA, performance, a11y, mobile).

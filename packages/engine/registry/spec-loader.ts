@@ -1,4 +1,5 @@
 import type { I18n } from '../i18n/types.js';
+import { applySqlViews } from './sql-views.js';
 import { pgIdentifier } from '../db/identifiers.js';
 import type {
   ActivityArch,
@@ -75,6 +76,12 @@ interface RawField {
   req?: number;
   ro?: number;
   help?: string;
+  /** Hand-written definitions only (extra-models.json): related path, SQL template, storage, default. */
+  related?: string;
+  sql?: string;
+  store?: boolean;
+  def?: unknown;
+  inverse?: string;
 }
 
 interface RawMenu {
@@ -315,6 +322,11 @@ export function convertFormNode(raw: Raw): FormNode | null {
       children: convertChildren(raw.items),
       attrs: restAttrs(raw, ['el', 'cls', 'class', 'text', 'invisible', 'items']),
     };
+  }
+
+  // `<div class="oe_title">` — the record title block (h1 with the name field, labels).
+  if (raw.title !== undefined && Array.isArray(raw.title)) {
+    return { kind: 'element', tag: 'div', class: 'oe_title', text: undefined, invisible: undefined, children: convertChildren(raw.title), attrs: {} };
   }
 
   if (raw.group !== undefined) {
@@ -933,15 +945,64 @@ function convertFieldDef(name: string, raw: RawField): FieldDef {
     label: { en: raw.s, ar: raw.ar ?? raw.s },
   };
   if (raw.help) field.help = { en: raw.help, ar: raw.help };
-  if (raw.req) field.required = true;
+  // Required + readonly means computed in Odoo: nobody can type it, so it must not block a create here.
+  if (raw.req && !raw.ro) field.required = true;
   if (raw.ro) field.readonly = true;
+  if (name === 'sequence' && type === 'integer' && raw.def === undefined) field.default = 10;
   if (raw.rel) field.relation = raw.rel;
   if (raw.sel) field.selection = convertSelection(raw.sel);
   // Binary payloads live in S3; every image is a binary in the export.
   if (type === 'binary' || type === 'image') field.attachment = true;
   // Monetary fields render with the record's currency unless told otherwise.
   if (type === 'monetary') field.currencyField = 'currency_id';
+  if (raw.related) { field.related = raw.related; field.readonly = true; if (raw.store !== true) field.store = false; }
+  if (raw.sql) { field.sqlExpr = raw.sql; field.readonly = true; field.store = false; }
+  if (raw.store !== undefined && !raw.sql) field.store = raw.store;
+  if (raw.def !== undefined) field.default = raw.def;
+  if (raw.inverse) field.inverse = raw.inverse;
   return field;
+}
+
+/**
+ * Chatter mixin fields (mail.thread / mail.activity.mixin) that the export
+ * left out because they only appear in search views: every model with a
+ * chatter, `message_ids` or `activity_ids` gets Odoo's summary columns
+ * (kept up to date by `packages/apps/base/activity.ts`) plus the per-user
+ * ones as SQL expressions. Existing definitions are never overridden.
+ */
+export function addMixinFields(models: Record<string, ModelDef>, chatterModels: Set<string>): void {
+  const partnerOfUser = `(SELECT u.partner_id FROM res_users u WHERE u.id = {uid})`;
+  const activity = (extra: string) => `SELECT a.date_deadline FROM mail_activity a WHERE a.res_model = {model} AND a.res_id = {alias}."id" AND coalesce(a.active, true)${extra} ORDER BY a.date_deadline, a.id LIMIT 1`;
+  const put = (model: ModelDef, name: string, field: Omit<FieldDef, 'name'>) => {
+    if (!model.fields[name]) model.fields[name] = { name, ...field } as FieldDef;
+  };
+  for (const model of Object.values(models)) {
+    const hasThread = chatterModels.has(model.name) || Boolean(model.fields.message_ids) || Boolean(model.fields.activity_ids);
+    if (!hasThread || model.transient) continue;
+    if (models['mail.message']) put(model, 'message_ids', { type: 'one2many', label: { en: 'Messages', ar: 'الرسائل' }, relation: 'mail.message', inverse: 'res_id', readonly: true });
+    if (models['mail.followers']) put(model, 'message_follower_ids', { type: 'one2many', label: { en: 'Followers', ar: 'المتابعون' }, relation: 'mail.followers', inverse: 'res_id', readonly: true });
+    if (models['mail.followers']) put(model, 'message_is_follower', { type: 'boolean', label: { en: 'Is Follower', ar: 'متابع' }, readonly: true, store: false, sqlExpr: `EXISTS (SELECT 1 FROM mail_followers f WHERE f.res_model = {model} AND f.res_id = {alias}."id" AND f.partner_id = ${partnerOfUser})` });
+    if (models['mail.message']) put(model, 'has_message', { type: 'boolean', label: { en: 'Has Message', ar: 'لديه رسالة' }, readonly: true, store: false, sqlExpr: `EXISTS (SELECT 1 FROM mail_message m WHERE m.model = {model} AND m.res_id = {alias}."id")` });
+    if (models['mail.message'] && models['mail.notification']?.fields.mail_message_id) put(model, 'message_needaction', { type: 'boolean', label: { en: 'Action Needed', ar: 'يتطلب إجراء' }, readonly: true, store: false, sqlExpr: `EXISTS (SELECT 1 FROM mail_message m JOIN mail_notification n ON n.mail_message_id = m."id" WHERE m.model = {model} AND m.res_id = {alias}."id" AND n.res_partner_id = ${partnerOfUser} AND coalesce(n.is_read, false) = false)` });
+    else put(model, 'message_needaction', { type: 'boolean', label: { en: 'Action Needed', ar: 'يتطلب إجراء' }, readonly: true, store: false, sqlExpr: 'FALSE' });
+    put(model, 'message_needaction_counter', { type: 'integer', label: { en: 'Number of Actions', ar: 'عدد الإجراءات' }, readonly: true, store: false, sqlExpr: '0' });
+    put(model, 'message_has_error', { type: 'boolean', label: { en: 'Message Delivery error', ar: 'خطأ في تسليم الرسالة' }, readonly: true, store: false, sqlExpr: 'FALSE' });
+    put(model, 'message_has_error_counter', { type: 'integer', label: { en: 'Number of errors', ar: 'عدد الأخطاء' }, readonly: true, store: false, sqlExpr: '0' });
+    if (models['ir.attachment']) put(model, 'message_attachment_count', { type: 'integer', label: { en: 'Attachment Count', ar: 'عدد المرفقات' }, readonly: true, store: false, sqlExpr: `(SELECT count(*) FROM ir_attachment att WHERE att.res_model = {model} AND att.res_id = {alias}."id")` });
+    if (models['rating.rating']?.fields.res_id) put(model, 'rating_ids', { type: 'one2many', label: { en: 'Ratings', ar: 'التقييمات' }, relation: 'rating.rating', inverse: 'res_id', readonly: true });
+
+    if (!models['mail.activity']) continue;
+    put(model, 'activity_ids', { type: 'one2many', label: { en: 'Activities', ar: 'الأنشطة' }, relation: 'mail.activity', inverse: 'res_id' });
+    put(model, 'activity_state', { type: 'selection', label: { en: 'Activity State', ar: 'حالة النشاط' }, readonly: true, selection: [{ value: 'overdue', label: { en: 'Overdue', ar: 'متأخر' } }, { value: 'today', label: { en: 'Today', ar: 'اليوم' } }, { value: 'planned', label: { en: 'Planned', ar: 'مخطط' } }] });
+    put(model, 'activity_user_id', { type: 'many2one', label: { en: 'Responsible User', ar: 'المستخدم المسؤول' }, relation: 'res.users', readonly: true });
+    put(model, 'activity_type_id', { type: 'many2one', label: { en: 'Next Activity Type', ar: 'نوع النشاط التالي' }, relation: 'mail.activity.type', readonly: true });
+    put(model, 'activity_date_deadline', { type: 'date', label: { en: 'Next Activity Deadline', ar: 'الموعد النهائي للنشاط التالي' }, readonly: true });
+    put(model, 'activity_summary', { type: 'char', label: { en: 'Next Activity Summary', ar: 'ملخص النشاط التالي' }, readonly: true });
+    put(model, 'activity_type_icon', { type: 'char', label: { en: 'Activity Type Icon', ar: 'أيقونة نوع النشاط' }, readonly: true });
+    put(model, 'activity_exception_decoration', { type: 'selection', label: { en: 'Activity Exception Decoration', ar: 'زخرفة استثناء النشاط' }, readonly: true, selection: [{ value: 'warning', label: { en: 'Alert', ar: 'تنبيه' } }, { value: 'danger', label: { en: 'Error', ar: 'خطأ' } }] });
+    put(model, 'activity_exception_icon', { type: 'char', label: { en: 'Icon', ar: 'أيقونة' }, readonly: true });
+    put(model, 'my_activity_date_deadline', { type: 'date', label: { en: 'My Activity Deadline', ar: 'الموعد النهائي لنشاطي' }, readonly: true, store: false, sqlExpr: activity(' AND a.user_id = {uid}') });
+  }
 }
 
 /**
@@ -1012,6 +1073,16 @@ export interface ExtraModels {
   models: Record<string, Record<string, RawField>>;
 }
 
+/** One2many fields Odoo declares `copy=True`: duplicating the parent duplicates these lines. */
+const COPIED_LINES = new Set([
+  'sale.order.order_line', 'purchase.order.order_line', 'account.move.invoice_line_ids',
+  'sale.order.template.sale_order_template_line_ids', 'sale.order.template.sale_order_template_option_ids',
+  'account.reconcile.model.line_ids', 'account.payment.term.line_ids', 'survey.survey.question_and_page_ids',
+  'survey.question.suggested_answer_ids', 'product.template.attribute_line_ids', 'account.tax.repartition_line_ids',
+  'approval.category.approver_ids', 'sign.template.sign_item_ids', 'resource.calendar.attendance_ids',
+  'planning.slot.template_id', 'appointment.type.slot_ids', 'appointment.type.question_ids', 'account.asset.depreciation_move_ids',
+]);
+
 export function convertModels(spec: RawSpec, extra?: ExtraModels): Record<string, ModelDef> {
   const models: Record<string, ModelDef> = {};
 
@@ -1050,6 +1121,7 @@ export function convertModels(spec: RawSpec, extra?: ExtraModels): Record<string
   for (const [name, model] of Object.entries(models)) {
     for (const field of Object.values(model.fields)) {
       if (field.type === 'one2many') {
+        if (COPIED_LINES.has(`${name}.${field.name}`)) field.copy = true;
         field.inverse = inferInverse(name, field, models) ?? synthesizeInverse(name, model, field, models);
         // A required back-reference means the line belongs to its parent and
         // goes with it (Odoo declares these ondelete='cascade').
@@ -1160,8 +1232,8 @@ export function convertActions(spec: RawSpec): Record<string, ActionDef> {
       action.viewMode = (raw.view_mode ?? '').split(',').map((mode) => mode.trim()).filter(Boolean) as ViewType[];
       action.views = views.filter((key) => key !== searchView);
       action.searchView = searchView;
-      action.domain = typeof raw.domain === 'string' ? tidyExpr(raw.domain) : false;
-      action.context = tidyExpr(raw.context) ?? '{}';
+      action.domain = typeof raw.domain === 'string' && raw.domain.trim() ? tidyExpr(raw.domain) : false;
+      action.context = tidyExpr(raw.context) || '{}';
       action.limit = raw.limit;
       action.toolbar = toolbarOf(raw.toolbar);
       if (meta.search_view_id) action.searchViewId = meta.search_view_id[0];
@@ -1169,7 +1241,7 @@ export function convertActions(spec: RawSpec): Record<string, ActionDef> {
     if (type === 'client') {
       action.tag = raw.tag;
       action.params = raw.params;
-      action.context = tidyExpr(raw.context) ?? '{}';
+      action.context = tidyExpr(raw.context) || '{}';
     }
     if (type === 'url') action.url = raw.url;
     if (type === 'report') action.reportName = raw.xml_id;
@@ -1257,6 +1329,37 @@ function convertAppIcons(spec: RawSpec): AppIconDef[] {
  * Entry point
  * ------------------------------------------------------------------ */
 
+/** Every table carries the audit columns; expose them as fields so views and filters can use them. */
+export function addAuditFields(models: Record<string, ModelDef>): void {
+  for (const model of Object.values(models)) {
+    if (!model.fields.create_uid && models['res.users']) model.fields.create_uid = { name: 'create_uid', type: 'many2one', relation: 'res.users', label: { en: 'Created by', ar: 'أنشئ بواسطة' }, readonly: true };
+    if (!model.fields.create_date) model.fields.create_date = { name: 'create_date', type: 'datetime', label: { en: 'Created on', ar: 'أنشئ في' }, readonly: true };
+    if (!model.fields.write_uid && models['res.users']) model.fields.write_uid = { name: 'write_uid', type: 'many2one', relation: 'res.users', label: { en: 'Last Updated by', ar: 'آخر تحديث بواسطة' }, readonly: true };
+    if (!model.fields.write_date) model.fields.write_date = { name: 'write_date', type: 'datetime', label: { en: 'Last Updated on', ar: 'آخر تحديث في' }, readonly: true };
+  }
+}
+
+/** A related path that does not resolve becomes a plain stored field rather than a runtime error. */
+export function validateRelatedFields(models: Record<string, ModelDef>): void {
+  for (const model of Object.values(models)) {
+    for (const field of Object.values(model.fields)) {
+      if (!field.related) continue;
+      let current: ModelDef | undefined = model;
+      let ok = true;
+      const parts = field.related.split('.');
+      for (let i = 0; i < parts.length && ok; i++) {
+        const step: FieldDef | undefined = current?.fields[parts[i]];
+        if (!step) { ok = false; break; }
+        if (i < parts.length - 1) {
+          current = step.relation ? models[step.relation] : undefined;
+          if (!current) ok = false;
+        }
+      }
+      if (!ok) { delete field.related; delete field.store; field.readonly = false; }
+    }
+  }
+}
+
 export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
   const views: Record<string, ViewDef> = {};
   for (const [key, raw] of Object.entries(spec.views)) {
@@ -1265,9 +1368,28 @@ export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
 
   const { roots, index } = convertMenus(spec);
 
+  const models = convertModels(spec, extra);
+  const chatterModels = new Set<string>();
+  const hasChatter = (node: unknown): boolean => {
+    if (!node || typeof node !== 'object') return false;
+    if (Array.isArray(node)) return node.some(hasChatter);
+    const obj = node as Record<string, unknown>;
+    if (obj.kind === 'chatter') return true;
+    return Object.values(obj).some((value) => typeof value === 'object' && hasChatter(value));
+  };
+  for (const view of Object.values(views)) {
+    if (view.arch.type === 'form' && hasChatter(view.arch.body)) chatterModels.add(view.model);
+    // Search views filtering on activities/followers imply the mixins too (reporting models).
+    if (view.arch.type === 'search' && JSON.stringify(view.arch).match(/my_activity_date_deadline|activity_user_id|message_is_follower|activity_ids|message_ids/)) chatterModels.add(view.model);
+  }
+  addMixinFields(models, chatterModels);
+  addAuditFields(models);
+  validateRelatedFields(models);
+  applySqlViews(models);
+
   return {
     session: spec.session,
-    models: convertModels(spec, extra),
+    models,
     views,
     actions: convertActions(spec),
     menus: roots,

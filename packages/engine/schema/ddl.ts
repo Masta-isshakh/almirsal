@@ -48,6 +48,8 @@ export function quoteIdent(name: string): string {
 
 /** SQL type for a stored field, or null when the field has no column. */
 export function sqlTypeOf(field: FieldDef): string | null {
+  // SQL-computed fields are expressions over other columns, never stored.
+  if (field.sqlExpr) return null;
   switch (field.type) {
     case 'char':
     case 'selection':
@@ -110,10 +112,13 @@ export function tableFor(model: ModelDef, registry: Registry): TableSpec {
 
     const column: ColumnSpec = { name: field.name, sqlType };
     if (field.type === 'many2one' && field.relation && registry.models[field.relation]) {
-      column.references = {
-        table: registry.models[field.relation].table,
-        onDelete: onDeleteOf(field),
-      };
+      // A view cannot be the target of a foreign key: links to reporting models stay plain integers.
+      if (!registry.models[field.relation].sqlView) {
+        column.references = {
+          table: registry.models[field.relation].table,
+          onDelete: onDeleteOf(field),
+        };
+      }
       indexes.push({ name: pgIdentifier(`${model.table}_${field.name}_idx`), columns: [field.name] });
     }
     // Odoo's `active` flag defaults to true; other booleans stay NULL ("unset",
@@ -136,10 +141,10 @@ export function relationTables(registry: Registry): TableSpec[] {
       seen.set(field.m2mTable, {
         name: field.m2mTable,
         columns: [
-          { name: field.m2mColumn1, sqlType: 'integer', notNull: true, references: { table: model.table, onDelete: 'CASCADE' } },
+          { name: field.m2mColumn1, sqlType: 'integer', notNull: true, references: model.sqlView ? undefined : { table: model.table, onDelete: 'CASCADE' } },
           {
             name: field.m2mColumn2, sqlType: 'integer', notNull: true,
-            references: comodel ? { table: comodel.table, onDelete: 'CASCADE' } : undefined,
+            references: comodel && !comodel.sqlView ? { table: comodel.table, onDelete: 'CASCADE' } : undefined,
           },
         ],
         primaryKey: [field.m2mColumn1, field.m2mColumn2],
@@ -153,8 +158,14 @@ export function relationTables(registry: Registry): TableSpec[] {
 export function allTables(registry: Registry): TableSpec[] {
   // Transient models get real tables too, as in Odoo: a wizard keeps its
   // state there between the dialog's steps and a cron vacuums old rows.
-  const tables = Object.values(registry.models).map((model) => tableFor(model, registry));
+  // Reporting models are SQL views (ModelDef.sqlView), not tables.
+  const tables = Object.values(registry.models).filter((model) => !model.sqlView).map((model) => tableFor(model, registry));
   return [...tables, ...relationTables(registry)];
+}
+
+/** `CREATE VIEW` statements of the reporting models, in registry order. */
+export function viewDdl(registry: Registry): { table: string; sql: string }[] {
+  return Object.values(registry.models).filter((model) => model.sqlView).map((model) => ({ table: model.table, sql: `CREATE VIEW ${quoteIdent(model.table)} AS ${model.sqlView}` }));
 }
 
 /* ------------------------------------------------------------------ *
@@ -205,6 +216,7 @@ export function generateDdl(registry: Registry): string {
       if (fk) statements.push(`${fk};`);
     }
   }
+  for (const view of viewDdl(registry)) statements.push(`${view.sql};`);
   return statements.join('\n');
 }
 
@@ -217,6 +229,8 @@ export interface SyncReport {
   columnsAdded: string[];
   indexesCreated: number;
   foreignKeysAdded: number;
+  /** Reporting views (re)created. */
+  viewsCreated?: number;
   /** True when the stored schema hash matched and nothing was checked. */
   skipped: boolean;
 }
@@ -322,6 +336,26 @@ export async function syncSchema(db: Database, registry: Registry, options: { fo
     }
   }
   await runDdlBatch(db, fkStatements);
+
+  // Reporting views are recreated on every schema change: a table left by an
+  // earlier registry (when the model was still a table) is dropped first.
+  const views = viewDdl(registry);
+  if (views.length) {
+    const kinds = await db.query<{ relname: string; relkind: string }>(
+      `SELECT c.relname::text AS relname, c.relkind::text AS relkind FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = current_schema() AND c.relname = ANY($1)`,
+      [views.map((view) => view.table)],
+    );
+    const kindOf = new Map(kinds.rows.map((row) => [row.relname, row.relkind]));
+    const viewStatements: string[] = [];
+    for (const view of views) {
+      const kind = kindOf.get(view.table);
+      if (kind === 'r') viewStatements.push(`DROP TABLE ${quoteIdent(view.table)} CASCADE`);
+      else if (kind === 'v') viewStatements.push(`DROP VIEW ${quoteIdent(view.table)} CASCADE`);
+      viewStatements.push(view.sql);
+    }
+    await runDdlBatch(db, viewStatements);
+    report.viewsCreated = views.length;
+  }
 
   await setParameter(db, SCHEMA_KEY, hash);
   return report;

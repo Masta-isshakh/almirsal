@@ -21,8 +21,14 @@ import { PivotView } from '../views/PivotView';
 import { GraphView } from '../views/GraphView';
 import { CalendarView } from '../views/CalendarView';
 import { ActivityView } from '../views/ActivityView';
+import { GanttView } from '../views/GanttView';
+import { CohortView } from '../views/CohortView';
+import { MapView } from '../views/MapView';
+import { GridView } from '../views/GridView';
+import { HierarchyView } from '../views/HierarchyView';
 import { ListActions } from '../views/ListActions';
 import { UnsupportedView } from '../views/UnsupportedView';
+import { ClientAction, ServerActionPage } from '../clientactions';
 import { RECORD_CACHE_MS, formSpecification, listFieldNames } from '@/lib/client/arch';
 import {
   EMPTY_STATE, facetsFromState, periodOptions, safeEval, stateFromContext, textFacetDomain,
@@ -57,6 +63,8 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
   const today = useMemo(() => PyDate.parse(new Date().toISOString().slice(0, 10))!, []);
 
   const idsParam = urlQuery.ids ?? null;
+  // Drill-downs (financial reports, dashboards) open a list on an explicit domain.
+  const domainParam = useMemo<Domain | null>(() => { try { return urlQuery.domain ? (JSON.parse(urlQuery.domain) as Domain) : null; } catch { return null; } }, [urlQuery.domain]);
   const defaultsParam = urlQuery.defaults ?? null;
   const actionContext = useMemo(() => {
     const base = (safeEval(action.context, { uid: user.uid, companyIds: user.companyIds, context: {} }) as Record<string, unknown>) ?? {};
@@ -161,11 +169,12 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
   const domain = useMemo<Domain>(() => {
     const parts: Domain[] = [actionDomain];
     if (idsParam) parts.push([['id', 'in', idsParam.split(',').map(Number).filter((id) => id > 0)]]);
+    if (domainParam?.length) parts.push(domainParam);
     for (const facet of facets) if (facet.domain?.length) parts.push(facet.domain);
     const nonEmpty = parts.filter((part) => part.length);
     if (nonEmpty.length <= 1) return nonEmpty[0] ?? [];
     return [...Array(nonEmpty.length - 1).fill('&'), ...nonEmpty.flat()] as Domain;
-  }, [actionDomain, facets, idsParam]);
+  }, [actionDomain, facets, idsParam, domainParam]);
   const groupBy = useMemo(() => facets.filter((facet) => facet.groupBy).map((facet) => facet.groupBy!), [facets]);
 
   const change = useCallback((updater: (current: SearchState) => SearchState) => {
@@ -297,6 +306,10 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
     ? [{ id: `favorite:${activeFavorite}`, kind: 'favorite' as const, label: favorites.find((f) => f.id === activeFavorite)?.name ?? '', values: [favorites.find((f) => f.id === activeFavorite)?.name ?? ''] }]
     : facets;
 
+  // Client actions render their own screen; server actions run and follow their result.
+  if (action.type === 'client') return <CurrencyProvider><ClientAction action={action} context={actionContext} user={user} /></CurrencyProvider>;
+  if (action.type === 'server') return <ServerActionPage action={action} />;
+
   return (
     <CurrencyProvider>
       <div className="o_control_panel">
@@ -377,6 +390,18 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
               onCreate={(defaults) => navigate(`/odoo/${resolution.slug}/new?defaults=${encodeURIComponent(JSON.stringify(defaults))}`)} />
           ) : view.arch.type === 'activity' ? (
             <ActivityView key={JSON.stringify([domain, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} />
+          ) : view.arch.type === 'gantt' ? (
+            <GanttView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} context={actionContext} user={user} onOpen={openRecord}
+              onCreate={(defaults) => navigate(`/odoo/${resolution.slug}/new?defaults=${encodeURIComponent(JSON.stringify(defaults))}`)} />
+          ) : view.arch.type === 'cohort' ? (
+            <CohortView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} onDrill={drill} />
+          ) : view.arch.type === 'map' ? (
+            <MapView key={JSON.stringify([domain, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} />
+          ) : view.arch.type === 'grid' ? (
+            <GridView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} onOpen={openRecord}
+              onCreate={(defaults) => navigate(`/odoo/${resolution.slug}/new?defaults=${encodeURIComponent(JSON.stringify(defaults))}`)} />
+          ) : view.arch.type === 'hierarchy' ? (
+            <HierarchyView key={reload} arch={view.arch} fields={fields} model={action.model!} domain={domain} context={actionContext} onOpen={openRecord} />
           ) : <UnsupportedView type={view.arch.type} />}
       </div>
     </CurrencyProvider>

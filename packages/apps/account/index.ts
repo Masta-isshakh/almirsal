@@ -173,6 +173,8 @@ export function registerAccount(registry: Registry): void {
   });
 
   registerModelHooks('account.move', {
+    // A duplicated entry is a new draft: number, state, payments and sent flag are not copied.
+    noCopy: ['name', 'state', 'payment_state', 'posted_before', 'is_move_sent', 'amount_residual', 'amount_residual_signed', 'line_ids', 'payment_id', 'reversal_move_ids', 'reversed_entry_id', 'invoice_date', 'access_token', 'message_ids', 'activity_ids', 'sequence_prefix', 'sequence_number'],
     // Posted entries are part of the books: cancel or reset to draft first.
     onUnlink: async (env, ids) => {
       const posted = await env.cr.query<{ name: string }>(`SELECT name FROM account_move WHERE id = ANY($1) AND state = 'posted'`, [ids]);
@@ -280,6 +282,17 @@ export function registerAccount(registry: Registry): void {
           if (isInvoice && (move.invoice_line_ids as number[]).length === 0) {
             throw new UserError({ en: 'You need to add a line before posting.', ar: 'يجب إضافة بند قبل الترحيل.' });
           }
+          if (!isInvoice) {
+            // Journal entries are written by hand: they must have items and balance.
+            const sums = await env.cr.query<{ n: number; debit: number; credit: number }>(
+              `SELECT count(*)::int AS n, coalesce(sum(debit), 0)::float8 AS debit, coalesce(sum(credit), 0)::float8 AS credit FROM account_move_line WHERE move_id = $1 AND coalesce(display_type, 'product') NOT IN ('line_section', 'line_note')`, [id],
+            );
+            const { n, debit, credit } = sums.rows[0];
+            if (!n) throw new UserError({ en: 'You need to add a line before posting.', ar: 'يجب إضافة بند قبل الترحيل.' });
+            if (Math.abs(Number(debit) - Number(credit)) > 0.005) {
+              throw new UserError({ en: `You cannot post an unbalanced journal entry: debit ${Number(debit).toFixed(2)} ≠ credit ${Number(credit).toFixed(2)}.`, ar: `لا يمكن ترحيل قيد يومية غير متوازن: المدين ${Number(debit).toFixed(2)} ≠ الدائن ${Number(credit).toFixed(2)}.` });
+            }
+          }
           const invoiceDate = isInvoice ? String(move.invoice_date || today()) : String(move.date || today());
           const vals: Values = { state: 'posted', posted_before: true, date: invoiceDate };
           if (isInvoice) {
@@ -364,9 +377,13 @@ export function registerAccount(registry: Registry): void {
         const out: Record<number, Values> = {};
         for (const row of rows.rows) {
           const rounding = row.rounding || 0.01;
-          if (row.display_type !== 'product') {
+          if (row.display_type !== 'product' || row.move_type === 'entry') {
+            // Tax/payment-term lines and hand-written journal items carry their
+            // own debit/credit: the balance follows them, never the price.
             const debit = row.debit ?? 0; const credit = row.credit ?? 0;
-            out[Number(row.id)] = { price_subtotal: 0, price_total: 0, balance: floatRound(debit - credit, rounding), amount_currency: floatRound(debit - credit, rounding), move_type: row.move_type, parent_state: row.state };
+            const balance = floatRound(debit - credit, rounding);
+            const manual = row.move_type === 'entry' && row.display_type === 'product';
+            out[Number(row.id)] = { price_subtotal: manual ? balance : 0, price_total: manual ? balance : 0, balance, amount_currency: balance, move_type: row.move_type, parent_state: row.state };
             continue;
           }
           const subtotal = floatRound(row.qty * row.price * (1 - (row.discount ?? 0) / 100), rounding);

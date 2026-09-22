@@ -1,6 +1,7 @@
 import type { Domain, FieldDef, ModelDef } from '../registry/types.js';
 import { parseDomain, type DomainNode } from './normalize.js';
 import { DomainError } from './normalize.js';
+import { expandSqlExpr } from '../orm/values.js';
 
 /**
  * Compiles an Odoo domain to a parameterised PostgreSQL `WHERE` fragment.
@@ -31,7 +32,62 @@ export interface SqlOptions {
   paramOffset?: number;
   /** Use `unaccent()` around ilike comparisons, as Odoo does when installed. */
   unaccent?: boolean;
+  /** Current user, substituted into `sqlExpr` templates (`{uid}`). */
+  uid?: number;
+  /** SQL of a model's display name for an alias (custom hooks); null = use the default. */
+  nameSql?: (model: ModelDef, alias: string) => string | null;
+  /** "Now" for relative date values such as `'today -365d'`; defaults to the wall clock. */
+  now?: Date;
 }
+
+/**
+ * SQL of a model's display name: the record-name column when it is stored,
+ * else the first text column, else the id. Custom display names come from
+ * `nameSql` (the ORM passes the model hooks).
+ */
+export function defaultNameSql(model: ModelDef, alias: string): string {
+  const rec = model.fields[model.recName];
+  if (rec && rec.name !== 'display_name' && !X2MANY_TYPES.has(rec.type) && !rec.sqlExpr) return `${alias}.${quoteIdent(rec.name)}`;
+  const candidates = ['name', 'complete_name', 'code', 'title', 'subject', 'summary', 'ref', 'login', 'label', 'description'];
+  for (const name of candidates) {
+    const field = model.fields[name];
+    if (field && TEXT_TYPES.has(field.type) && !field.sqlExpr) return `${alias}.${quoteIdent(name)}`;
+  }
+  const text = Object.values(model.fields).find((field) => (field.type === 'char' || field.type === 'text') && !field.sqlExpr && field.name !== 'display_name');
+  return text ? `${alias}.${quoteIdent(text.name)}` : `${alias}."id"::text`;
+}
+
+/**
+ * Relative date values accepted in search filters (`'-1d'`, `'today -365d'`,
+ * `'+1H'`, `'-3m'`): a base (`today` at midnight, or `now`) plus offsets in
+ * seconds/minutes (`M`)/hours (`H`)/days/weeks/months (`m`)/years. Returns
+ * the resolved ISO value, or null when the string is not of that form.
+ */
+export function resolveRelativeDate(value: unknown, fieldType: string, now: Date): string | null {
+  if (typeof value !== 'string') return null;
+  const text = value.trim();
+  const re = /^(today|now)?((?:\s*[+-]\d+\s*[a-zA-Z]+)*)$/;
+  const match = re.exec(text);
+  if (!match || (!match[1] && !match[2])) return null;
+  const base = match[1] === 'now' || (!match[1] && fieldType === 'datetime' && /[HMs]\b/.test(match[2])) ? new Date(now) : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const date = new Date(base);
+  for (const part of match[2].matchAll(/([+-]\d+)\s*([a-zA-Z]+)/g)) {
+    const n = Number(part[1]);
+    const unit = part[2];
+    if (/^(d|days?)$/.test(unit)) date.setUTCDate(date.getUTCDate() + n);
+    else if (/^(w|weeks?)$/.test(unit)) date.setUTCDate(date.getUTCDate() + 7 * n);
+    else if (/^(m|months?)$/.test(unit)) date.setUTCMonth(date.getUTCMonth() + n);
+    else if (/^(y|years?)$/.test(unit)) date.setUTCFullYear(date.getUTCFullYear() + n);
+    else if (/^(H|h|hours?)$/.test(unit)) date.setUTCHours(date.getUTCHours() + n);
+    else if (/^(M|minutes?|min)$/.test(unit)) date.setUTCMinutes(date.getUTCMinutes() + n);
+    else if (/^(s|seconds?|sec)$/.test(unit)) date.setUTCSeconds(date.getUTCSeconds() + n);
+    else return null;
+  }
+  const iso = date.toISOString();
+  return fieldType === 'date' ? iso.slice(0, 10) : `${iso.slice(0, 10)} ${iso.slice(11, 19)}`;
+}
+
+const ORDER_OPS = new Set(['>', '>=', '<', '<=']);
 
 function quoteIdent(name: string): string {
   if (!/^[a-z_][a-z0-9_]*$/.test(name)) {
@@ -49,9 +105,26 @@ class Compiler {
 
   constructor(
     private readonly schema: SqlSchema,
-    private readonly options: Required<Pick<SqlOptions, 'unaccent'>>,
+    private readonly options: Required<Pick<SqlOptions, 'unaccent'>> & Pick<SqlOptions, 'uid' | 'nameSql' | 'now'>,
     private readonly paramOffset: number,
   ) {}
+
+  /** Column or expression that reads a field on `alias`. */
+  private columnOf(field: FieldDef, alias: string, model: ModelDef): string {
+    if (field.sqlExpr) return expandSqlExpr(field.sqlExpr, alias, { uid: this.options.uid ?? 0, model: model.name });
+    return `${alias}.${quoteIdent(field.name)}`;
+  }
+
+  /** SQL of the display name of `model` rows aliased `alias`. */
+  private nameSql(model: ModelDef, alias: string): string {
+    return this.options.nameSql?.(model, alias) ?? defaultNameSql(model, alias);
+  }
+
+  /** The leaf to search on a comodel when a text is matched against a relation. */
+  private nameLeafField(comodel: ModelDef): string {
+    const rec = comodel.fields[comodel.recName];
+    return rec && rec.name !== 'display_name' && !X2MANY_TYPES.has(rec.type) && !rec.sqlExpr ? comodel.recName : 'display_name';
+  }
 
   private placeholder(value: unknown): string {
     this.params.push(value);
@@ -72,7 +145,7 @@ class Compiler {
     if (!field) {
       throw new DomainError(`Unknown field ${model.name}.${name}`);
     }
-    if (field.compute && field.store === false) {
+    if (field.compute && field.store === false && !field.sqlExpr) {
       throw new DomainError(
         `Cannot search on non-stored computed field ${model.name}.${name}`,
       );
@@ -123,7 +196,19 @@ class Compiler {
     }
 
     const [head, ...rest] = path.split('.');
+
+    // `display_name` never has a column: search the name expression instead.
+    if (head === 'display_name' && rest.length === 0) {
+      if (op === 'child_of' || op === 'parent_of') return this.hierarchyCondition(null, model, alias, op, value);
+      return this.scalarCondition(this.nameSql(model, alias), op, value, 'char');
+    }
+
     const field = this.field(model, head);
+
+    // A non-stored related field is searched through its path, as in Odoo.
+    if (field.related && field.store !== true && !field.sqlExpr) {
+      return this.compileLeaf([field.related, ...rest].join('.'), op, value, model, alias);
+    }
 
     // Dotted traversal: recurse into the comodel with the remaining path.
     if (rest.length > 0) {
@@ -151,22 +236,25 @@ class Compiler {
     }
 
     if (field.type === 'many2one') {
-      // An `ilike` against a many2one searches the comodel's display name.
-      if (op.includes('like')) {
+      // An `ilike` (or a text compared with =/in) against a many2one searches
+      // the comodel's display name, as Odoo's name_search does.
+      const textual = op.includes('like') || (typeof value === 'string' && value !== '' && Number.isNaN(Number(value)) && ['=', '!=', 'in', 'not in'].includes(op));
+      if (textual && !field.sqlExpr) {
         const comodel = this.comodel(field);
+        const nameOp = op.includes('like') ? op : op === '=' || op === 'in' ? '=ilike' : 'not ilike';
         return this.relationalSubquery(field, model, alias, [
-          [comodel.recName, op as never, value],
-        ], op.startsWith('not'));
+          [this.nameLeafField(comodel), nameOp as never, value],
+        ], op.startsWith('not') || op === '!=');
       }
       return this.scalarCondition(
-        `${alias}.${quoteIdent(head)}`,
+        this.columnOf(field, alias, model),
         op,
         value,
         'many2one',
       );
     }
 
-    return this.scalarCondition(`${alias}.${quoteIdent(head)}`, op, value, field.type);
+    return this.scalarCondition(this.columnOf(field, alias, model), op, value, field.type);
   }
 
   /**
@@ -215,7 +303,8 @@ class Compiler {
       const invAlias = this.nextAlias(comodel.table);
       // Polymorphic inverses (activities, messages: res_model + res_id) are
       // scoped to this model; archived children do not count, as on read.
-      const polymorphic = field.inverse === 'res_id' && comodel.fields.res_model ? ` AND ${invAlias}."res_model" = '${model.name.replace(/'/g, "''")}'` : '';
+      const modelCol = field.inverse === 'res_id' ? (comodel.fields.res_model ? 'res_model' : comodel.fields.model ? 'model' : null) : null;
+      const polymorphic = modelCol ? ` AND ${invAlias}.${quoteIdent(modelCol)} = '${model.name.replace(/'/g, "''")}'` : '';
       const active = comodel.fields.active ? ` AND coalesce(${invAlias}."active", true)` : '';
       return `${alias}.${quoteIdent('id')} IN (SELECT ${invAlias}.${quoteIdent(field.inverse)} FROM ${quoteIdent(comodel.table)} AS ${invAlias} WHERE ${invAlias}.${quoteIdent('id')} IN (${innerIdSelect}) AND ${invAlias}.${quoteIdent(field.inverse)} IS NOT NULL${polymorphic}${active})`;
     }
@@ -247,10 +336,11 @@ class Compiler {
       return op === '=' ? `(${empty}) IS NOT TRUE` : empty;
     }
 
-    if (op.includes('like')) {
+    if (op.includes('like') || (typeof value === 'string' && value !== '' && Number.isNaN(Number(value)))) {
+      const nameOp = op.includes('like') ? op : op === '!=' || op === 'not in' ? 'not ilike' : 'ilike';
       return this.relationalSubquery(field, model, alias, [
-        [comodel.recName, op as never, value],
-      ], op.startsWith('not'));
+        [this.nameLeafField(comodel), nameOp as never, value],
+      ], nameOp.startsWith('not'));
     }
 
     // Membership by id.
@@ -283,13 +373,19 @@ class Compiler {
     const table = quoteIdent(comodel.table);
 
     const seeds = (Array.isArray(value) ? value : [value]).map((item) =>
-      (Array.isArray(item) ? item[0] : item));
-    const seedParam = this.placeholder(seeds);
+      (Array.isArray(item) ? item[0] : item)).filter((item) => item !== false && item !== null && item !== undefined && item !== '');
+    // No seed (`child_of False`) matches nothing, as in Odoo.
+    if (seeds.length === 0) return 'FALSE';
+    // Text seeds (typed in the search box) name-search the comodel first.
+    const textual = seeds.some((item) => typeof item === 'string' && Number.isNaN(Number(item)));
+    const seedSelect = textual
+      ? seeds.map((item) => `SELECT ${idCol} FROM ${table} WHERE ${this.nameSql(comodel, table)} ILIKE ${this.placeholder(`%${String(item)}%`)}`).join(' UNION ')
+      : `SELECT unnest(${this.placeholder(seeds.map(Number))}::int[])`;
 
     // child_of starts at the seeds and walks down to every descendant;
     // parent_of walks up to every ancestor. Both carry parent_id through the
     // recursion so the join has a column to follow.
-    const anchor = `SELECT ${idCol}, ${parentField} FROM ${table} WHERE ${idCol} = ANY(${seedParam})`;
+    const anchor = `SELECT ${idCol}, ${parentField} FROM ${table} WHERE ${idCol} IN (${seedSelect})`;
     const step = op === 'child_of'
       ? `SELECT c.${idCol}, c.${parentField} FROM ${table} c JOIN tree t ON c.${parentField} = t.${idCol}`
       : `SELECT p.${idCol}, p.${parentField} FROM ${table} p JOIN tree t ON t.${parentField} = p.${idCol}`;
@@ -319,6 +415,15 @@ class Compiler {
   ): string {
     const isText = TEXT_TYPES.has(fieldType);
     const isEmptyValue = value === false || value === null || value === undefined;
+
+    // Ordering against "nothing" (`date >= context.get('date_from')` with no
+    // date in the context) matches no row rather than erroring.
+    if (ORDER_OPS.has(op) && (isEmptyValue || value === '')) return 'FALSE';
+    // Relative date literals from search filters.
+    if ((fieldType === 'date' || fieldType === 'datetime') && typeof value === 'string') {
+      const resolved = resolveRelativeDate(value, fieldType, this.options.now ?? new Date());
+      if (resolved !== null) value = resolved;
+    }
 
     switch (op) {
       case '=': {
@@ -418,7 +523,7 @@ export function domainToSql(
 
   const compiler = new Compiler(
     schema,
-    { unaccent: options.unaccent ?? false },
+    { unaccent: options.unaccent ?? false, uid: options.uid, nameSql: options.nameSql, now: options.now },
     options.paramOffset ?? 0,
   );
   const text = compiler.compile(

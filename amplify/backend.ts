@@ -2,6 +2,9 @@ import { defineBackend } from '@aws-amplify/backend';
 import { Duration, Stack } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+import { SecretValue } from 'aws-cdk-lib';
 import { Trigger } from 'aws-cdk-lib/triggers';
 import { auth } from './auth/resource.js';
 import { storage } from './storage/resource.js';
@@ -101,6 +104,30 @@ new Trigger(migrationStack, 'RunMigration', {
   executeOnHandlerChange: true,
   timeout: Duration.minutes(15),
 });
+
+/**
+ * Scheduled actions (ir.cron): an EventBridge rule calls `/api/cron` every
+ * 15 minutes through an API destination — no Lambda, no VPC, about $0.20
+ * per million calls. Needs two branch environment variables: RODEO_CRON_KEY
+ * (the shared secret the route checks) and, for a custom domain,
+ * RODEO_APP_URL; otherwise the default amplifyapp.com URL is used.
+ */
+const cronKey = process.env.RODEO_CRON_KEY?.trim();
+const appId = process.env.AWS_APP_ID;
+if (cronKey && (process.env.RODEO_APP_URL || appId)) {
+  const cronStack = backend.createStack('cron');
+  const baseUrl = process.env.RODEO_APP_URL?.replace(/\/$/, '') ?? `https://${branch}.${appId}.amplifyapp.com`;
+  const connection = new events.Connection(cronStack, 'CronConnection', {
+    description: 'Almirsal: shared secret for /api/cron',
+    authorization: events.Authorization.apiKey('x-cron-key', SecretValue.unsafePlainText(cronKey)),
+  });
+  const destination = new events.ApiDestination(cronStack, 'CronDestination', { connection, endpoint: `${baseUrl}/api/cron`, httpMethod: events.HttpMethod.POST, rateLimitPerSecond: 1 });
+  new events.Rule(cronStack, 'CronSchedule', {
+    description: 'Almirsal: run the due scheduled actions',
+    schedule: events.Schedule.rate(Duration.minutes(15)),
+    targets: [new targets.ApiDestination(destination, { retryAttempts: 1 })],
+  });
+}
 
 backend.addOutput({
   custom: {

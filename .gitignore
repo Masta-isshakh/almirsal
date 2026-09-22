@@ -41,3 +41,4 @@ amplify_outputs*
 amplifyconfiguration*
 # local PGlite database
 .pglite/
+.pglite-dev/

@@ -91,6 +91,14 @@ export interface FieldDef {
    * fields visible in views (e.g. a one2many's back-reference).
    */
   inferred?: boolean;
+  /**
+   * SQL template of a computed field that has no column: read, searched,
+   * grouped and sorted through this expression. Placeholders: `{alias}` (the
+   * row's table alias), `{uid}` (the current user id), `{model}` (the model
+   * name as a quoted literal). Used for per-user fields such as
+   * `my_activity_date_deadline` and `message_is_follower`.
+   */
+  sqlExpr?: string;
 }
 
 /* ------------------------------------------------------------------ *
@@ -169,6 +177,11 @@ export interface ModelDef {
   methods?: Record<string, MethodDef>;
   /** Transient models (wizards) are garbage-collected and have no rules. */
   transient?: boolean;
+  /**
+   * Reporting models are SQL views over the business tables (Odoo's
+   * `_auto = False`): the SELECT that defines the view. Read-only.
+   */
+  sqlView?: string;
   /** Registered _check_* python-constraint handler ids. */
   constraints?: string[];
 }

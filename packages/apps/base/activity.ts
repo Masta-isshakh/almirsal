@@ -50,21 +50,23 @@ async function deadlineFor(env: Environment, typeId: number | false, from: PyDat
 /** Recompute the document's activity summary columns after any change to its activities. */
 export async function refreshActivityState(env: Environment, model: string, resIds: number[]): Promise<void> {
   const def = env.registry.models[model];
-  if (!def || !def.fields.activity_state || resIds.length === 0) return;
+  if (!def || def.sqlView || !def.fields.activity_state || resIds.length === 0) return;
   const now = today(env).toString();
-  const rows = await env.cr.query<{ res_id: number; date_deadline: string; user_id: number | null; activity_type_id: number | null }>(
-    `SELECT DISTINCT ON (res_id) res_id, date_deadline, user_id, activity_type_id FROM mail_activity
-     WHERE res_model = $1 AND res_id = ANY($2) AND coalesce(active, true) ORDER BY res_id, date_deadline ASC, id ASC`,
+  const rows = await env.cr.query<{ res_id: number; date_deadline: string; user_id: number | null; activity_type_id: number | null; summary: string | null; icon: string | null }>(
+    `SELECT DISTINCT ON (a.res_id) a.res_id, a.date_deadline, a.user_id, a.activity_type_id, a.summary, t.icon FROM mail_activity a
+     LEFT JOIN mail_activity_type t ON t.id = a.activity_type_id
+     WHERE a.res_model = $1 AND a.res_id = ANY($2) AND coalesce(a.active, true) ORDER BY a.res_id, a.date_deadline ASC, a.id ASC`,
     [model, resIds],
   );
   const byId = new Map(rows.rows.map((row) => [Number(row.res_id), row]));
-  const cols = ['activity_state', 'activity_date_deadline', 'activity_user_id', 'activity_type_id'].filter((name) => def.fields[name]);
+  const cols = ['activity_state', 'activity_date_deadline', 'activity_user_id', 'activity_type_id', 'activity_summary', 'activity_type_icon'].filter((name) => def.fields[name] && !def.fields[name].sqlExpr);
   for (const id of resIds) {
     const next = byId.get(id);
     const deadline = next ? isoDate(next.date_deadline) : null;
     const state = !deadline ? null : deadline < now ? 'overdue' : deadline === now ? 'today' : 'planned';
     const values: Record<string, unknown> = {
       activity_state: state, activity_date_deadline: deadline, activity_user_id: next?.user_id ?? null, activity_type_id: next?.activity_type_id ?? null,
+      activity_summary: next?.summary ?? null, activity_type_icon: next?.icon ?? null,
     };
     const sets = cols.map((name, index) => `${quoteIdent(name)} = ${paramExpr(def.fields[name], `$${index + 2}`)}`);
     if (sets.length) await env.cr.query(`UPDATE ${quoteIdent(def.table)} SET ${sets.join(', ')} WHERE id = $1`, [id, ...cols.map((name) => values[name])]);

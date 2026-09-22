@@ -1,16 +1,23 @@
 import type { Domain, DomainLeaf, FieldDef, ModelDef } from '../registry/types.js';
 import { combineDomains } from '../domain/normalize.js';
-import { domainToSql } from '../domain/sql.js';
+import { defaultNameSql, domainToSql } from '../domain/sql.js';
 import { evaluate } from '../expr/evaluate.js';
 import { quoteIdent } from '../schema/ddl.js';
 import type { Environment } from './env.js';
 import { AccessError, MissingError, UserError, ValidationError } from './errors.js';
-import { hooksFor, type ActionResult, type OnchangeResult, type Values } from './hooks.js';
+import { hooksFor, methodFallback, type ActionResult, type OnchangeResult, type Values } from './hooks.js';
 import { postCreationMessage, postTracking, unlinkThreadData, type TrackingChange } from './mail.js';
 import { readGroup, type ReadGroupOptions, type ReadGroupRow } from './read-group.js';
 import {
-  fromSql, nowSql, paramExpr, selectExpr, toCommands, toSql, type X2ManyCommand,
+  expandSqlExpr, fromSql, nowSql, paramExpr, selectExpr, toCommands, toSql, type SqlExprContext, type X2ManyCommand,
 } from './values.js';
+
+/** Column naming the parent model on a polymorphic comodel (`res_model` on activities/followers, `model` on messages). */
+export function polymorphicModelColumn(comodel: ModelDef): string | null {
+  if (comodel.fields.res_model) return 'res_model';
+  if (comodel.fields.model && comodel.fields.res_id) return 'model';
+  return null;
+}
 
 /**
  * The per-model API with Odoo's semantics (A-3): defaults, required-field
@@ -61,11 +68,27 @@ export class Model {
     return field;
   }
 
-  /** Columns that live on the table (no x2many, no display_name). */
+  /** Columns that live on the table (no x2many, no display_name, no SQL-computed field). */
   private storedFields(): FieldDef[] {
     return Object.values(this.fields).filter(
-      (field) => !X2MANY.has(field.type) && field.name !== 'display_name' && field.name !== 'id',
+      (field) => !X2MANY.has(field.type) && field.name !== 'display_name' && field.name !== 'id' && !field.sqlExpr,
     );
+  }
+
+  /** Placeholders for SQL-computed fields of this model. */
+  private get sqlCtx(): SqlExprContext {
+    return { uid: this.env.uid, model: this.name };
+  }
+
+  /**
+   * SQL of the display name of `model` rows aliased `alias`: the model's
+   * `displayNameSql` hook when it has one, else the record-name column (or
+   * the first text column for models named by a computed display_name).
+   */
+  nameSqlFor(model: ModelDef, alias: string): string {
+    const hooks = hooksFor(model.name);
+    if (hooks.displayNameSql) return hooks.displayNameSql(alias);
+    return defaultNameSql(model, alias);
   }
 
   /* ---------------------------------------------------------------- *
@@ -130,7 +153,8 @@ export class Model {
 
   private compileWhere(domain: Domain, alias: string, paramOffset = 0) {
     return domainToSql(this.name, domain, { model: (name) => this.env.registry.models[name] }, {
-      alias, paramOffset, unaccent: false,
+      alias, paramOffset, unaccent: false, uid: this.env.uid,
+      nameSql: (model, a) => (hooksFor(model.name).displayNameSql ? hooksFor(model.name).displayNameSql!(a) : null),
     });
   }
 
@@ -144,11 +168,16 @@ export class Model {
       const dir = direction.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
       if (name === 'id') { parts.push(`${alias}."id" ${dir}`); continue; }
       const field = this.fields[name];
+      if (name === 'display_name' && (!field || field.sqlExpr || !this.storedFields().includes(field))) {
+        parts.push(`${this.nameSqlFor(this.def, alias)} ${dir} NULLS LAST`);
+        continue;
+      }
       if (!field || X2MANY.has(field.type)) continue;
-      if (field.type === 'many2one' && field.relation && this.env.registry.models[field.relation]) {
+      if (field.sqlExpr) {
+        parts.push(`${expandSqlExpr(field.sqlExpr, alias, this.sqlCtx)} ${dir} NULLS LAST`);
+      } else if (field.type === 'many2one' && field.relation && this.env.registry.models[field.relation]) {
         const comodel = this.env.registry.models[field.relation];
-        const recName = comodel.fields[comodel.recName] ? comodel.recName : 'id';
-        parts.push(`(SELECT c.${quoteIdent(recName)} FROM ${quoteIdent(comodel.table)} c WHERE c."id" = ${alias}.${quoteIdent(name)}) ${dir} NULLS LAST`);
+        parts.push(`(SELECT ${this.nameSqlFor(comodel, 'c')} FROM ${quoteIdent(comodel.table)} c WHERE c."id" = ${alias}.${quoteIdent(name)}) ${dir} NULLS LAST`);
       } else {
         parts.push(`${alias}.${quoteIdent(name)} ${dir} NULLS LAST`);
       }
@@ -225,10 +254,10 @@ export class Model {
     const inline = many2one.filter((field) => this.inlineNameExpr(field) !== null);
     // The record's own display name rides along too when it can be expressed in SQL.
     const ownHooks = hooksFor(this.name);
-    const ownNameExpr = !wantDisplay ? null : ownHooks.displayNameSql ? ownHooks.displayNameSql('t') : !ownHooks.displayName && this.fields[this.def.recName] && !X2MANY.has(this.fields[this.def.recName].type) ? selectExpr(this.fields[this.def.recName], 't') : null;
+    const ownNameExpr = !wantDisplay ? null : ownHooks.displayName ? null : this.nameSqlFor(this.def, 't');
     const selects = [
       't."id"',
-      ...scalar.map((field) => `${selectExpr(field, 't')} AS ${quoteIdent(field.name)}`),
+      ...scalar.map((field) => `${selectExpr(field, 't', this.sqlCtx)} AS ${quoteIdent(field.name)}`),
       ...inline.map((field) => `${this.inlineNameExpr(field)} AS ${quoteIdent(`__name_${field.name}`)}`),
       ...(ownNameExpr ? [`${ownNameExpr} AS "__rec_name"`] : []),
     ];
@@ -271,11 +300,8 @@ export class Model {
     const comodel = field.relation ? this.env.registry.models[field.relation] : undefined;
     if (!comodel) return null;
     const hooks = hooksFor(comodel.name);
-    if (hooks.displayNameSql) return `(SELECT ${hooks.displayNameSql('n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = t.${quoteIdent(field.name)})`;
-    if (hooks.displayName) return null;
-    const recName = comodel.fields[comodel.recName] ? comodel.recName : null;
-    if (!recName || X2MANY.has(comodel.fields[recName].type)) return null;
-    return `(SELECT ${selectExpr(comodel.fields[recName], 'n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = t.${quoteIdent(field.name)})`;
+    if (hooks.displayName && !hooks.displayNameSql) return null;
+    return `(SELECT ${this.nameSqlFor(comodel, 'n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = t.${quoteIdent(field.name)})`;
   }
 
   /**
@@ -293,7 +319,8 @@ export class Model {
       if (field.type === 'one2many' && comodel && field.inverse) {
         const co = this.env.model(comodel.name);
         let extra = '';
-        if (field.inverse === 'res_id') { params.push(this.name); extra += ` AND t."res_model" = $${params.length}`; }
+        const modelCol = field.inverse === 'res_id' ? polymorphicModelColumn(comodel) : null;
+        if (modelCol) { params.push(this.name); extra += ` AND t.${quoteIdent(modelCol)} = $${params.length}`; }
         if (Array.isArray(field.domain) && field.domain.length) {
           const compiled = co.compileDomain(field.domain as Domain, 't', params.length);
           extra += ` AND (${compiled.text})`;
@@ -336,7 +363,7 @@ export class Model {
       if (comodel.fields.active && this.env.context.active_test !== false) extra += ` AND coalesce(t."active", true)`;
       const rows = await this.env.cr.query<{ id: number; parent: number }>(
         `SELECT t."id", t.${quoteIdent(field.inverse)} AS parent FROM ${quoteIdent(comodel.table)} t
-         WHERE t.${quoteIdent(field.inverse)} = ANY($1)${field.inverse === 'res_id' ? ` AND t."res_model" = $2` : ''}${extra}
+         WHERE t.${quoteIdent(field.inverse)} = ANY($1)${extra}
          ORDER BY ${co.orderClause(undefined, 't')}`,
         params,
       );
@@ -464,26 +491,21 @@ export class Model {
       return out;
     }
 
-    const recName = this.fields[this.def.recName] ? this.def.recName : null;
-    if (!recName) {
-      for (const id of ids) out.set(id, `${this.name},${id}`);
-      return out;
-    }
+    const recName = this.fields[this.def.recName] && !this.fields[this.def.recName].sqlExpr && this.def.recName !== 'display_name' ? this.def.recName : null;
     // The record name is already loaded: no query.
-    if (preloaded && preloaded.every((record) => recName in record)) {
+    if (recName && preloaded && preloaded.every((record) => recName in record)) {
       for (const record of preloaded) {
         const value = record[recName];
         out.set(record.id as number, value === false || value === null || value === undefined ? `${this.name},${record.id}` : String(value));
       }
       return out;
     }
-    const field = this.fields[recName];
     const result = await this.env.cr.query<{ id: number; name: unknown }>(
-      `SELECT "id", ${selectExpr(field, 't')} AS name FROM ${quoteIdent(this.table)} t WHERE "id" = ANY($1)`, [ids],
+      `SELECT "id", (${this.nameSqlFor(this.def, 't')})::text AS name FROM ${quoteIdent(this.table)} t WHERE "id" = ANY($1)`, [ids],
     );
     for (const row of result.rows) {
-      const value = fromSql(field, row.name);
-      out.set(Number(row.id), value === false || value === null ? `${this.name},${row.id}` : String(value));
+      const value = row.name;
+      out.set(Number(row.id), value === false || value === null || value === undefined || value === '' ? `${this.name},${row.id}` : String(value));
     }
     return out;
   }
@@ -505,7 +527,9 @@ export class Model {
   /** many2one autocomplete: `[[id, display_name], …]`. */
   async nameSearch(name = '', domain: Domain = [], operator = 'ilike', limit = 8): Promise<[number, string][]> {
     const hooks = hooksFor(this.name);
-    const searchable = [this.def.recName, ...(hooks.searchFields ?? [])].filter((field) => this.fields[field] && !X2MANY.has(this.fields[field].type));
+    const recField = this.fields[this.def.recName];
+    const nameField = recField && this.def.recName !== 'display_name' && !X2MANY.has(recField.type) && !recField.sqlExpr ? this.def.recName : 'display_name';
+    const searchable = [nameField, ...(hooks.searchFields ?? []).filter((field) => this.fields[field] && !X2MANY.has(this.fields[field].type))];
     let full = domain;
     if (name) {
       const leaves: Domain = searchable.map((field) => [field, operator, name] as DomainLeaf);
@@ -584,6 +608,8 @@ export class Model {
     for (const [name, value] of Object.entries(vals)) {
       if (AUDIT_FIELDS.has(name) || name === 'display_name') continue;
       const field = this.field(name);
+      // SQL-computed fields have no column: values sent for them are ignored.
+      if (field.sqlExpr) continue;
       if (X2MANY.has(field.type)) relations.push([field, toCommands(value)]);
       else columns.push([field, value]);
     }
@@ -599,7 +625,13 @@ export class Model {
     return many ? ids : ids[0];
   }
 
+  /** Reporting views are computed from the business tables and never written. */
+  private checkWritable(): void {
+    if (this.def.sqlView) throw new UserError({ en: `${this.def.description.en} is an analysis report computed from other documents; it cannot be edited directly.`, ar: `${this.def.description.ar} تقرير تحليلي محسوب من مستندات أخرى؛ لا يمكن تعديله مباشرة.` });
+  }
+
   private async createInTx(list: Values[]): Promise<number[]> {
+    this.checkWritable();
     this.checkAccess('create');
     const hooks = hooksFor(this.name);
     const ids: number[] = [];
@@ -645,6 +677,7 @@ export class Model {
   }
 
   private async writeInTx(ids: number[], rawVals: Values): Promise<boolean> {
+    this.checkWritable();
     this.checkAccess('write');
     const hooks = hooksFor(this.name);
     const vals = hooks.beforeWrite ? await hooks.beforeWrite(this.env, ids, rawVals) : rawVals;
@@ -707,6 +740,7 @@ export class Model {
   async unlink(ids: number | number[]): Promise<boolean> {
     const list = idList(ids);
     if (list.length === 0) return true;
+    this.checkWritable();
     return this.env.withTransaction((env) => env.model(this.name).unlinkInTx(list));
   }
 
@@ -729,6 +763,15 @@ export class Model {
   }
 
   async copy(id: number, defaults: Values = {}): Promise<number> {
+    const vals = await this.copyValues(id);
+    if (this.def.recName === 'name' && typeof vals.name === 'string' && !('name' in defaults)) {
+      vals.name = `${vals.name} (copy)`;
+    }
+    return this.create({ ...vals, ...defaults });
+  }
+
+  /** The values `copy()` would create from: every copyable field, lines as create commands. */
+  async copyValues(id: number): Promise<Values> {
     const hooks = hooksFor(this.name);
     const [record] = await this.read(id);
     if (!record) throw new MissingError({ en: 'Record does not exist or has been deleted.', ar: 'السجل غير موجود أو تم حذفه.' });
@@ -736,16 +779,26 @@ export class Model {
     for (const [name, field] of Object.entries(this.fields)) {
       if (AUDIT_FIELDS.has(name) || name === 'display_name') continue;
       if (field.copy === false || hooks.noCopy?.includes(name) || field.inferred) continue;
-      if (field.type === 'one2many') continue; // Odoo copies lines only when copy=True on the o2m; default off here
       const value = record[name];
+      if (field.type === 'one2many') {
+        // Lines come along only when the one2many is declared copy=True (order
+        // lines, invoice items…), as in Odoo; each line is copied recursively.
+        if (field.copy !== true || !field.relation || !field.inverse) continue;
+        const co = this.env.model(field.relation);
+        const commands: X2ManyCommand[] = [];
+        for (const childId of (value as number[]) ?? []) {
+          const childVals = await co.copyValues(childId);
+          delete childVals[field.inverse];
+          commands.push([0, 0, childVals]);
+        }
+        if (commands.length) vals[name] = commands;
+        continue;
+      }
       if (field.type === 'many2one') vals[name] = Array.isArray(value) ? value[0] : value;
       else if (field.type === 'many2many') vals[name] = [[6, 0, value as number[]]];
       else vals[name] = value;
     }
-    if (this.def.recName === 'name' && typeof vals.name === 'string' && !('name' in defaults)) {
-      vals.name = `${vals.name} (copy)`;
-    }
-    return this.create({ ...vals, ...defaults });
+    return vals;
   }
 
   async toggleActive(ids: number | number[]): Promise<boolean> {
@@ -768,7 +821,8 @@ export class Model {
       if (!inverse) throw new UserError(`one2many ${this.name}.${field.name} has no inverse`);
       const inverseField = co.fields[inverse];
       const polymorphic = inverse === 'res_id';
-      const link = (vals: Values): Values => (polymorphic ? { ...vals, res_id: recordId, res_model: this.name } : { ...vals, [inverse]: recordId });
+      const modelCol = polymorphic ? polymorphicModelColumn(co.def) : null;
+      const link = (vals: Values): Values => (polymorphic ? { ...vals, res_id: recordId, ...(modelCol ? { [modelCol]: this.name } : {}) } : { ...vals, [inverse]: recordId });
       const detach = async (childIds: number[]) => {
         if (childIds.length === 0) return;
         if (inverseField?.required || polymorphic) await co.unlink(childIds);
@@ -957,10 +1011,14 @@ export class Model {
   /** Execute a button/server method (`action_confirm`, …) on records. */
   async callButton(ids: number | number[], method: string, context: Values = {}): Promise<ActionResult | void> {
     const handler = hooksFor(this.name).methods?.[method];
+    const env = this.env.with({ context });
     if (!handler) {
+      // Smart buttons and other generic openers resolve through the fallback.
+      const resolver = methodFallback();
+      const resolved = resolver ? await resolver(env, this.name, idList(ids), method, context) : undefined;
+      if (resolved !== undefined) return resolved;
       throw new UserError({ en: `Method ${method} is not implemented on ${this.name}`, ar: `الدالة ${method} غير منفذة في ${this.name}` });
     }
-    const env = this.env.with({ context });
     return env.withTransaction((tx) => handler(tx, idList(ids), context));
   }
 }
