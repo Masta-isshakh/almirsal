@@ -31,7 +31,7 @@ export function CommandPalette({ open, onClose, apps, menuHrefs, currentModel, c
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [records, setRecords] = useState<SearchGroup[]>([]);
-  const [recent, setRecent] = useState<{ id: string; label: string; href: string; icon: string }[]>([]);
+  const [recent, setRecent] = useState<{ id: string; label: string; href: string; icon: string; appId?: number }[]>([]);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,15 +44,15 @@ export function CommandPalette({ open, onClose, apps, menuHrefs, currentModel, c
   }, [open]);
 
   const menus = useMemo(() => {
-    const out: { id: string; label: string; path: string; href: string; app: string }[] = [];
+    const out: { id: string; label: string; path: string; href: string; app: string; appId: number }[] = [];
     const walk = (app: AppEntry, node: MenuDef, trail: string[]) => {
       const label = t(node.name);
       const href = menuHrefs[node.id];
-      if (href && node.children.length === 0) out.push({ id: `menu:${node.id}`, label, path: [...trail, label].join(' › '), href, app: t(app.name) });
+      if (href && node.children.length === 0) out.push({ id: `menu:${node.id}`, label, path: [...trail, label].join(' › '), href, app: t(app.name), appId: app.id });
       for (const child of node.children) walk(app, child, [...trail, label]);
     };
     for (const app of apps) {
-      out.push({ id: `app:${app.id}`, label: t(app.name), path: t(app.name), href: app.href, app: t(app.name) });
+      out.push({ id: `app:${app.id}`, label: t(app.name), path: t(app.name), href: app.href, app: t(app.name), appId: app.id });
       for (const child of app.children) walk(app, child, [t(app.name)]);
     }
     return out;
@@ -71,11 +71,11 @@ export function CommandPalette({ open, onClose, apps, menuHrefs, currentModel, c
     return () => { cancelled = true; clearTimeout(handle); };
   }, [open, text, mode, currentModel]);
 
-  const remember = (item: { id: string; label: string; href: string; icon: string }) => {
+  const remember = (item: { id: string; label: string; href: string; icon: string; appId?: number }) => {
     const next = [item, ...recent.filter((r) => r.id !== item.id)].slice(0, 8);
     try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
   };
-  const go = (href: string, item?: { id: string; label: string; icon: string }) => { if (item) remember({ ...item, href }); onClose(); navigate(href); };
+  const go = (href: string, item?: { id: string; label: string; icon: string; appId?: number }) => { if (item) remember({ ...item, href }); onClose(); navigate(href, { app: item?.appId }); };
 
   const items = useMemo<Item[]>(() => {
     const list: Item[] = [];
@@ -93,7 +93,7 @@ export function CommandPalette({ open, onClose, apps, menuHrefs, currentModel, c
     }
     if (mode === 'all' || mode === 'menu') {
       const found = text ? menus.filter((menu) => matches(menu.path)) : [];
-      list.push(...found.slice(0, mode === 'menu' ? 40 : 8).map((menu) => ({ id: menu.id, kind: 'menu' as const, label: menu.label, hint: menu.path, icon: 'fa-bars', run: () => go(menu.href, { id: menu.id, label: menu.path, icon: 'fa-bars' }) })));
+      list.push(...found.slice(0, mode === 'menu' ? 40 : 8).map((menu) => ({ id: menu.id, kind: 'menu' as const, label: menu.label, hint: menu.path, icon: 'fa-bars', run: () => go(menu.href, { id: menu.id, label: menu.path, icon: 'fa-bars', appId: menu.appId }) })));
     }
     if (mode === 'all' || mode === 'record') {
       for (const group of records) {
@@ -103,7 +103,7 @@ export function CommandPalette({ open, onClose, apps, menuHrefs, currentModel, c
       }
     }
     if (!text && recent.length) {
-      list.unshift(...recent.map((item) => ({ id: `recent:${item.id}`, kind: 'menu' as const, label: item.label, hint: t('Recent'), icon: item.icon, run: () => go(item.href) })));
+      list.unshift(...recent.map((item) => ({ id: `recent:${item.id}`, kind: 'menu' as const, label: item.label, hint: t('Recent'), icon: item.icon, run: () => go(item.href, item) })));
     }
     return list;
   }, [text, mode, menus, records, recent, currentSlug, currentName, theme, lang]); // eslint-disable-line react-hooks/exhaustive-deps

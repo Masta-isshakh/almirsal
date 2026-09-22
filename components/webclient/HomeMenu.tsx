@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '@/lib/client/i18n';
 import type { AppEntry } from './WebClient';
@@ -29,11 +28,11 @@ export function HomeMenu({ apps }: { apps: AppEntry[] }) {
     <div className="o_home_menu" onKeyDown={onKeyDown}>
       <div className="o_home_menu_grid" role="list">
         {apps.map((app, index) => (
-          <Link key={app.id} href={app.href} className="o_app" role="listitem" tabIndex={index === focus ? 0 : -1}
+          <a key={app.id} href={app.href} data-app={app.id} className="o_app" role="listitem" tabIndex={index === focus ? 0 : -1}
             ref={(element) => { refs.current[index] = element; }} onFocus={() => setFocus(index)}>
             <img className="o_app_icon" src={`/icons/apps/${app.slug}.svg`} alt="" width={70} height={70} />
             <span className="o_app_caption">{t(app.name)}</span>
-          </Link>
+          </a>
         ))}
       </div>
     </div>

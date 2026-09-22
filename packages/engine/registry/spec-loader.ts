@@ -1229,7 +1229,8 @@ export function convertActions(spec: RawSpec): Record<string, ActionDef> {
 
     if (type === 'act_window') {
       action.model = raw.model;
-      action.viewMode = (raw.view_mode ?? '').split(',').map((mode) => mode.trim()).filter(Boolean) as ViewType[];
+      // `search` is not a switchable view: some exports list it in view_mode (appointment answers).
+      action.viewMode = (raw.view_mode ?? '').split(',').map((mode) => mode.trim()).filter((mode) => mode && mode !== 'search') as ViewType[];
       action.views = views.filter((key) => key !== searchView);
       action.searchView = searchView;
       action.domain = typeof raw.domain === 'string' && raw.domain.trim() ? tidyExpr(raw.domain) : false;

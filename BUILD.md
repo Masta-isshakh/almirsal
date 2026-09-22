@@ -449,6 +449,31 @@ the `"char"` column `pg_class.relkind` used by the view sync (cast to text);
 and the Skills History menu opening a model the export has no views for
 (now `hr.employee.skill.report`).
 
+Navbar follow-up (reported on the Accounting tabs): the shell's links used
+`next/link`, so every menu click was a server navigation that remounted the
+web client and re-derived the app from the action's *first* menu — opening
+Accounting › Customers › Customers switched the navbar to Sales, and the
+tabs looked broken. The web client now uses plain anchors handled by the
+client router (`lib/client/navigation.tsx`), links carry the app they were
+clicked in (`data-app`), and the shell keeps the current app while it can
+reach the action (`useCurrentApp` in `WebClient.tsx`, remembered per tab);
+section dropdowns switch on hover like Odoo's. Programmatic moves (records,
+smart buttons, server-action results such as Appointments › Resources
+opening the calendar) keep the current app too. Found by the same
+click-through: a server action reached by URL renders its ad-hoc
+`act_window` result in place under its own path with its own name, domain
+and context (`components/webclient/ServerActionRunner.tsx` — Resource and
+Staff Bookings, Certifications, the skills log…), Kiosk Mode opens in the
+same tab (Odoo's `target: 'self'`), a server action that opens a new tab
+shows an "Open" card instead of an endless spinner, `ir.actions.act_url`
+menus (Discuss › Configuration › Settings) are followed by the client
+router, and the one menu bound to an `ir.actions.report` (Sign › Reports ›
+Green Savings) renders a page (`components/clientactions/GreenSavings.tsx`). `scripts/dev/nav-check.js`
+(playwright-core, ad hoc like the crawl) clicks through every app × every
+menu item with client-side navigation and asserts the view rendered, the URL
+changed, the dropdown closed and the app stayed — the page-load crawl cannot
+see this class of defect.
+
 Results of the third round on the final code: unit tests 177/177,
 `tsc --noEmit` and `next build` clean, backend verification 0 failures on
 PGlite and on the Aurora sandbox (`--crud`), workflows 135/135, UI crawl

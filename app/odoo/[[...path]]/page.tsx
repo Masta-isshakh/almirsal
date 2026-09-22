@@ -32,6 +32,7 @@ export default async function OdooPage({ params, searchParams }: PageProps) {
   const apps: AppEntry[] = registry.menus.map((menu) => ({
     id: menu.id,
     xmlId: menu.xmlId,
+    actionId: menu.actionId,
     name: menu.name,
     slug: appSlug(menu.xmlId, menu.name.en),
     href: menuHref(menu),

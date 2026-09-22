@@ -13,17 +13,39 @@ import { rpc } from './rpc';
  * for Sales) are fetched once per action and cached for the session.
  */
 
-export interface Location { path: string[]; query: Record<string, string> }
+export interface Location {
+  path: string[];
+  query: Record<string, string>;
+  /**
+   * The app (root menu id) the move was made from — a navbar or home-menu
+   * click. Not part of the URL: it tells the shell which app's sections to
+   * keep showing when the action is reachable from several apps.
+   */
+  app?: number;
+}
 
 interface Navigation {
   location: Location;
-  navigate: (href: string, options?: { replace?: boolean }) => void;
+  navigate: (href: string, options?: { replace?: boolean; app?: number }) => void;
   /** Re-resolve the current location (what `router.refresh()` used to do). */
   reload: () => void;
   version: number;
 }
 
 const NavigationContext = createContext<Navigation | null>(null);
+
+/** Session-storage key of the app the shell currently shows (written by the shell). */
+export const CURRENT_APP_KEY = 'rodeo.current_app';
+
+/**
+ * The app to keep for a move that names none: the one the shell shows now.
+ * Odoo keeps the current menu when an action opens a record, runs a server
+ * action or follows a smart button; only a navbar / home-menu click, the
+ * command palette or a fresh URL choose the app.
+ */
+export function currentAppHint(): number | undefined {
+  try { return Number(sessionStorage.getItem(CURRENT_APP_KEY)) || undefined; } catch { return undefined; }
+}
 
 export function parseHref(href: string): Location {
   const url = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
@@ -43,9 +65,15 @@ export function NavigationProvider({ initial, children }: { initial: Location; c
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
-    const onPop = () => setLocation(parseHref(window.location.href));
+    const onPop = (event: PopStateEvent) => {
+      const app = Number((event.state as { app?: number } | null)?.app);
+      setLocation({ ...parseHref(window.location.href), ...(app ? { app } : {}) });
+    };
     window.addEventListener('popstate', onPop);
-    // Any in-app link to /odoo/… becomes a client-side move.
+    // Any in-app link to /odoo/… becomes a client-side move. The web client
+    // uses plain anchors, not next/link: a Next navigation re-renders the page
+    // on the server and remounts the shell (the dynamic segment changes), which
+    // would drop the current app and every in-memory state on each menu click.
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const anchor = (event.target as HTMLElement).closest('a[href]') as HTMLAnchorElement | null;
@@ -53,16 +81,19 @@ export function NavigationProvider({ initial, children }: { initial: Location; c
       const href = anchor.getAttribute('href') ?? '';
       if (!href.startsWith('/odoo')) return;
       event.preventDefault();
-      window.history.pushState(null, '', href);
-      setLocation(parseHref(href));
+      const app = Number(anchor.dataset.app) || currentAppHint();
+      window.history.pushState(app ? { app } : null, '', href);
+      setLocation({ ...parseHref(href), ...(app ? { app } : {}) });
     };
     document.addEventListener('click', onClick);
     return () => { window.removeEventListener('popstate', onPop); document.removeEventListener('click', onClick); };
   }, []);
 
-  const navigate = useCallback((href: string, options: { replace?: boolean } = {}) => {
-    const next = parseHref(href);
-    if (options.replace) window.history.replaceState(null, '', href); else window.history.pushState(null, '', href);
+  const navigate = useCallback((href: string, options: { replace?: boolean; app?: number } = {}) => {
+    const app = options.app ?? currentAppHint();
+    const next: Location = { ...parseHref(href), ...(app ? { app } : {}) };
+    const state = app ? { app } : null;
+    if (options.replace) window.history.replaceState(state, '', href); else window.history.pushState(state, '', href);
     setLocation(next);
   }, []);
   const reload = useCallback(() => setVersion((n) => n + 1), []);

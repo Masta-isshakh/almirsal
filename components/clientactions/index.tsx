@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import type { ActionDef } from '@engine/registry/types';
-import { rpc } from '@/lib/client/rpc';
 import { useT } from '@/lib/client/i18n';
-import { useActions } from '@/lib/client/actions';
 import { useNavigation } from '@/lib/client/navigation';
 import { useUi } from '../webclient/ui';
 import type { SessionInfo } from '../webclient/WebClient';
@@ -14,6 +11,7 @@ import { JournalCreateWizard } from './JournalCreateWizard';
 import { Discuss } from './Discuss';
 import { Dashboards } from './Dashboards';
 import { Documents } from './Documents';
+import { GreenSavings } from './GreenSavings';
 
 /**
  * Client actions (`ir.actions.client`, C-8): the tag names the screen.
@@ -80,22 +78,18 @@ function ImportGuide() {
 }
 
 /** A URL bound to an `ir.actions.server`: run it and follow its result. */
-export function ServerActionPage({ action }: { action: ActionDef }) {
+/**
+ * A menu bound to an `ir.actions.report`: Odoo renders the qweb-html report
+ * in place. The export has one (Sign › Reports › Green Savings).
+ */
+export function ReportAction({ action }: { action: ActionDef }) {
   const t = useT();
-  const { doAction } = useActions();
-  const ui = useUi();
-  const ran = useRef(false);
-  useEffect(() => {
-    if (ran.current) return;
-    ran.current = true;
-    rpc<Record<string, unknown>>('runServerAction', null, { id: String(action.id) })
-      .then((result) => doAction(result, {}))
-      .catch((error) => ui.notify({ type: 'warning', message: String((error as Error).message ?? error) }));
-  }, [action.id, doAction, ui]);
+  if (action.reportName === 'sign.green_savings_report') return <GreenSavings />;
   return (
-    <div className="p-5 text-center text-muted">
-      <i className="fa fa-circle-o-notch fa-spin fa-2x d-block mb-3 opacity-50" aria-hidden="true" />
-      {t(action.name)}
+    <div className="o_report_page p-5 text-center text-muted">
+      <i className="fa fa-print fa-3x d-block mb-3 opacity-50" aria-hidden="true" />
+      <h2 className="fs-4">{t(action.name)}</h2>
+      <p>{t({ en: 'This report prints from a record: open one and use its Print menu.', ar: 'يُطبع هذا التقرير من سجل: افتح سجلاً واستخدم قائمة الطباعة.' })}</p>
     </div>
   );
 }

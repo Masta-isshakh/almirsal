@@ -32,14 +32,16 @@ const SERVER_ACTIONS: Record<string, (env: Environment) => Promise<Result> | Res
     const row = await env.cr.query<{ id: number }>(`SELECT id FROM knowledge_article WHERE coalesce(active, true) ORDER BY write_date DESC NULLS LAST, id DESC LIMIT 1`).catch(() => ({ rows: [] as { id: number }[] }));
     return windowAction('knowledge.article', { en: 'Articles', ar: 'المقالات' }, { view_mode: 'kanban,list,form', ...(row.rows[0] ? { res_id: Number(row.rows[0].id), view_mode: 'form' } : {}) });
   },
-  // Employees › Learning › Certifications
-  'hr_skills.action_server_hr_employee_skill_certification': () => windowAction('hr.resume.line', { en: 'Certifications', ar: 'الشهادات' }, { domain: [['display_type', '=', 'certification']], context: { default_display_type: 'certification' } }),
+  // Employees › Learning › Certifications — the export has no `display_type` on resume lines:
+  // a certification is a line with a certificate file or a "Certification" line type.
+  'hr_skills.action_server_hr_employee_skill_certification': () => windowAction('hr.resume.line', { en: 'Certifications', ar: 'الشهادات' }, { domain: ['|', ['certificate_file', '!=', false], ['line_type_id.name', 'ilike', 'certif']] }),
   'hr_skills.action_open_skills_log_department': () => windowAction('hr.employee.skill.report', { en: 'Skill History Report', ar: 'تقرير سجل المهارات' }, { view_mode: 'pivot,list' }),
   // Approvals › Open Approval Category (dashboard)
   'approvals.action_open_approval_category': () => windowAction('approval.category', { en: 'Approvals', ar: 'الموافقات' }, { view_mode: 'kanban,list,form' }),
   // Attendances › Kiosk
   'hr_attendance.action_try_kiosk': async (env) => ({ type: 'ir.actions.act_url', url: `/kiosk/${await kioskKey(env)}`, target: 'new' }),
-  'hr_attendance.open_kiosk_url': async (env) => ({ type: 'ir.actions.act_url', url: `/kiosk/${await kioskKey(env)}`, target: 'new' }),
+  // Kiosk Mode opens in this tab (Odoo's `target: 'self'`); Try kiosk keeps Settings open.
+  'hr_attendance.open_kiosk_url': async (env) => ({ type: 'ir.actions.act_url', url: `/kiosk/${await kioskKey(env)}`, target: 'self' }),
 };
 
 export async function runServerAction(env: Environment, id: string): Promise<Result> {

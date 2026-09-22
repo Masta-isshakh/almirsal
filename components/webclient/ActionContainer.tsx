@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SearchArch, SearchFilter, SearchGroupBy } from '@engine/registry/arch';
 import type { Domain, ViewType } from '@engine/registry/types';
@@ -28,7 +27,8 @@ import { GridView } from '../views/GridView';
 import { HierarchyView } from '../views/HierarchyView';
 import { ListActions } from '../views/ListActions';
 import { UnsupportedView } from '../views/UnsupportedView';
-import { ClientAction, ServerActionPage } from '../clientactions';
+import { ClientAction, ReportAction } from '../clientactions';
+import { ServerActionRunner, UrlActionPage } from './ServerActionRunner';
 import { RECORD_CACHE_MS, formSpecification, listFieldNames } from '@/lib/client/arch';
 import {
   EMPTY_STATE, facetsFromState, periodOptions, safeEval, stateFromContext, textFacetDomain,
@@ -308,7 +308,9 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
 
   // Client actions render their own screen; server actions run and follow their result.
   if (action.type === 'client') return <CurrencyProvider><ClientAction action={action} context={actionContext} user={user} /></CurrencyProvider>;
-  if (action.type === 'server') return <ServerActionPage action={action} />;
+  if (action.type === 'server') return <ServerActionRunner resolution={resolution} query={urlQuery} user={user} render={(inline) => <ActionContainer resolution={inline} query={urlQuery} user={user} />} />;
+  if (action.type === 'url') return <UrlActionPage action={action} />;
+  if (action.type === 'report') return <ReportAction action={action} />;
 
   return (
     <CurrencyProvider>
@@ -322,7 +324,7 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
             <div className="o_breadcrumb">
               {isForm && !isSettings ? (
                 <>
-                  <Link href={`/odoo/${resolution.slug}`}>{t(action.name)}</Link>
+                  <a href={`/odoo/${resolution.slug}`}>{t(action.name)}</a>
                   <span className="o_breadcrumb_sep">/</span>
                   <span className="active" id="o_breadcrumb_current">{resolution.isNew ? t('New') : '…'}</span>
                 </>

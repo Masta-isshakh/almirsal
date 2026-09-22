@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { I18n, Lang } from '@engine/i18n/types';
 import type { MenuDef } from '@engine/registry/types';
 import type { Resolution } from '@/lib/server/actions';
@@ -13,13 +13,15 @@ import { SessionProvider } from './session';
 import { ActionRunnerProvider } from '@/lib/client/actions';
 import { ThemeProvider } from './theme';
 import { CommandPalette } from './CommandPalette';
-import { NavigationProvider, parseHref, resolveLocation, seedResolution, useNavigation, type Location } from '@/lib/client/navigation';
+import { CURRENT_APP_KEY, NavigationProvider, parseHref, resolveLocation, seedResolution, useNavigation, type Location } from '@/lib/client/navigation';
 import { ProgressBar } from './ProgressBar';
 import { ShortcutsHelp } from './Shortcuts';
 
 export interface AppEntry {
   id: number;
   xmlId: string;
+  /** The root menu's own action (the app's landing action), if any. */
+  actionId?: number | string;
   name: I18n;
   slug: string;
   href: string;
@@ -80,6 +82,54 @@ function keyOf(location: Location): string {
   return `${location.path.join('/')}?${new URLSearchParams(location.query).toString()}`;
 }
 
+/** Action ids reachable from each app's menu tree (the root's own action included). */
+function actionsByApp(apps: AppEntry[]): Map<number, Set<string>> {
+  const out = new Map<number, Set<string>>();
+  for (const app of apps) {
+    const ids = new Set<string>();
+    if (app.actionId !== undefined) ids.add(String(app.actionId));
+    const walk = (menu: MenuDef) => { if (menu.actionId !== undefined) ids.add(String(menu.actionId)); menu.children.forEach(walk); };
+    app.children.forEach(walk);
+    out.set(app.id, ids);
+  }
+  return out;
+}
+
+/**
+ * Which app's sections the navbar shows — Odoo's menu service keeps the app
+ * you are in: an action reachable from several apps (Products under Sales,
+ * Accounting and Purchase; Payments…) does not switch the navbar to the
+ * first app that lists it, and neither does a server action that opens
+ * another app's action (Appointments › Resources opens the calendar).
+ * Priority: the app the move names (a navbar / home-menu / palette click,
+ * or the app kept by a programmatic move), then the current app when it can
+ * reach the action, then the app remembered in this tab, then the action's
+ * first app; actions without a menu keep the current app.
+ */
+function useCurrentApp(apps: AppEntry[], resolution: Resolution, hint: number | undefined): number | null {
+  const reachable = useMemo(() => actionsByApp(apps), [apps]);
+  const initial = resolution.kind === 'action' ? resolution.app?.id ?? null : null;
+  const [appId, setAppId] = useState<number | null>(initial);
+  useEffect(() => {
+    if (resolution.kind !== 'action') return;
+    const actionId = String(resolution.action.id);
+    const reaches = (id: number | null | undefined) => id !== null && id !== undefined && reachable.get(id)?.has(actionId) === true;
+    let remembered: number | null = null;
+    try { remembered = Number(sessionStorage.getItem(CURRENT_APP_KEY)) || null; } catch { remembered = null; }
+    setAppId((current) => {
+      let next: number | null;
+      if (hint && reachable.has(hint)) next = hint;
+      else if (reaches(current)) next = current;
+      else if (reaches(remembered)) next = remembered;
+      else if (resolution.app) next = resolution.app.id;
+      else next = current ?? remembered;
+      try { if (next) sessionStorage.setItem(CURRENT_APP_KEY, String(next)); } catch { /* private mode */ }
+      return next;
+    });
+  }, [resolution, hint, reachable]);
+  return appId;
+}
+
 function Shell({ user, apps, menuHrefs, initialResolution }: { user: SessionInfo; apps: AppEntry[]; menuHrefs: Record<number, string>; initialResolution: Resolution }) {
   const ui = useUi();
   const { resolution, resolving } = useResolution(initialResolution);
@@ -108,9 +158,8 @@ function Shell({ user, apps, menuHrefs, initialResolution }: { user: SessionInfo
     return () => window.removeEventListener('keydown', onKey);
   }, [homeOpen, resolution.kind, ui]);
 
-  const currentApp = resolution.kind === 'action' && resolution.app
-    ? apps.find((app) => app.id === resolution.app!.id) ?? null
-    : null;
+  const appId = useCurrentApp(apps, resolution, location.app);
+  const currentApp = appId === null ? null : apps.find((app) => app.id === appId) ?? null;
 
   return (
     <div className="o_web_client">
