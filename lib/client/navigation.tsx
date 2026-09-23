@@ -26,7 +26,8 @@ export interface Location {
 
 interface Navigation {
   location: Location;
-  navigate: (href: string, options?: { replace?: boolean; app?: number }) => void;
+  /** `app: null` lets the target action choose the app (a URL action opening another app's page). */
+  navigate: (href: string, options?: { replace?: boolean; app?: number | null }) => void;
   /** Re-resolve the current location (what `router.refresh()` used to do). */
   reload: () => void;
   version: number;
@@ -89,8 +90,9 @@ export function NavigationProvider({ initial, children }: { initial: Location; c
     return () => { window.removeEventListener('popstate', onPop); document.removeEventListener('click', onClick); };
   }, []);
 
-  const navigate = useCallback((href: string, options: { replace?: boolean; app?: number } = {}) => {
-    const app = options.app ?? currentAppHint();
+  const navigate = useCallback((href: string, options: { replace?: boolean; app?: number | null } = {}) => {
+    const app = options.app === null ? undefined : options.app ?? currentAppHint();
+    if (options.app === null) { try { sessionStorage.removeItem(CURRENT_APP_KEY); } catch { /* private mode */ } }
     const next: Location = { ...parseHref(href), ...(app ? { app } : {}) };
     const state = app ? { app } : null;
     if (options.replace) window.history.replaceState(state, '', href); else window.history.pushState(state, '', href);

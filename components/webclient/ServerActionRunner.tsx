@@ -78,7 +78,7 @@ export function ServerActionRunner({ resolution, query, user, render }: {
   if (inline) return <>{render(inline)}</>;
   if (opened) {
     return (
-      <div className="p-5 text-center">
+      <div className="o_action o_action_result p-5 text-center">
         <i className="fa fa-external-link fa-3x d-block mb-3 text-muted opacity-50" aria-hidden="true" />
         <h2 className="fs-4 mb-2">{t(action.name)}</h2>
         <p className="text-muted">{t({ en: 'Opened in a new tab. If your browser blocked it, open it from here.', ar: 'تم فتحه في تبويب جديد. إذا منعه المتصفح، افتحه من هنا.' })}</p>
@@ -87,7 +87,7 @@ export function ServerActionRunner({ resolution, query, user, render }: {
     );
   }
   return (
-    <div className="p-5 text-center text-muted">
+    <div className="o_action o_action_result p-5 text-center text-muted">
       <i className="fa fa-circle-o-notch fa-spin fa-2x d-block mb-3 opacity-50" aria-hidden="true" />
       {t(action.name)}
     </div>
@@ -98,6 +98,8 @@ export function ServerActionRunner({ resolution, query, user, render }: {
  * An `ir.actions.act_url` reached by URL (Discuss › Configuration › Settings
  * is `/odoo/settings#discuss_setting`): in-app URLs are followed by the
  * client router; external ones open in a new tab and leave the link here.
+ * The target page picks its own app (Settings here), as Odoo does when a
+ * module's Configuration menu opens the settings page.
  */
 export function UrlActionPage({ action }: { action: ActionDef }) {
   const t = useT();
@@ -105,19 +107,19 @@ export function UrlActionPage({ action }: { action: ActionDef }) {
   const url = String(action.url ?? '');
   const inApp = url.startsWith('/odoo');
   useEffect(() => {
-    if (inApp) navigate(url.split('#')[0], { replace: true });
+    if (inApp) navigate(url.split('#')[0], { replace: true, app: null });
     else if (url) window.open(url, '_blank');
   }, [inApp, navigate, url]);
   if (inApp) {
     return (
-      <div className="p-5 text-center text-muted">
+      <div className="o_action o_action_result p-5 text-center text-muted">
         <i className="fa fa-circle-o-notch fa-spin fa-2x d-block mb-3 opacity-50" aria-hidden="true" />
         {t(action.name)}
       </div>
     );
   }
   return (
-    <div className="p-5 text-center">
+    <div className="o_action o_action_result p-5 text-center">
       <i className="fa fa-external-link fa-3x d-block mb-3 text-muted opacity-50" aria-hidden="true" />
       <h2 className="fs-4 mb-2">{t(action.name)}</h2>
       <a className="btn btn-primary" href={url} target="_blank" rel="noreferrer">{t({ en: 'Open', ar: 'فتح' })}</a>

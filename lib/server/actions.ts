@@ -49,9 +49,20 @@ function findAction(segment: string): ActionDef | undefined {
   return Object.values(registry.actions).find((action) => action.path === segment);
 }
 
-/** Depth-first search for the first menu bound to an action. */
+/**
+ * The menu an action belongs to, and the app that menu lives in.
+ *
+ * An app's own landing action wins: Appointments, Employees and Fleet are
+ * listed inside Calendar, Planning and Accounting as well, and a plain
+ * depth-first search would hand `/odoo/appointments` to Calendar — so
+ * opening an app by its URL would show another app's navbar. Otherwise the
+ * first menu bound to the action decides, as Odoo does.
+ */
 export function menuForAction(actionId: number | string): { menu: MenuDef; app: MenuDef } | null {
   const registry = getRegistry();
+  for (const root of registry.menus) {
+    if (root.actionId !== undefined && String(root.actionId) === String(actionId)) return { menu: root, app: root };
+  }
   const walk = (menu: MenuDef, app: MenuDef): { menu: MenuDef; app: MenuDef } | null => {
     if (menu.actionId !== undefined && String(menu.actionId) === String(actionId)) return { menu, app };
     for (const child of menu.children) {

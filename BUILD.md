@@ -468,7 +468,24 @@ same tab (Odoo's `target: 'self'`), a server action that opens a new tab
 shows an "Open" card instead of an endless spinner, `ir.actions.act_url`
 menus (Discuss › Configuration › Settings) are followed by the client
 router, and the one menu bound to an `ir.actions.report` (Sign › Reports ›
-Green Savings) renders a page (`components/clientactions/GreenSavings.tsx`). `scripts/dev/nav-check.js`
+Green Savings) renders a page (`components/clientactions/GreenSavings.tsx`).
+An `act_url` that points at another app's page (Discuss › Configuration ›
+Settings → `/odoo/settings`) hands the app choice to that page, so the
+navbar becomes Settings as in Odoo, while every other programmatic move
+keeps the app you are in.
+
+An app's own landing action now wins when an action is listed in several
+apps (`menuForAction` in `lib/server/actions.ts`): Appointments, Employees
+and Fleet also appear inside Calendar, Planning and Accounting, so opening
+`/odoo/appointments` used to show Calendar's navbar.
+
+Running the checks: `scripts/dev/nav-check.js` needs a server that is not the
+one under `next dev` in the same folder. Two Next processes in one project
+share `.next/`, and the loser starts serving 404 chunks — the page then
+renders but never hydrates, which looks exactly like "the menus do nothing".
+Use a production build on another port, or mirror the project into a scratch
+folder (copy the source folders, link `node_modules`, leave
+`amplify_outputs.json` out so it runs on PGlite) and start `next dev` there. `scripts/dev/nav-check.js`
 (playwright-core, ad hoc like the crawl) clicks through every app × every
 menu item with client-side navigation and asserts the view rendered, the URL
 changed, the dropdown closed and the app stayed — the page-load crawl cannot
