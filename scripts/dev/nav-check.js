@@ -49,6 +49,21 @@ const SCREENS = ['.o_list_view', '.o_form_view', '.o_kanban_view', '.o_pivot_vie
     url: location.pathname,
   }), SCREENS).catch(() => ({ found: [], brand: '', url: '' }));
 
+  // Is the open section really on screen? A menu can sit in the layout and
+  // still be painted over or clipped away by an ancestor, which is how the
+  // navbar dropdowns were invisible while every check passed. Ask the browser
+  // what is painted at the menu's own centre.
+  const sectionPainted = () => page.evaluate(() => {
+    const menu = document.querySelector('.o_menu_sections .o_dropdown_menu');
+    if (!menu) return 'no menu';
+    const r = menu.getBoundingClientRect();
+    if (r.width < 40 || r.height < 20) return `menu is ${Math.round(r.width)}x${Math.round(r.height)}`;
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + Math.min(r.height / 2, 30));
+    if (!top || !(menu === top || menu.contains(top))) return `menu is behind ${top ? top.tagName + '.' + String(top.className).split(' ')[0] : 'nothing'}`;
+    if (!menu.querySelector('a')) return 'menu has no items';
+    return null;
+  }).catch(() => 'menu could not be read');
+
   // Wait for the move to land: the network goes quiet, then a screen appears.
   // A dev server compiles a route on its first visit and a full page load
   // (the kiosk) starts late, so an empty screen gets a second look.
@@ -152,7 +167,11 @@ const SCREENS = ['.o_list_view', '.o_form_view', '.o_kanban_view', '.o_pivot_vie
         for (let attempt = 0; attempt < 3; attempt++) {
           await entry().click({ timeout: 15000 }).catch(() => {});
           const ok = await page.locator('.o_menu_sections .o_dropdown_menu').first().waitFor({ state: 'visible', timeout: 4000 }).then(() => true).catch(() => false);
-          if (ok) return true;
+          if (ok) {
+            const hidden = await sectionPainted();
+            if (hidden) { problems.push(`${app} > ${label}: the section opened but ${hidden}`); }
+            return true;
+          }
           await page.waitForTimeout(400);
         }
         return false;

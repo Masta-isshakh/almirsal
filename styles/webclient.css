@@ -39,13 +39,17 @@
 .o_main_navbar {
   height: var(--o-height-navbar); background: var(--o-white); border-bottom: var(--o-border-width) solid var(--o-border);
   display: flex; align-items: center; padding: 0 8px; gap: 2px; flex: 0 0 auto;
+  position: relative; z-index: 1000;
 }
 .o_navbar_apps_menu { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--o-radius); color: var(--o-text); }
 .o_navbar_apps_menu:hover { background: var(--o-gray-200); }
 .o_navbar_apps_menu img { width: 26px; height: 26px; border-radius: var(--o-radius-avatar-navbar); }
 .o_menu_brand { font-size: var(--o-font-size-navbar-app); line-height: var(--o-line-height-navbar-app); font-weight: 500; color: var(--o-text); padding: 0 8px; text-decoration: none; white-space: nowrap; }
 .o_menu_brand:hover { color: var(--o-text); }
-.o_menu_sections { display: flex; align-items: center; gap: 0; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+/* The sections must not clip their own dropdowns: what does not fit is
+   moved into the "more" menu by the navbar, as Odoo does. */
+.o_menu_sections { display: flex; align-items: center; gap: 0; flex: 1 1 auto; min-width: 0; overflow: visible; }
+.o_menu_sections_more .o_dropdown_menu { max-height: calc(100vh - 60px); overflow-y: auto; }
 .o_nav_entry { font-size: 14px; color: var(--o-text); padding: 6px 8px; border-radius: var(--o-radius); text-decoration: none; white-space: nowrap; background: none; border: 0; line-height: 1.5; }
 .o_nav_entry:hover, .o_nav_entry[aria-expanded="true"] { background: var(--o-gray-200); color: var(--o-text); }
 .o_menu_systray { display: flex; align-items: center; gap: 2px; margin-inline-start: auto; }
@@ -60,7 +64,7 @@
 /* Dropdowns */
 .o_dropdown { position: relative; }
 .o_dropdown_menu {
-  position: absolute; top: 100%; inset-inline-start: 0; z-index: 1050; min-width: 200px; background: var(--o-white);
+  position: absolute; top: 100%; inset-inline-start: 0; z-index: 1050; max-height: calc(100vh - 60px); overflow-y: auto; min-width: 200px; background: var(--o-white);
   border-radius: var(--o-radius-panel); box-shadow: var(--o-shadow-panel); border: var(--o-border-width) solid var(--o-border); padding: 4px 0; margin-top: 2px;
 }
 .o_dropdown_menu.o_dropdown_end { inset-inline-start: auto; inset-inline-end: 0; }

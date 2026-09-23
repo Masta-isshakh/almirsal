@@ -479,6 +479,17 @@ apps (`menuForAction` in `lib/server/actions.ts`): Appointments, Employees
 and Fleet also appear inside Calendar, Planning and Accounting, so opening
 `/odoo/appointments` used to show Calendar's navbar.
 
+The navbar dropdowns were rendered but invisible: `.o_menu_sections` carried
+`overflow: hidden`, which clipped each open section to the 33px navbar strip.
+Every automated check passed, because a clipped menu still has a box and
+still answers "visible". The sections no longer clip, the navbar sits above
+the content, and — as in Odoo — the sections that do not fit the width move
+into a "more" (⋯) menu, measured once and recomputed on resize
+(`MenuSections` in `Navbar.tsx`). Both checks now ask the browser what is
+painted at a menu's own centre instead of trusting the DOM:
+`scripts/dev/overlay-check.js` does it for every dropdown on nine screens
+(88 overlays, EN + AR), and `nav-check.js` for each open section.
+
 Running the checks: `scripts/dev/nav-check.js` needs a server that is not the
 one under `next dev` in the same folder. Two Next processes in one project
 share `.next/`, and the loser starts serving 404 chunks — the page then
