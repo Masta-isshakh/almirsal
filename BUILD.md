@@ -490,6 +490,25 @@ painted at a menu's own centre instead of trusting the DOM:
 `scripts/dev/overlay-check.js` does it for every dropdown on nine screens
 (88 overlays, EN + AR), and `nav-check.js` for each open section.
 
+Arabic coverage: the export ships part of the interface untranslated (Odoo's
+own Arabic pack does not cover it), so switching to Arabic left menus, field
+labels, settings text and whole screens in English — "Depreciation Models"
+in Accounting › Configuration, and the accounting dashboard almost entirely.
+`messages/ar.json` is the catalog `useT()` falls back to when an export
+string has no Arabic, and it gained about 900 entries: 21 menus, 57 action
+titles, 292 field labels, 272 in-view strings, 64 selection values and 128
+strings our own screens pass to `t('…')`. Eleven models the export left
+named after their table (`documents.document`) got real names in
+`registry/extra-models.json`, and 57 catalog entries that the export had
+mis-paired — "Access Groups" mapped to "Configuration Wizard" — were
+translated or dropped. `scripts/dev/i18n-check.mts` walks the registry and
+the source for strings with no Arabic (brands, IANA time zones, EU tax and
+routing codes are listed as staying Latin), and `scripts/dev/ar-scan.js`
+reads the running client in Arabic and reports any label still in Latin
+script. Seeded record names (journal names, chart of accounts) are data from
+an English export, not labels; the accounting dashboard renders journal
+titles through the catalog, as Odoo's language pack does.
+
 Running the checks: `scripts/dev/nav-check.js` needs a server that is not the
 one under `next dev` in the same folder. Two Next processes in one project
 share `.next/`, and the loser starts serving 404 chunks — the page then

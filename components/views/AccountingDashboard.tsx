@@ -61,7 +61,7 @@ export function AccountingDashboard({ domain }: { domain: unknown[] }) {
         <div key={card.id} className="o_journal_card" style={{ borderInlineStartColor: card.color ? `var(--o-color-${card.color})` : 'var(--o-border)' }}>
           <div className="o_journal_head">
             <div>
-              <div className="o_journal_title" onClick={() => openMoves(card, [], card.name)}>{card.name}</div>
+              <div className="o_journal_title" onClick={() => openMoves(card, [], card.name)}>{t(card.name)}</div>
               <div className="small text-muted">{t(TYPE_LABEL[card.type] ?? { en: card.type, ar: card.type })}</div>
             </div>
             <Dropdown end toggle={() => <span className="o_journal_menu_toggle" title={t('Menu')}><i className="fa fa-ellipsis-v" /></span>}>
