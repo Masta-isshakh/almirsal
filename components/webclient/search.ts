@@ -1,5 +1,5 @@
 import type { SearchArch, SearchFilter, SearchGroupBy } from '@engine/registry/arch';
-import type { Domain } from '@engine/registry/types';
+import type { Domain, FieldDef } from '@engine/registry/types';
 import type { I18n, Lang } from '@engine/i18n/types';
 import { PyDate, applyRelativeDelta, RelativeDelta } from '@engine/expr/pydate';
 import { evaluate, makeScope } from '@engine/expr/evaluate';
@@ -18,6 +18,8 @@ export interface Facet {
   values: (I18n | string)[];
   domain?: Domain;
   groupBy?: string;
+  /** The filters this facet stands for (a group of them reads as one facet). */
+  names?: string[];
 }
 
 /** What a favorite stores (JSON in `ir.filters.context`). */
@@ -89,28 +91,86 @@ export function dateFilterDomain(field: string, keys: string[], options: PeriodO
   return [...Array(leaves.length - 1).fill('|'), ...leaves.flat()];
 }
 
+/** The filters of a search view, split into the groups its separators make. */
+export function filterGroups(search: SearchArch): SearchFilter[][] {
+  const groups: SearchFilter[][] = [[]];
+  for (const item of search.filters) {
+    if ('separator' in item) { groups.push([]); continue; }
+    // A date filter is its own question (it has its own facet), so it never
+    // joins a group.
+    if (item.date) continue;
+    groups[groups.length - 1].push(item);
+  }
+  return groups.filter((group) => group.length);
+}
+
+/** `a`, or `a | b | c` — Odoo's prefix form. */
+export function orDomains(domains: Domain[]): Domain {
+  const real = domains.filter((domain) => domain.length);
+  if (real.length <= 1) return real[0] ?? [];
+  return [...Array(real.length - 1).fill('|'), ...real.flat()] as Domain;
+}
+
+/**
+ * What to call a filter or a group by. Odoo's views leave the label off about
+ * thirty entries (`<filter name="groupby_category" context="{'group_by':
+ * 'category'}"/>`), and Odoo then shows the field's own label — so a technical
+ * name never reaches the screen.
+ */
+export function entryLabel(
+  entry: { name?: string; string?: I18n; context?: string; date?: string },
+  fields: Record<string, FieldDef> = {},
+): I18n | string {
+  if (entry.string) return entry.string;
+  const grouped = entry.context ? /'group_by'\s*:\s*'([^']+)'/.exec(entry.context)?.[1] : undefined;
+  const field = fields[(grouped ?? entry.date ?? '').split(':')[0]];
+  if (field?.label) return field.label;
+  // Last resort: the name as words, titled the way Odoo labels things, so the
+  // Arabic side can translate it like any other label.
+  const words = (entry.name ?? '')
+    .replace(/^(group_?by_?|group_|filter_)/, '')
+    .replace(/_ids?$/, '')
+    .replace(/^my(?=[a-z])/, 'my_')
+    .split('_')
+    .filter(Boolean);
+  return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || (entry.name ?? '');
+}
+
 /** Rebuild the facet list from a serialisable state and the search arch. */
-export function facetsFromState(state: SearchState, search: SearchArch | null, env: EvalEnv, today: PyDate, lang: Lang): Facet[] {
+export function facetsFromState(state: SearchState, search: SearchArch | null, env: EvalEnv, today: PyDate, lang: Lang, fields: Record<string, FieldDef> = {}): Facet[] {
   const facets: Facet[] = [];
   if (!search) return facets;
   const options = periodOptions(today, lang);
-  for (const name of state.filters) {
-    const filter = search.filters.find((item): item is SearchFilter => 'name' in item && item.name === name);
-    if (!filter) continue;
-    facets.push({ id: `filter:${name}`, kind: 'filter', label: filter.string ?? name, values: [filter.string ?? name], domain: (safeEval(filter.domain, env) as Domain) ?? [] });
+  // Odoo reads the filters between two separators as one question: picking
+  // Invoices and Receipts asks for either, not for both at once. Each group of
+  // chosen filters is therefore one facet, and its domains are OR-ed.
+  for (const group of filterGroups(search)) {
+    const chosen = group.filter((filter) => state.filters.includes(filter.name));
+    if (!chosen.length) continue;
+    const domains = chosen.map((filter) => (safeEval(filter.domain, env) as Domain) ?? []).filter((domain) => domain.length);
+    facets.push({
+      id: `filter:${chosen.map((filter) => filter.name).join('|')}`,
+      kind: 'filter',
+      label: entryLabel(chosen[0], fields),
+      values: chosen.map((filter) => entryLabel(filter, fields)),
+      domain: orDomains(domains),
+      names: chosen.map((filter) => filter.name),
+    });
   }
   for (const [name, keys] of Object.entries(state.dates)) {
     const filter = search.filters.find((item): item is SearchFilter => 'name' in item && item.name === name);
     if (!filter?.date || keys.length === 0) continue;
     facets.push({
-      id: `date:${name}`, kind: 'date', label: filter.string ?? name,
+      id: `date:${name}`, kind: 'date', label: entryLabel(filter, fields),
       values: keys.map((key) => options.find((option) => option.key === key)?.label ?? key),
       domain: dateFilterDomain(filter.date, keys, options),
     });
   }
   for (const name of state.groupbys) {
     const group = search.groupbys.find((item) => item.name === name);
-    if (group) facets.push({ id: `groupby:${name}`, kind: 'groupby', label: group.string ?? name, values: [group.string ?? name], groupBy: groupByField(group) });
+    if (!group) continue;
+    const label = entryLabel(group, fields);
+    facets.push({ id: `groupby:${name}`, kind: 'groupby', label, values: [label], groupBy: groupByField(group) });
   }
   state.texts.forEach((text, index) => {
     facets.push({ id: `field:${index}:${text.value}`, kind: 'field', label: text.label, values: [text.value], domain: text.domain });

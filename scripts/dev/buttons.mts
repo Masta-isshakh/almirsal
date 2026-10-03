@@ -9,7 +9,12 @@ const walk = (nodes: any[], model: string, where: string) => {
   for (const n of nodes ?? []) {
     if (n.kind === 'button' && n.name) {
       const type = n.type ?? 'object';
-      const implemented = type === 'object' ? Boolean(hooksFor(model).methods?.[n.name]) : type === 'action' ? Boolean(r.actions[n.name] || Object.values(r.actions).some((a: any) => a.xmlId === n.name)) : false;
+      // Odoo writes \ for a method and \ for an
+      // action, but a few views carry other spellings, so a name that names a
+      // method counts whatever the type says.
+      const isMethod = Boolean(hooksFor(model).methods?.[n.name]);
+      const isAction = Boolean(r.actions[n.name] || Object.values(r.actions).some((a: any) => a.xmlId === n.name));
+      const implemented = type === 'action' ? isAction || isMethod : isMethod || isAction;
       (out[model] ??= {})[`${type}:${n.name}`] = { label: n.string?.en ?? n.label?.en ?? n.icon ?? '', type, where, implemented };
     }
     if (n.children) walk(n.children, model, where);
@@ -21,6 +26,10 @@ for (const [key, v] of Object.entries(r.views) as any) {
   if (v.arch.type === 'form') { walk(v.arch.header ?? [], v.model, `${key}:header`); walk(v.arch.body ?? [], v.model, `${key}:body`); }
   if (v.arch.type === 'list') walk(v.arch.headerButtons ?? [], v.model, `${key}:list-header`);
   if (v.arch.type === 'kanban') { walk(v.arch.templates ? Object.values(v.arch.templates).flat() as any[] : [], v.model, `${key}:kanban`); }
+  // A view can carry a method of its own that a click on the record runs
+  // (`<kanban action="…" type="object">` on the Sales Teams board); it is a
+  // button in everything but the tag.
+  if (v.arch.action) walk([{ kind: 'button', name: v.arch.action, type: v.arch.actionType ?? 'object', string: { en: `${v.arch.type} click` } }], v.model, `${key}:${v.arch.type}-click`);
 }
 let total = 0, done = 0;
 const summary: string[] = [];
@@ -31,4 +40,4 @@ for (const [model, buttons] of Object.entries(out).sort()) {
 }
 console.log(`buttons: ${total}, implemented: ${done}`);
 console.log(summary.filter((s) => !s.endsWith(': ')).join('\n'));
-writeFileSync(process.argv[2], JSON.stringify(out, null, 1));
+if (process.argv[2]) writeFileSync(process.argv[2], JSON.stringify(out, null, 1));

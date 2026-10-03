@@ -23,7 +23,7 @@ const clean = (s) => (s || '').replace(/\s+/g, ' ').trim().slice(0, 160);
 // Anything that counts as "a screen rendered".
 const SCREENS = ['.o_list_view', '.o_form_view', '.o_kanban_view', '.o_pivot_view', '.o_graph_view', '.o_activity_view',
   '.o_calendar_view', '.o_gantt_view', '.o_cohort_view', '.o_map_view', '.o_grid_view', '.o_hierarchy_view',
-  '.o_account_report', '.o_settings', '.o_discuss', '.o_discuss_settings', '.o_dashboards', '.o_documents',
+  '.o_account_report', '.o_settings', '.o_discuss', '.o_discuss_settings', '.o_dashboards', '.o_documents', '.o_knowledge',
   '.o_report_page', '.o_kiosk_main', '.o_action', '.o_client_action', '.o_view_controller'];
 
 (async () => {

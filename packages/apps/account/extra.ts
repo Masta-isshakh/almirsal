@@ -324,9 +324,19 @@ export function registerAccountExtra(): void {
 
   registerModelHooks('account.change.lock.date', {
     defaults: async (env) => {
-      const row = await env.cr.query<Row>(`SELECT fiscalyear_lock_date, tax_lock_date, sale_lock_date, purchase_lock_date, hard_lock_date FROM res_company WHERE id = $1`, [env.companyId]).catch(() => ({ rows: [] as Row[] }));
-      const c = row.rows[0] ?? {};
-      return { company_id: env.companyId, fiscalyear_lock_date: c.fiscalyear_lock_date ?? false, tax_lock_date: c.tax_lock_date ?? false, sale_lock_date: c.sale_lock_date ?? false, purchase_lock_date: c.purchase_lock_date ?? false, hard_lock_date: c.hard_lock_date ?? false, exception_applies_to: 'me', exception_duration: '24h' };
+      // Only the lock columns this database actually has: a statement that
+      // names a missing column aborts the whole transaction, and catching the
+      // error in JavaScript does not undo that.
+      const names = ['fiscalyear_lock_date', 'tax_lock_date', 'sale_lock_date', 'purchase_lock_date', 'hard_lock_date']
+        .filter((name) => env.registry.models['res.company']?.fields[name]);
+      const values: Values = { company_id: env.companyId };
+      for (const name of names) values[name] = false;
+      if (names.length) {
+        const row = await env.cr.query<Row>(`SELECT ${names.join(', ')} FROM res_company WHERE id = $1`, [env.companyId]);
+        const company = (row.rows[0] ?? {}) as Record<string, unknown>;
+        for (const name of names) values[name] = company[name] ?? false;
+      }
+      return values;
     },
     methods: {
       change_lock_date: async (env, ids) => {

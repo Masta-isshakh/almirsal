@@ -12,6 +12,24 @@ import { getRegistry } from './registry';
  */
 
 export interface ReportParty { name: string; lines: string[]; vat?: string; email?: string; phone?: string; website?: string }
+
+/**
+ * What "Configure Document Layout" chose (`base.document.layout` writes it on
+ * the company): the logo, the two colours, the font, the tagline, the footer and
+ * the paper format. Odoo's four layouts differ only in how they draw, so the
+ * name travels with the document and the stylesheet does the rest.
+ */
+export interface ReportLayout {
+  style: 'light' | 'boxed' | 'bold' | 'striped';
+  logo?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  font: string;
+  tagline?: string;
+  details?: string;
+  footer?: string;
+  page: { width: number; height: number; margins: { top: number; right: number; bottom: number; left: number } };
+}
 export interface ReportLine { kind: 'product' | 'section' | 'note'; name: string; quantity?: string; price?: string; discount?: string; taxes?: string; subtotal?: string }
 export interface ReportDocument {
   model: string;
@@ -27,6 +45,7 @@ export interface ReportDocument {
   totals: { label: string; value: string; strong?: boolean }[];
   note?: string;
   footer?: string;
+  layout?: ReportLayout;
 }
 
 export interface ReportSpec { reportName: string; model: string; name: I18n }
@@ -71,6 +90,65 @@ async function party(env: Environment, model: 'res.company' | 'res.partner', id:
 
 function tr(lang: Lang, en: string, ar: string): string { return lang === 'ar_001' ? ar : en; }
 
+/** A4 in millimetres, which is what `report.paperformat` measures in. */
+const A4 = { width: 210, height: 297, margins: { top: 20, right: 15, bottom: 20, left: 15 } };
+
+/** The style behind an `external_report_layout_id`, by the view's name. */
+function layoutStyle(key: string): ReportLayout['style'] {
+  if (/boxed/.test(key)) return 'boxed';
+  if (/bold/.test(key)) return 'bold';
+  if (/striped/.test(key)) return 'striped';
+  return 'light';
+}
+
+/** The layout the company saved, with Odoo's defaults where it saved nothing. */
+export async function reportLayout(env: Environment, companyId: number | null): Promise<ReportLayout> {
+  const fields = env.registry.models['res.company'].fields;
+  const wanted = ['logo', 'primary_color', 'secondary_color', 'font', 'external_report_layout_id', 'report_header', 'report_footer', 'company_details', 'paperformat_id']
+    .filter((name) => fields[name]);
+  const [row] = companyId ? await env.sudo().model('res.company').read(companyId, wanted).catch(() => [] as Rec[]) : [];
+  const company = row ?? {};
+  let style: ReportLayout['style'] = 'light';
+  const layoutId = m2oId(company.external_report_layout_id);
+  if (layoutId && env.registry.models['ir.ui.view']) {
+    const [view] = await env.sudo().model('ir.ui.view').read(layoutId, ['key', 'name']).catch(() => [] as Rec[]);
+    style = layoutStyle(`${String(view?.key ?? '')} ${String(view?.name ?? '')}`.toLowerCase());
+  }
+  let page = A4;
+  const formatId = m2oId(company.paperformat_id);
+  if (formatId && env.registry.models['report.paperformat']) {
+    const [format] = await env.sudo().model('report.paperformat').read(formatId, ['format', 'page_width', 'page_height', 'margin_top', 'margin_bottom', 'margin_left', 'margin_right', 'orientation']).catch(() => [] as Rec[]);
+    if (format) {
+      const width = Number(format.page_width) || (format.format === 'Letter' ? 216 : A4.width);
+      const height = Number(format.page_height) || (format.format === 'Letter' ? 279 : A4.height);
+      const landscape = format.orientation === 'Landscape';
+      page = {
+        width: landscape ? height : width,
+        height: landscape ? width : height,
+        margins: {
+          top: Number(format.margin_top) || A4.margins.top,
+          right: Number(format.margin_right) || A4.margins.right,
+          bottom: Number(format.margin_bottom) || A4.margins.bottom,
+          left: Number(format.margin_left) || A4.margins.left,
+        },
+      };
+    }
+  }
+  const text = (value: unknown) => (value === false || value == null || String(value).trim() === '' ? undefined : String(value));
+  const logo = typeof company.logo === 'string' && company.logo.length > 32 ? `data:image/png;base64,${company.logo}` : undefined;
+  return {
+    style,
+    logo,
+    primaryColor: text(company.primary_color) ?? '#714B67',
+    secondaryColor: text(company.secondary_color) ?? '#017E84',
+    font: text(company.font) ?? 'Noto Sans',
+    tagline: text(company.report_header),
+    details: text(company.company_details),
+    footer: text(company.report_footer),
+    page,
+  };
+}
+
 async function currencyOf(env: Environment, value: unknown): Promise<CurrencyDef> {
   const id = m2oId(value);
   if (!id) return { name: '', symbol: '', position: 'after', decimalPlaces: 2, rounding: 0.01 };
@@ -80,9 +158,13 @@ async function currencyOf(env: Environment, value: unknown): Promise<CurrencyDef
 
 export async function renderReport(env: Environment, spec: ReportSpec, id: number): Promise<ReportDocument> {
   const lang = env.lang;
-  if (spec.model === 'sale.order') return saleOrder(env, spec, id, lang);
-  if (spec.model === 'account.move') return invoice(env, spec, id, lang);
-  return generic(env, spec, id, lang);
+  const document = spec.model === 'sale.order' ? await saleOrder(env, spec, id, lang)
+    : spec.model === 'account.move' ? await invoice(env, spec, id, lang)
+      : await generic(env, spec, id, lang);
+  // The company of the record, so a second company prints its own layout.
+  const [row] = await env.sudo().model(spec.model).read(id, env.registry.models[spec.model].fields.company_id ? ['company_id'] : []).catch(() => [] as Rec[]);
+  document.layout = await reportLayout(env, m2oId(row?.company_id) ?? env.companyId);
+  return document;
 }
 
 async function saleOrder(env: Environment, spec: ReportSpec, id: number, lang: Lang): Promise<ReportDocument> {

@@ -86,21 +86,6 @@ async function invoiceOrder(env: Environment, orderId: number, mode: 'delivered'
 
 export function registerSaleInvoicing(): void {
   registerModelHooks('sale.order', {
-    computes: [{
-      fields: ['invoice_count'],
-      depends: ['invoice_ids'],
-      compute: async (env, ids) => {
-        const rel = env.registry.models['sale.order'].fields.invoice_ids;
-        const out: Record<number, Values> = {};
-        for (const id of ids) out[id] = { invoice_count: 0 };
-        if (!rel?.m2mTable) return out;
-        const rows = await env.cr.query<{ id: number; n: string }>(
-          `SELECT r."${rel.m2mColumn1}" AS id, count(*)::text AS n FROM "${rel.m2mTable}" r WHERE r."${rel.m2mColumn1}" = ANY($1) GROUP BY 1`, [ids],
-        );
-        for (const row of rows.rows) out[Number(row.id)] = { invoice_count: Number(row.n) };
-        return out;
-      },
-    }],
     methods: {
       action_view_invoice: async (env, ids) => {
         const [order] = await env.model('sale.order').read(ids[0], ['invoice_ids']);

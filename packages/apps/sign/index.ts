@@ -33,6 +33,17 @@ export function registerSignSurveyFleet(): void {
       stop_sharing: async (env, ids) => { await env.model('sign.template').write(ids, { is_sharing: false }); },
     },
   });
+/** Each signer's own link, for the chatter (there is no mail gateway here). */
+async function signerLinks(env: Environment, requestId: number, state?: string): Promise<string[]> {
+  if (!env.registry.models['sign.request.item'].fields.access_token) return [];
+  const rows = await env.cr.query<{ id: number; token: string | null; name: string | null; state: string }>(
+    `SELECT i.id, i.access_token AS token, p.name, i.state FROM sign_request_item i LEFT JOIN res_partner p ON p.id = i.partner_id
+     WHERE i.sign_request_id = $1 ${state ? 'AND i.state = $2' : ''} ORDER BY i.id`,
+    state ? [requestId, state] : [requestId],
+  ).catch(() => ({ rows: [] as { id: number; token: string | null; name: string | null; state: string }[] }));
+  return rows.rows.filter((row) => row.token).map((row) => `${row.name ?? 'Signer'}: /sign/${row.id}?token=${row.token}`);
+}
+
   registerModelHooks('sign.request', {
     defaults: (env) => ({ state: 'sent', active: true, send_channel: 'email', reminder_enabled: false, reminder: 7, validity: addDays(today(), 60), nb_total: 0, nb_wait: 0, nb_closed: 0, create_uid: env.uid }),
     tracked: ['state'],
@@ -57,11 +68,24 @@ export function registerSignSurveyFleet(): void {
           if (!(r.request_item_ids as number[]).length) throw new UserError({ en: 'Add at least one signer before sending.', ar: 'أضف موقّعاً واحداً على الأقل قبل الإرسال.' });
           await env.cr.query(`UPDATE sign_request_item SET is_mail_sent = true, state = 'sent' WHERE sign_request_id = $1 AND state <> 'completed'`, [id]);
           await env.model('sign.request').write(id, { state: 'sent' });
-          await note(env, 'sign.request', id, { en: 'Signature request sent to the signers.', ar: 'تم إرسال طلب التوقيع إلى الموقّعين.' });
+          // No mail gateway in this build, so the links go in the chatter where
+          // whoever sent the request can copy them to the signers.
+          const links = await signerLinks(env, id);
+          await note(env, 'sign.request', id, links.length
+            ? { en: `Signature request sent. Signing links:<br/>${links.join('<br/>')}`, ar: `تم إرسال طلب التوقيع. روابط التوقيع:<br/>${links.join('<br/>')}` }
+            : { en: 'Signature request sent to the signers.', ar: 'تم إرسال طلب التوقيع إلى الموقّعين.' });
         }
         return notify({ en: 'Signature request sent.', ar: 'تم إرسال طلب التوقيع.' });
       },
-      send_signature_accesses: async (env, ids) => { for (const id of ids) await note(env, 'sign.request', id, { en: 'Reminder sent to the signers who have not signed yet.', ar: 'تم إرسال تذكير إلى الموقّعين الذين لم يوقّعوا بعد.' }); return notify({ en: 'Reminder sent.', ar: 'تم إرسال التذكير.' }); },
+      send_signature_accesses: async (env, ids) => {
+        for (const id of ids) {
+          const links = await signerLinks(env, id, 'sent');
+          await note(env, 'sign.request', id, links.length
+            ? { en: `Reminder for the signers who have not signed yet:<br/>${links.join('<br/>')}`, ar: `تذكير للموقّعين الذين لم يوقّعوا بعد:<br/>${links.join('<br/>')}` }
+            : { en: 'Every signer has signed already.', ar: 'وقّع جميع الموقّعين بالفعل.' });
+        }
+        return notify({ en: 'Reminder sent.', ar: 'تم إرسال التذكير.' });
+      },
       cancel: async (env, ids) => { await env.cr.query(`UPDATE sign_request_item SET state = 'canceled' WHERE sign_request_id = ANY($1) AND state <> 'completed'`, [ids]); await env.model('sign.request').write(ids, { state: 'canceled' }); },
       get_sign_request_documents: async (env, ids) => { const [r] = await env.model('sign.request').read(ids[0], ['state']); return r.state === 'signed' ? urlAction(`/report/sign.sign_request_logs_user/${ids[0]}?print=1`) : notify({ en: 'The signed document is available once every signer has signed.', ar: 'يتوفر المستند الموقّع بعد توقيع جميع الموقّعين.' }, 'info'); },
       go_to_document: async (_env, ids) => windowAction('sign.request', { en: 'Document', ar: 'المستند' }, { resId: ids[0] }),
@@ -82,7 +106,14 @@ export function registerSignSurveyFleet(): void {
   });
   registerModelHooks('sign.request.item', {
     defaults: () => ({ state: 'sent', is_mail_sent: false }),
-    beforeCreate: async (env, vals) => { const out = { ...vals }; const pid = m2o(out.partner_id); if (pid && !out.signer_email) { const p = await env.cr.query<{ email: string | null }>(`SELECT email FROM res_partner WHERE id = $1`, [pid]); out.signer_email = p.rows[0]?.email ?? false; } return out; },
+    beforeCreate: async (env, vals) => {
+      const out = { ...vals };
+      const pid = m2o(out.partner_id);
+      if (pid && !out.signer_email) { const p = await env.cr.query<{ email: string | null }>(`SELECT email FROM res_partner WHERE id = $1`, [pid]); out.signer_email = p.rows[0]?.email ?? false; }
+      // The signer's own link (app/sign/[item]) is what the invitation carries.
+      if (env.registry.models['sign.request.item'].fields.access_token && !out.access_token) out.access_token = randomToken(48);
+      return out;
+    },
     onCreate: async (env, ids) => { const rows = await env.cr.query<{ r: number }>(`SELECT DISTINCT sign_request_id AS r FROM sign_request_item WHERE id = ANY($1)`, [ids]); for (const row of rows.rows) await refreshRequestCounts(env, Number(row.r)); },
     onWrite: async (env, ids, vals) => { if ('state' in vals) { const rows = await env.cr.query<{ r: number }>(`SELECT DISTINCT sign_request_id AS r FROM sign_request_item WHERE id = ANY($1)`, [ids]); for (const row of rows.rows) await refreshRequestCounts(env, Number(row.r)); } },
     methods: {

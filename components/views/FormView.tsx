@@ -10,6 +10,7 @@ import { useActions } from '@/lib/client/actions';
 import { RECORD_CACHE_MS, formSpecification, isInvisible, isReadonly, isRequired, makeRecordScope } from '@/lib/client/arch';
 import { idOf, nameOf } from '@/lib/client/display';
 import { Field } from '../fields/Field';
+import { FormRecordProvider } from './form/FormContext';
 import { Chatter } from '../webclient/Chatter';
 import { SettingsPage } from './form/Settings';
 import { useUi } from '../webclient/ui';
@@ -48,6 +49,8 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
   const [changes, setChanges] = useState<Rec>({});
   const [lines, setLines] = useState<Record<string, LineRow[]>>({});
   const [saving, setSaving] = useState(false);
+  /** Fields the last save refused, so the form can point at them like Odoo. */
+  const [invalid, setInvalid] = useState<string[]>([]);
   const { names, nodes, spec } = useMemo(() => formSpecification(arch, fields), [arch, fields]);
   const lineFields = useMemo(() => names.filter((name) => fields[name].type === 'one2many' || (fields[name].type === 'many2many' && nodes.find((node) => node.name === name)?.views?.list)), [names, fields, nodes]);
 
@@ -97,6 +100,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
   }, [record, values, recordId, t, mode]);
 
   const setValue = async (name: string, value: unknown) => {
+    setInvalid((current) => (current.includes(name) ? current.filter((field) => field !== name) : current));
     setChanges((current) => ({ ...current, [name]: value }));
     // Server onchange rules for the changed field (partner → addresses, …).
     try {
@@ -149,6 +153,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
     setSaving(true);
     try {
       const saved = await rpc<Rec>('webSave', model, { id: recordId ?? undefined, values: writeValues(), specification: spec }, { context });
+      setInvalid([]);
       setRecord(saved);
       setChanges({});
       const next: Record<string, LineRow[]> = {};
@@ -160,7 +165,15 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
         ui.notify({ type: 'success', sticky: true, message: { en: `Invitation email with a temporary password sent to ${String(saved.login ?? '')}. They sign in with it and choose their own password.`, ar: `تم إرسال دعوة بكلمة مرور مؤقتة إلى ${String(saved.login ?? '')}. يسجل الدخول بها ثم يختار كلمة مروره.` } });
       }
       return saved.id as number;
-    } catch {
+    } catch (error) {
+      // The server names the fields it refused: mark them and scroll to the
+      // first, so a failed save says where to look and not only what is wrong.
+      const data = (error as { payload?: { data?: { fields?: unknown } } })?.payload?.data;
+      const fields = Array.isArray(data?.fields) ? (data.fields as unknown[]).map(String) : [];
+      setInvalid(fields);
+      if (fields.length) {
+        setTimeout(() => document.querySelector('.o_field_invalid')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50);
+      }
       return null;
     } finally {
       setSaving(false);
@@ -216,7 +229,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
   const header = arch.body.find((node): node is Extract<FormNode, { kind: 'header' }> => node.kind === 'header');
   const footer = findFooter(arch.body);
   const hasChatter = mode === 'page' && arch.body.some((node) => node.kind === 'chatter');
-  const ctx: RenderCtx = { values, fields, relatedFields, scope, setValue, clickButton, lines, setLines, footer };
+  const ctx: RenderCtx = { values, fields, relatedFields, scope, setValue, clickButton, lines, setLines, footer, invalid };
 
   // C-6: the settings page is a transient form with its own layout; Save = create + execute.
   if (mode === 'page' && arch.jsClass === 'base_settings') {
@@ -232,8 +245,13 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
     );
   }
 
+  // A widget that acts on the record (the payment widget on an invoice) needs
+  // the model and a way to read the record back after its call.
+  const formRecord = { model, recordId: recordId ?? null, reload: () => { void load(); } };
+
   if (mode === 'dialog') {
     return (
+      <FormRecordProvider value={formRecord}>
       <div className="o_form_view o_form_dialog">
         <div className="o_form_sheet_bg p-0">
           <div className="o_form_sheet border-0 p-0" style={{ maxWidth: 'none' }}>
@@ -252,10 +270,12 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
           {!footer && <button type="button" className="btn btn-secondary" onClick={() => onDone?.(false)}>{t('Discard')}</button>}
         </div>
       </div>
+      </FormRecordProvider>
     );
   }
 
   return (
+    <FormRecordProvider value={formRecord}>
     <div className="o_form_view">
       <div className="o_form_statusbar">
         <div className="o_statusbar_buttons">
@@ -277,8 +297,21 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
           </span>
         </div>
         {header?.children.filter((node): node is FieldNode => node.kind === 'field' && node.widget === 'statusbar').map((node, index) => (
-          <StatusBar key={`${node.name}-${index}`} node={node} field={fields[node.name]} value={values[node.name]} />
+          <StatusBar key={`${node.name}-${index}`} node={node} field={fields[node.name]} value={values[node.name]} onChange={(next) => setValue(node.name, next)} />
         ))}
+        {/* Odoo's header can also hold plain fields (a validity date, the
+            completed documents of a signature request): show them too. */}
+        {header?.children.filter((node): node is FieldNode => node.kind === 'field' && node.widget !== 'statusbar' && !node.hidden && !isInvisible(node, scope)).map((node, index) => {
+          const field = fields[node.name];
+          if (!field) return null;
+          return (
+            <div key={`${node.name}-header-${index}`} className="o_statusbar_field o_field_slot" data-name={node.name}>
+              {node.string || field.label ? <span className="o_form_label me-1">{t(node.string ?? field.label)}</span> : null}
+              <Field node={node} field={field} value={values[node.name]} record={values} readonly={isReadonly(node, field, scope)} required={false}
+                onChange={(next) => setValue(node.name, next)} />
+            </div>
+          );
+        })}
       </div>
       <div className={hasChatter ? 'o_form_renderer_with_chatter' : ''}>
         <div className="o_form_sheet_bg">
@@ -287,6 +320,7 @@ export function FormView({ arch, fields, relatedFields = {}, model, recordId, co
         {hasChatter && recordId && <Chatter model={model} recordId={recordId} user={user} />}
       </div>
     </div>
+    </FormRecordProvider>
   );
 }
 
@@ -308,6 +342,8 @@ interface RenderCtx {
   lines: Record<string, LineRow[]>;
   setLines: (updater: (current: Record<string, LineRow[]>) => Record<string, LineRow[]>) => void;
   footer: FormNode | null;
+  /** Names of the fields the last save refused. */
+  invalid: string[];
 }
 
 function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
@@ -420,6 +456,10 @@ function FieldSlot({ node, ctx, withLabel }: { node: FieldNode; ctx: RenderCtx; 
   } else {
     control = <Field node={node} field={field} value={ctx.values[node.name]} record={ctx.values} readonly={readonly} required={required} onChange={(value) => ctx.setValue(node.name, value)} />;
   }
+  // Name every rendered field, as Odoo does: it is what a checker (and a
+  // person reading the DOM) uses to tell which field is on screen.
+  control = <div className="o_field_slot" data-name={node.name}>{control}</div>;
+  if (ctx.invalid.includes(node.name)) control = <div className="o_field_invalid">{control}</div>;
   if (node.class && !isLines) control = <div className={node.class}>{control}</div>;
   if (!withLabel || node.nolabel) return isLines ? <div style={{ gridColumn: '1 / -1' }}>{control}</div> : control;
   return (
@@ -448,15 +488,46 @@ function Notebook({ pages, ctx }: { pages: Extract<FormNode, { kind: 'page' }>[]
   );
 }
 
-function StatusBar({ node, field, value }: { node: FieldNode; field: FieldDef | undefined; value: unknown }) {
+/**
+ * The bar of states across the top of a form. A selection field lists its own
+ * options; a link to a stage model (helpdesk, project, fleet, CRM) lists the
+ * stages, and clicking one moves the record, as Odoo does.
+ */
+function StatusBar({ node, field, value, onChange }: { node: FieldNode; field: FieldDef | undefined; value: unknown; onChange?: (value: unknown) => void }) {
   const t = useT();
+  const [stages, setStages] = useState<{ id: number; name: string }[]>([]);
+  const relation = field?.type === 'many2one' ? field.relation : undefined;
+  useEffect(() => {
+    if (!relation) return;
+    let cancelled = false;
+    void rpc<{ id: number; display_name: string }[]>('searchRead', relation, { domain: [], fields: ['display_name'], order: 'sequence, id', limit: 40 }, { silent: true })
+      .then((rows) => { if (!cancelled) setStages(rows.map((row) => ({ id: row.id, name: String(row.display_name ?? '') }))); })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [relation]);
+
+  if (relation) {
+    const current = Array.isArray(value) ? Number(value[0]) : Number(value) || 0;
+    const known = stages.length ? stages : Array.isArray(value) ? [{ id: current, name: String(value[1] ?? '') }] : [];
+    if (!known.length) return null;
+    return (
+      <div className="o_statusbar_status" data-name={node.name}>
+        {known.map((stage) => (
+          <button key={stage.id} type="button" className={`o_arrow_button ${stage.id === current ? 'o_arrow_button_current' : ''}`}
+            onClick={() => onChange?.(stage.id)}><span>{stage.name}</span></button>
+        ))}
+      </div>
+    );
+  }
+
   if (!field?.selection) return null;
   const visible = node.statusbarVisible ? node.statusbarVisible.split(',').map((item) => item.trim()) : field.selection.map((option) => option.value);
   const options = field.selection.filter((option) => visible.includes(option.value) || option.value === value);
   return (
-    <div className="o_statusbar_status">
+    <div className="o_statusbar_status" data-name={node.name}>
       {options.map((option) => (
-        <button key={option.value} type="button" className={`o_arrow_button ${option.value === value ? 'o_arrow_button_current' : ''}`}><span>{t(option.label)}</span></button>
+        <button key={option.value} type="button" className={`o_arrow_button ${option.value === value ? 'o_arrow_button_current' : ''}`}
+          onClick={() => { if (!node.readonly) onChange?.(option.value); }}><span>{t(option.label)}</span></button>
       ))}
     </div>
   );

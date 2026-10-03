@@ -189,4 +189,36 @@ describe('payments', () => {
     await expect(invoices.callButton(action.res_id, 'button_draft')).rejects.toMatchObject({ kind: 'user_error' });
     await expect(payCtx.model('account.payment.register').defaultGet()).rejects.toMatchObject({ kind: 'user_error' });
   });
+
+  /** The payment widget on the invoice form: add an outstanding credit, take it off again. */
+  it('applies and removes an outstanding payment from the invoice', async () => {
+    const order = await confirmedOrder(1); // 100 + 10% = 110
+    const wizardEnv = env.with({ context: { active_ids: [order], active_id: order, active_model: 'sale.order' } });
+    const wizard = await wizardEnv.model('sale.advance.payment.inv').create({ advance_payment_method: 'delivered' });
+    const { res_id: invoiceId } = await wizardEnv.model('sale.advance.payment.inv').callButton(wizard, 'create_invoices') as { res_id: number };
+    const invoices = env.model('account.move');
+
+    const payments = env.model('account.payment');
+    const paymentId = await payments.create({ partner_id: partner, amount: 110, partner_type: 'customer', payment_type: 'inbound' });
+    await payments.callButton(paymentId, 'action_post');
+
+    // A draft invoice cannot take a payment, and a payment of another partner never can.
+    await expect(invoices.callButton(invoiceId, 'js_assign_outstanding_line', { payment_id: paymentId })).rejects.toMatchObject({ kind: 'user_error' });
+    await invoices.callButton(invoiceId, 'action_post');
+    const other = await env.model('res.partner').create({ name: 'Someone Else' });
+    const strayPayment = await payments.create({ partner_id: other, amount: 110, partner_type: 'customer', payment_type: 'inbound' });
+    await payments.callButton(strayPayment, 'action_post');
+    await expect(invoices.callButton(invoiceId, 'js_assign_outstanding_line', { payment_id: strayPayment })).rejects.toMatchObject({ kind: 'user_error' });
+
+    await invoices.callButton(invoiceId, 'js_assign_outstanding_line', { payment_id: paymentId });
+    expect((await invoices.read(invoiceId, ['amount_residual', 'payment_state']))[0]).toMatchObject({ amount_residual: 0, payment_state: 'paid' });
+    // The widget reads the applied payments back with this domain.
+    expect(await payments.search([['reconciled_invoice_ids', 'in', [invoiceId]]])).toEqual([paymentId]);
+
+    await invoices.callButton(invoiceId, 'js_remove_outstanding_partial', { payment_id: paymentId });
+    expect((await invoices.read(invoiceId, ['amount_residual', 'payment_state']))[0]).toMatchObject({ amount_residual: 110, payment_state: 'not_paid' });
+    // And the outstanding list finds it again: a confirmed payment applied to nothing.
+    const outstanding = await payments.search([['partner_id', '=', partner], ['state', 'in', ['paid', 'in_process']], ['payment_type', '=', 'inbound'], ['reconciled_invoice_ids', '=', false]]);
+    expect(outstanding).toContain(paymentId);
+  });
 });

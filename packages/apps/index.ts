@@ -1,11 +1,16 @@
 import type { Registry } from '../engine/registry/types.js';
 import { hooksFor } from '../engine/orm/hooks.js';
 import { registerBase } from './base/index.js';
+import { registerFormDefaults } from './base/form-defaults.js';
+import { registerAttachments } from './base/attachments.js';
+import { registerScreenButtons } from './base/screen-buttons.js';
 import { registerActivities } from './base/activity.js';
 import { registerUsers } from './base/users.js';
 import { registerSettings } from './base/settings.js';
 import { registerSmartButtons } from './base/smart.js';
 import { registerSale } from './sale/index.js';
+import { registerRental } from './sale/rental.js';
+import { registerSaleTemplates } from './sale/template.js';
 import { registerSaleInvoicing } from './sale/invoice.js';
 import { registerAccount } from './account/index.js';
 import { registerAccountExtra } from './account/extra.js';
@@ -31,6 +36,8 @@ export function registerApps(registry: Registry): void {
   registerAccountExtra();
   registerSale();
   registerSaleInvoicing();
+  registerRental();
+  registerSaleTemplates();
   registerPurchase();
   registerApprovals();
   registerHr();
@@ -39,4 +46,8 @@ export function registerApps(registry: Registry): void {
   registerSignSurveyFleet();
   registerMisc();
   registerSmartButtons();
+  registerAttachments();
+  registerScreenButtons();
+  // Last, so a model's own defaults win where both set the same field.
+  registerFormDefaults();
 }

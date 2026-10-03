@@ -32,6 +32,8 @@ export interface ResolvedAction {
   relatedFields: Record<string, Record<string, FieldDef>>;
   /** Public URL slug for this action. */
   slug: string;
+  /** True for the reporting models that are SQL views: nothing to create or edit. */
+  readOnlyModel: boolean;
 }
 
 export type Resolution = { kind: 'home' } | { kind: 'notfound'; path: string } | ({ kind: 'action' } & ResolvedAction);
@@ -216,6 +218,7 @@ export function resolvePath(segments: string[], searchParams: Record<string, str
     fields: action.model ? registry.models[action.model]?.fields ?? {} : {},
     relatedFields: action.model ? relatedFieldsFor(action.model, views) : {},
     slug: actionSlug(action),
+    readOnlyModel: Boolean(action.model && registry.models[action.model]?.sqlView),
   };
 }
 
@@ -230,6 +233,7 @@ export function describeAction(action: ActionDef) {
     fields: action.model ? registry.models[action.model]?.fields ?? {} : {},
     relatedFields: action.model ? relatedFieldsFor(action.model, views) : {},
     slug: actionSlug(action),
+    readOnlyModel: Boolean(action.model && registry.models[action.model]?.sqlView),
   };
 }
 
@@ -242,7 +246,7 @@ export function describeModel(model: string, viewTypes: ViewType[]) {
     if (view) views[type] = view;
   }
   const searchView = Object.values(registry.views).find((view) => view.model === model && view.type === 'search') ?? null;
-  return { views, searchView, fields: registry.models[model]?.fields ?? {}, relatedFields: relatedFieldsFor(model, views) };
+  return { views, searchView, fields: registry.models[model]?.fields ?? {}, relatedFields: relatedFieldsFor(model, views), readOnlyModel: Boolean(registry.models[model]?.sqlView) };
 }
 
 export { ROOT_SLUGS };

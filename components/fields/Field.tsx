@@ -7,9 +7,12 @@ import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
 import { GroupsField } from './GroupsField';
+import { widgetKind } from './routing';
 import {
   BadgesMany2OneField, BooleanFavoriteField, CodeField, ColorPickerField, CopyClipboardField, DateRangeField, ImageField, LinkField,
-  Many2ManyCheckboxesField, Many2OneAvatarField, PercentPieField, ProgressBarField, RemainingDaysField, DatePickerField, TaxTotalsField,
+  Many2ManyCheckboxesField, Many2OneAvatarField, OpenRecordField, PercentPieField, ProgressBarField, RelativeDateField, RemainingDaysField,
+  SelectionBadgeField, DatePickerField, TaxTotalsField, PaymentsWidget, X2ManyButtonsField, AnalyticDistributionField, ActivityExceptionField, PresenceStatusField,
+  ActionableErrorsField, TimezoneField, ShortcutField, IdentifiersField, StatisticsField, RoundingWarningField, OrgChartField, GroupedLinesField, FileSizeField,
 } from './widgets';
 
 type Rec = Record<string, unknown>;
@@ -34,31 +37,61 @@ export function Field(props: FieldProps) {
   const lang = useLang();
   const currencies = useCurrencies();
 
-  if (widget === 'priority') return <PriorityField {...props} />;
-  if (widget === 'many2many_tags' || widget === 'many2many_tags_avatar') return <TagsField {...props} />;
-  if (widget === 'many2many_checkboxes') return <Many2ManyCheckboxesField {...props} />;
-  if (widget === 'res_user_group_ids') return <GroupsField {...props} />;
-  if (widget === 'badge' || widget === 'label_selection') {
-    return <span className="badge rounded-pill text-bg-secondary">{formatValue(field, value, { lang, record: props.record, currencies })}</span>;
+  // Odoo names many variants of the same control; `widgetKind` decides which
+  // one draws, and the widget audit asks it the same question.
+  switch (widgetKind(widget, field)) {
+    case 'relative_date': return <RelativeDateField {...props} />;
+    case 'open_record': return <OpenRecordField {...props} />;
+    case 'selection_badge': return <SelectionBadgeField {...props} />;
+    case 'priority': return <PriorityField {...props} />;
+    case 'tags': return <TagsField {...props} />;
+    case 'many2many_checkboxes': return <Many2ManyCheckboxesField {...props} />;
+    case 'groups': return <GroupsField {...props} />;
+    case 'badge': return <span className="badge rounded-pill text-bg-secondary">{formatValue(field, value, { lang, record: props.record, currencies })}</span>;
+    case 'image': return <ImageField {...props} />;
+    case 'toggle': return <ToggleField {...props} />;
+    case 'favorite': return <BooleanFavoriteField {...props} />;
+    case 'color': return <ColorPickerField {...props} />;
+    case 'progressbar': return <ProgressBarField {...props} />;
+    case 'percentpie': return <PercentPieField {...props} />;
+    case 'clipboard': return <CopyClipboardField {...props} />;
+    case 'remaining_days': return <RemainingDaysField {...props} />;
+    case 'tax_totals': return <TaxTotalsField {...props} />;
+    case 'payments': return <PaymentsWidget {...props} />;
+    case 'x2many_buttons': return <X2ManyButtonsField {...props} />;
+    case 'analytic_distribution': return <AnalyticDistributionField {...props} />;
+    case 'activity_exception': return <ActivityExceptionField {...props} />;
+    case 'actionable_errors': return <ActionableErrorsField {...props} />;
+    case 'timezone': return <TimezoneField {...props} editor={<SelectionField {...props} />} />;
+    case 'shortcut': return <ShortcutField {...props} editor={<CharField {...props} />} />;
+    case 'identifiers': return <IdentifiersField {...props} />;
+    case 'statistics': return <StatisticsField {...props} />;
+    case 'rounding_warning': return <RoundingWarningField {...props} />;
+    case 'org_chart': return <OrgChartField {...props} />;
+    case 'resume': case 'skills': return <GroupedLinesField {...props} />;
+    case 'file_size': return <FileSizeField {...props} />;
+    case 'presence_status': return <PresenceStatusField {...props} />;
+    case 'nothing': return null;
+    case 'tax_mode': return <TaxModeBadge {...props} />;
+    case 'daterange': return <DateRangeField {...props} />;
+    case 'link': return <LinkField {...props} />;
+    case 'code': return <CodeField {...props} />;
+    case 'badges_many2one': return <BadgesMany2OneField {...props} editor={<Many2OneField {...props} />} />;
+    case 'many2one_avatar': return <Many2OneAvatarField {...props} editor={<Many2OneField {...props} />} />;
+    case 'many2one': return <Many2OneField {...props} />;
+    // These draw the plain control for the field: a radio is a selection, a
+    // status bar is drawn by the form header, a handle by the list.
+    case 'radio': case 'selection': return <SelectionField {...props} />;
+    case 'x2many': return <TagsField {...props} />;
+    case 'boolean': return <BooleanField {...props} />;
+    case 'date': return <DatePickerField {...props} />;
+    case 'html': return <TextField {...props} />;
+    case 'float_time': return <NumberField {...props} node={{ ...node, widget: 'float_time' }} />;
+    case 'percentage': return <NumberField {...props} node={{ ...node, widget: 'percentage' }} />;
+    case 'statusbar': case 'handle': case 'type': default: break;
   }
-  if (widget === 'image' || widget === 'contact_image' || widget === 'image_url' || field.type === 'image' || field.type === 'binary') return <ImageField {...props} />;
-  if (widget === 'boolean_toggle') return <ToggleField {...props} />;
-  if (widget === 'boolean_favorite') return <BooleanFavoriteField {...props} />;
-  if (widget === 'color_picker' || widget === 'color') return <ColorPickerField {...props} />;
-  if (widget === 'progressbar') return <ProgressBarField {...props} />;
-  if (widget === 'percentpie') return <PercentPieField {...props} />;
-  if (widget.startsWith('CopyClipboard')) return <CopyClipboardField {...props} />;
-  if (widget === 'remaining_days') return <RemainingDaysField {...props} />;
-  if (widget === 'account-tax-totals-field') return <TaxTotalsField {...props} />;
-  if (widget === 'sale-extra-totals') return null;
-  if (widget === 'document_tax_mode_selector') return <TaxModeBadge {...props} />;
-  if (widget === 'daterange') return <DateRangeField {...props} />;
-  if (widget === 'url' || widget === 'email' || widget === 'phone') return <LinkField {...props} />;
-  if (widget === 'ace' || widget === 'domain' || widget === 'code_editor' || widget === 'json') return <CodeField {...props} />;
-  if (widget === 'badges_many2one' && field.type === 'many2one') return <BadgesMany2OneField {...props} editor={<Many2OneField {...props} />} />;
-  if ((widget === 'many2one_avatar' || widget === 'many2one_avatar_user' || widget === 'many2one_avatar_employee') && field.type === 'many2one') {
-    return <Many2OneAvatarField {...props} editor={<Many2OneField {...props} />} />;
-  }
+  // A binary field is a file or a picture whatever the view calls it.
+  if (field.type === 'image' || field.type === 'binary') return <ImageField {...props} />;
 
   switch (field.type) {
     case 'boolean': return <BooleanField {...props} />;
@@ -134,18 +167,41 @@ function NumberField({ field, node, value, readonly, record, onChange }: FieldPr
   const currencies = useCurrencies();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
+  // Hours and percentages are typed the way they are shown, as in Odoo:
+  // 01:30 for an hour and a half, 15 for fifteen percent.
+  const asTime = node.widget === 'float_time';
+  const asPercent = node.widget === 'percentage';
+  const toDraft = (raw: unknown): string => {
+    const number = Number(raw ?? 0);
+    if (asTime) {
+      const sign = number < 0 ? '-' : '';
+      const minutes = Math.round(Math.abs(number) * 60);
+      return `${sign}${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+    }
+    if (asPercent) return String(Math.round(number * 10000) / 100);
+    return raw === false || raw == null ? '' : String(raw);
+  };
+  const fromDraft = (text: string): number => {
+    if (asTime) {
+      const [hours, minutes] = text.split(':');
+      const sign = text.trim().startsWith('-') ? -1 : 1;
+      return sign * (Math.abs(Number(hours) || 0) + (Number(minutes) || 0) / 60);
+    }
+    if (asPercent) return (Number(text) || 0) / 100;
+    return text === '' ? 0 : Number(text);
+  };
   if (readonly || !editing) {
     return (
-      <div className={`o_field_widget o_field_${field.type} ${readonly ? 'o_readonly' : ''}`} onClick={() => { if (!readonly) { setDraft(value === false || value == null ? '' : String(value)); setEditing(true); } }}>
+      <div className={`o_field_widget o_field_${field.type} ${readonly ? 'o_readonly' : ''}`} onClick={() => { if (!readonly) { setDraft(toDraft(value)); setEditing(true); } }}>
         <input className="o_input" readOnly value={formatValue(field, value, { lang, widget: node.widget, record, currencies })} />
       </div>
     );
   }
   return (
     <div className={`o_field_widget o_field_${field.type}`}>
-      <input className="o_input" type="number" step={field.type === 'integer' ? 1 : 'any'} value={draft} autoFocus
+      <input className="o_input" type={asTime ? 'text' : 'number'} step={field.type === 'integer' ? 1 : 'any'} value={draft} autoFocus
         onChange={(event) => setDraft(event.target.value)}
-        onBlur={() => { setEditing(false); onChange(draft === '' ? 0 : Number(draft)); }}
+        onBlur={() => { setEditing(false); onChange(fromDraft(draft)); }}
         onKeyDown={(event) => { if (event.key === 'Enter') (event.target as HTMLInputElement).blur(); }} />
     </div>
   );

@@ -97,9 +97,45 @@ export async function kioskKey(env: Environment): Promise<string> {
   return key;
 }
 
+/**
+ * A random token for a kiosk key, a meeting code or a portal link. These guard
+ * access, so the randomness comes from the platform's cryptographic source,
+ * never from `Math.random()`.
+ */
 export function randomToken(length = 32): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = new Uint8Array(length);
+  globalThis.crypto.getRandomValues(bytes);
   let out = '';
-  for (let i = 0; i < length; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  // 36 does not divide 256, so the last 4 values of a byte are dropped rather
+  // than folded in, which would make those characters likelier.
+  for (let i = 0; i < length; i += 1) {
+    let byte = bytes[i];
+    while (byte >= 252) { const extra = new Uint8Array(1); globalThis.crypto.getRandomValues(extra); byte = extra[0]; }
+    out += chars[byte % chars.length];
+  }
   return out;
+}
+
+/**
+ * The customer portal link for a record, token and all — Odoo's
+ * `_portal_ensure_token` plus `access_url`. The token is the permission the
+ * link carries, so it is made from the platform's cryptographic source and
+ * written once.
+ */
+export async function portalToken(env: Environment, model: string, id: number): Promise<string> {
+  if (!env.registry.models[model]?.fields.access_token) return '';
+  const [row] = await env.sudo().model(model).read(id, ['access_token']);
+  const existing = typeof row?.access_token === 'string' ? row.access_token : '';
+  if (existing) return existing;
+  const token = randomToken(48);
+  await env.sudo().model(model).write(id, { access_token: token });
+  return token;
+}
+
+/** `/my/orders/<id>?access_token=…` for a quotation, `/my/invoices/…` for an invoice. */
+export async function portalUrl(env: Environment, model: 'sale.order' | 'account.move', id: number): Promise<string> {
+  const kind = model === 'sale.order' ? 'orders' : 'invoices';
+  const token = await portalToken(env, model, id);
+  return `/my/${kind}/${id}${token ? `?access_token=${token}` : ''}`;
 }

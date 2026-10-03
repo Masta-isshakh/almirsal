@@ -7,7 +7,11 @@ import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
 import { avatarColor } from '../webclient/Navbar';
+import { useFormRecord } from '../views/form/FormContext';
+import { useUi } from '../webclient/ui';
 import type { FieldProps } from './Field';
+
+type Rec = Record<string, unknown>;
 
 /**
  * The remaining A-4 §6 widgets: favorites star, colour picker, progress bar,
@@ -306,10 +310,14 @@ export function DatePickerField({ field, value, readonly, required, onChange, no
 
   const raw = value === false || value == null ? '' : String(value);
   const nativeValue = isDatetime ? raw.replace(' ', 'T').slice(0, 16) : raw.slice(0, 10);
+  // `date_dynamic_min`: an end date cannot be before the start date it names.
+  const minField = /'min_date_field'\s*:\s*'([^']+)'/.exec(node.options ?? '')?.[1];
+  const minValue = minField && record[minField] ? String(record[minField]).slice(0, isDatetime ? 16 : 10).replace(' ', 'T') : undefined;
   const commit = (typed: string) => {
     setDraft(null);
     const parsed = parseTypedDate(typed.trim(), lang, isDatetime, raw);
     if (parsed === undefined) return;
+    if (parsed && minValue && parsed.replace(' ', 'T') < minValue) return;
     onChange(parsed);
   };
   return (
@@ -321,7 +329,7 @@ export function DatePickerField({ field, value, readonly, required, onChange, no
         onClick={() => { const input = picker.current; if (!input) return; if ('showPicker' in input) { try { (input as HTMLInputElement & { showPicker: () => void }).showPicker(); return; } catch { /* fall through */ } } input.click(); }}>
         <i className="fa fa-calendar" />
       </button>
-      <input ref={picker} type={isDatetime ? 'datetime-local' : 'date'} value={nativeValue} tabIndex={-1} aria-hidden="true"
+      <input ref={picker} type={isDatetime ? 'datetime-local' : 'date'} value={nativeValue} min={minValue} tabIndex={-1} aria-hidden="true"
         style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
         onChange={(event) => { const next = event.target.value; if (!next) return onChange(false); onChange(isDatetime ? `${next.replace('T', ' ')}:00`.slice(0, 19) : next); }} />
     </div>
@@ -385,4 +393,490 @@ export function TaxTotalsField({ record, field }: FieldProps) {
       </tbody>
     </table>
   );
+}
+
+/** Odoo's `relative_date`: "3 days ago", "in 2 months". */
+export function RelativeDateField({ value, field, record, node }: FieldProps) {
+  const lang = useLang();
+  const currencies = useCurrencies();
+  if (!value) return <span className="o_field_widget o_readonly" />;
+  const when = new Date(String(value).replace(' ', 'T') + (String(value).length <= 10 ? 'T00:00:00' : '') + 'Z').getTime();
+  const days = Math.round((when - Date.now()) / 86_400_000);
+  const rtf = new Intl.RelativeTimeFormat(lang === 'ar_001' ? 'ar' : 'en', { numeric: 'auto' });
+  const text = Math.abs(days) >= 45 ? rtf.format(Math.round(days / 30), 'month')
+    : Math.abs(days) >= 1 ? rtf.format(days, 'day')
+    : rtf.format(Math.round((when - Date.now()) / 3_600_000), 'hour');
+  return <span className="o_field_widget o_readonly" title={formatValue(field, value, { lang, widget: node.widget, record, currencies })}>{text}</span>;
+}
+
+/** A selection shown as a coloured pill, the way Odoo badges a state. */
+export function SelectionBadgeField({ field, value, readonly, onChange }: FieldProps) {
+  const t = useT();
+  const options = field.selection ?? [];
+  const current = options.find((option) => option.value === value);
+  const tone = /done|posted|paid|valid|success|approved|won/i.test(String(value ?? '')) ? 'success'
+    : /cancel|refused|fail|lost|blocked/i.test(String(value ?? '')) ? 'danger'
+    : /draft|new|to_/i.test(String(value ?? '')) ? 'secondary' : 'info';
+  if (readonly || !options.length) {
+    return <span className={`badge rounded-pill text-bg-${tone}`}>{current ? t(current.label) : ''}</span>;
+  }
+  return (
+    <select className={`o_input o_selection_badge badge rounded-pill text-bg-${tone}`} value={value === false || value == null ? '' : String(value)}
+      onChange={(event) => onChange(event.target.value || false)}>
+      {options.map((option) => <option key={String(option.value)} value={String(option.value)}>{t(option.label)}</option>)}
+    </select>
+  );
+}
+
+/** A link that opens the record the field points at (journal entry, move line). */
+export function OpenRecordField({ field, value, node }: FieldProps) {
+  const t = useT();
+  const id = Array.isArray(value) ? Number(value[0]) : Number(value);
+  const label = Array.isArray(value) ? String(value[1] ?? '') : '';
+  if (!id || !field.relation) return <span className="o_field_widget o_readonly">{label}</span>;
+  return (
+    <a className="o_field_widget o_open_record" href={`/odoo/m/${field.relation}/${id}`} title={t('Open')}>
+      {label || `#${id}`}{node.widget === 'matching_link_widget' ? <i className="fa fa-link ms-1" aria-hidden="true" /> : null}
+    </a>
+  );
+}
+
+/**
+ * Odoo's `payment` widget, the two panels under an invoice's total: the
+ * payments already applied ("Paid on 09/30/2026") and the outstanding credits
+ * that can be applied with one click. The amounts come from the payments
+ * themselves rather than from the json field, so the panel is always current.
+ */
+export function PaymentsWidget({ node, record }: FieldProps) {
+  const t = useT();
+  const lang = useLang();
+  const currencies = useCurrencies();
+  const form = useFormRecord();
+  const moveId = Number(record.id) || 0;
+  const outstanding = node.name === 'invoice_outstanding_credits_debits_widget';
+  const [rows, setRows] = useState<{ id: number; name: string; date: string; amount: number; currency: unknown }[]>([]);
+  const [busy, setBusy] = useState(false);
+  const partner = idOf(record.partner_id);
+  const state = String(record.state ?? '');
+  const residual = Number(record.amount_residual ?? 0);
+  const moveType = String(record.move_type ?? '');
+  // An outstanding credit is a payment of the same partner in the same
+  // direction as the invoice that is not applied to an invoice yet.
+  const inbound = /out_invoice|out_receipt|in_refund/.test(moveType);
+
+  useEffect(() => {
+    let alive = true;
+    if (!moveId || state !== 'posted' || (outstanding && (!partner || residual <= 0))) { setRows([]); return () => { alive = false; }; }
+    const domain = outstanding
+      ? [['partner_id', '=', partner], ['state', 'in', ['paid', 'in_process']], ['payment_type', '=', inbound ? 'inbound' : 'outbound'], ['reconciled_invoice_ids', '=', false]]
+      : [['reconciled_invoice_ids', 'in', [moveId]]];
+    rpc<Record<string, unknown>[]>('searchRead', 'account.payment',
+      { domain, fields: ['display_name', 'date', 'amount', 'currency_id'], limit: 10, order: 'date desc, id desc' }, { silent: true })
+      .then((found) => { if (alive) setRows(found.map((row) => ({ id: Number(row.id), name: String(row.display_name ?? ''), date: String(row.date ?? ''), amount: Number(row.amount ?? 0), currency: row.currency_id }))); })
+      .catch(() => { if (alive) setRows([]); });
+    return () => { alive = false; };
+  }, [moveId, outstanding, partner, state, residual, inbound]);
+
+  const money = (amount: number, currency: unknown) => formatValue({ name: 'amount', label: { en: 'Amount', ar: 'المبلغ' }, type: 'monetary', currencyField: 'currency_id' }, amount, { lang, record: { currency_id: currency }, currencies });
+  const apply = async (paymentId: number, add: boolean) => {
+    if (!form || busy) return;
+    setBusy(true);
+    await rpc('callButton', 'account.move', { ids: [moveId], method: add ? 'js_assign_outstanding_line' : 'js_remove_outstanding_partial', context: { payment_id: paymentId } })
+      .catch(() => undefined);
+    setBusy(false);
+    form.reload();
+  };
+
+  if (!rows.length) return null;
+  return (
+    <div className={`o_payments_widget ${outstanding ? 'o_outstanding_credits' : ''}`}>
+      <span className="o_payments_title text-muted">{t(outstanding ? 'Outstanding credits' : 'Payments')}</span>
+      {rows.map((row) => (
+        <div key={row.id} className="o_payment_line">
+          <a href={`/odoo/m/account.payment/${row.id}`}>{row.name}</a>
+          <span className="text-muted mx-1">{row.date ? formatDate(row.date, lang) : ''}</span>
+          <span className="fw-bold">{money(row.amount, row.currency)}</span>
+          {form ? (
+            <button type="button" className="btn btn-link btn-sm p-0 ms-1" disabled={busy}
+              title={t(outstanding ? 'Add' : 'Unreconcile')} onClick={() => void apply(row.id, outstanding)}>
+              <i className={`fa ${outstanding ? 'fa-plus' : 'fa-times'}`} aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** `x2many_buttons`: each linked record as a button that opens it. */
+export function X2ManyButtonsField({ field, value }: FieldProps) {
+  const items = Array.isArray(value) ? value : [];
+  if (!items.length || !field.relation) return null;
+  return (
+    <div className="o_field_widget o_x2many_buttons">
+      {items.map((item, index) => {
+        const id = idOf(item);
+        return <a key={index} className="btn btn-sm btn-link" href={`/odoo/m/${field.relation}/${id}`}>{nameOf(item) || `#${id}`}</a>;
+      })}
+    </div>
+  );
+}
+
+/** `analytic_distribution`: `{"3": 100}` read as "Project X 100%". */
+export function AnalyticDistributionField({ value, field }: FieldProps) {
+  const [names, setNames] = useState<Record<number, string>>({});
+  let parsed: Record<string, number> = {};
+  if (value && typeof value === 'object') parsed = value as Record<string, number>;
+  else if (typeof value === 'string' && value.trim().startsWith('{')) { try { parsed = JSON.parse(value) as Record<string, number>; } catch { parsed = {}; } }
+  // A key can name several accounts at once ("3,7"), one per analytic plan.
+  const ids = [...new Set(Object.keys(parsed).flatMap((key) => key.split(',').map(Number)).filter(Boolean))];
+  const wanted = ids.join(',');
+  useEffect(() => {
+    const missing = wanted.split(',').map(Number).filter((id) => id && !(id in names));
+    if (!missing.length) return;
+    rpc<Record<string, unknown>[]>('searchRead', field.relation ?? 'account.analytic.account', { domain: [['id', 'in', missing]], fields: ['display_name'], limit: 40 }, { silent: true })
+      .then((found) => setNames((current) => ({ ...current, ...Object.fromEntries(found.map((row) => [Number(row.id), String(row.display_name ?? '')])) })))
+      .catch(() => undefined);
+    // `names` is written here, so the effect watches the ids instead.
+  }, [wanted, field.relation]);
+  const entries = Object.entries(parsed);
+  if (!entries.length) return <span className="o_field_widget o_readonly" />;
+  return (
+    <span className="o_field_widget o_readonly">
+      {entries.map(([key, percent]) => (
+        <span key={key} className="badge rounded-pill text-bg-light border me-1">
+          {key.split(',').map((id) => names[Number(id)] ?? `#${id}`).join(' / ')} {Math.round(Number(percent))}%
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** `activity_exception`: the warning icon Odoo shows when an activity is late. */
+export function ActivityExceptionField({ value, field }: FieldProps) {
+  const t = useT();
+  if (!value) return <span className="o_field_widget o_readonly" />;
+  const label = field.selection?.find((option) => String(option.value) === String(value))?.label;
+  return <i className="fa fa-exclamation-triangle text-warning" title={t(label ?? 'Exception')} aria-hidden="true" />;
+}
+
+/** `hr_presence_status`: a coloured circle for present, absent or away. */
+export function PresenceStatusField({ value, field }: FieldProps) {
+  const t = useT();
+  const text = String(value ?? '');
+  if (!text) return <span className="o_field_widget o_readonly" />;
+  const tone = /present|online/.test(text) ? 'text-success' : /absent|offline/.test(text) ? 'text-danger' : /holiday|leave/.test(text) ? 'text-warning' : 'text-muted';
+  const icon = /holiday|leave/.test(text) ? 'fa-plane' : /busy|call/.test(text) ? 'fa-phone' : 'fa-circle';
+  const label = field.selection?.find((option) => String(option.value) === text)?.label ?? text;
+  return <i className={`fa ${icon} ${tone} o_presence_status`} title={t(label)} aria-hidden="true" />;
+}
+
+/**
+ * `actionable_errors`: the banner Odoo draws above an invoice listing what
+ * stands in the way — no lines, no partner, an unbalanced entry, a reference
+ * another document of the same partner already uses. The field (`alerts`) is a
+ * json map of codes computed in SQL, so the banner is always current; the
+ * wording lives here, where it can be translated.
+ */
+const ALERT_TEXT: Record<string, { en: string; ar: string }> = {
+  no_lines: { en: 'Add at least one line before posting this document.', ar: 'أضف بنداً واحداً على الأقل قبل ترحيل هذا المستند.' },
+  no_partner: { en: 'Choose the partner this document is for.', ar: 'اختر الشريك الذي يتعلق به هذا المستند.' },
+  no_invoice_date: { en: 'Set the bill date.', ar: 'حدد تاريخ الفاتورة.' },
+  unbalanced: { en: 'The debit and the credit of this entry do not match.', ar: 'المدين والدائن في هذا القيد غير متطابقين.' },
+  duplicated_ref: { en: 'Another document of this partner already uses this reference.', ar: 'مستند آخر لهذا الشريك يستخدم هذا المرجع بالفعل.' },
+};
+
+export function ActionableErrorsField({ value }: FieldProps) {
+  const t = useT();
+  let alerts: Record<string, { level?: string; message?: string }> = {};
+  if (value && typeof value === 'object') alerts = value as Record<string, { level?: string }>;
+  else if (typeof value === 'string' && value.trim().startsWith('{')) { try { alerts = JSON.parse(value); } catch { alerts = {}; } }
+  const entries = Object.entries(alerts);
+  if (!entries.length) return null;
+  const worst = entries.some(([, alert]) => alert?.level === 'danger') ? 'danger' : 'warning';
+  return (
+    <div className={`alert alert-${worst} o_actionable_errors py-2 px-3 mb-2`} role="alert">
+      {entries.map(([code, alert]) => (
+        <div key={code} className="d-flex align-items-start gap-2">
+          <i className={`fa fa-${alert?.level === 'danger' ? 'exclamation-circle' : 'exclamation-triangle'} mt-1`} aria-hidden="true" />
+          <span>{alert?.message ? t(alert.message) : ALERT_TEXT[code] ? t(ALERT_TEXT[code]) : code.replace(/_/g, ' ')}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * `timezone_mismatch`: the timezone, with the warning Odoo shows when the
+ * browser's offset disagrees with the one on the record — the usual cause of
+ * meetings an hour out.
+ */
+export function TimezoneField(props: FieldProps & { editor: React.ReactNode }) {
+  const { record, node, editor } = props;
+  const t = useT();
+  const offsetField = /'tz_offset_field'\s*:\s*'([^']+)'/.exec(node.options ?? '')?.[1] ?? 'tz_offset';
+  const stored = String(record[offsetField] ?? '');
+  // Odoo keeps the offset as "+0300"; the browser gives minutes behind UTC.
+  const browserMinutes = -new Date().getTimezoneOffset();
+  const storedMinutes = /^[+-]\d{4}$/.test(stored)
+    ? (stored.startsWith('-') ? -1 : 1) * (Number(stored.slice(1, 3)) * 60 + Number(stored.slice(3, 5)))
+    : null;
+  const mismatch = storedMinutes !== null && storedMinutes !== browserMinutes;
+  return (
+    <span className="d-inline-flex align-items-center gap-1">
+      {editor}
+      {mismatch && (
+        <i className="fa fa-exclamation-triangle text-warning" aria-hidden="true"
+          title={t({ en: 'This timezone is not the one your computer is in.', ar: 'هذه المنطقة الزمنية ليست منطقة جهازك.' })} />
+      )}
+    </span>
+  );
+}
+
+/** `shortcut`: a canned response is typed as ":hello". */
+export function ShortcutField(props: FieldProps & { editor: React.ReactNode }) {
+  const { value, readonly, editor } = props;
+  if (!readonly) return <>{editor}</>;
+  const text = value === false || value == null ? '' : String(value);
+  return text ? <span className="o_shortcut badge rounded-pill text-bg-light border font-monospace">{`:${text}`}</span> : <span className="o_field_widget o_readonly" />;
+}
+
+/**
+ * `additional_identifiers`: the extra company identifiers Odoo keeps as a json
+ * map (a second tax id, a registration number). The list shows them; the button
+ * adds one.
+ */
+export function IdentifiersField({ value, readonly, onChange, node }: FieldProps) {
+  const t = useT();
+  const ui = useUi();
+  let entries: [string, unknown][] = [];
+  if (value && typeof value === 'object') entries = Object.entries(value as Record<string, unknown>);
+  else if (typeof value === 'string' && value.trim().startsWith('{')) { try { entries = Object.entries(JSON.parse(value)); } catch { entries = []; } }
+
+  const add = () => {
+    let name = '';
+    let identifier = '';
+    let dialogId = 0;
+    const save = () => {
+      if (name.trim()) onChange({ ...Object.fromEntries(entries), [name.trim()]: identifier.trim() });
+      ui.closeDialog(dialogId);
+    };
+    dialogId = ui.openDialog({
+      title: { en: 'Add an identifier', ar: 'إضافة معرّف' },
+      size: 'sm',
+      body: (
+        <div className="d-flex flex-column gap-2">
+          <label className="o_form_label">{t({ en: 'Name', ar: 'الاسم' })}
+            <input className="o_input" autoFocus onChange={(event) => { name = event.target.value; }} />
+          </label>
+          <label className="o_form_label">{t({ en: 'Identifier', ar: 'المعرّف' })}
+            <input className="o_input" onChange={(event) => { identifier = event.target.value; }} onKeyDown={(event) => { if (event.key === 'Enter') save(); }} />
+          </label>
+        </div>
+      ),
+      footer: (
+        <>
+          <button type="button" className="btn btn-primary" onClick={save}>{t('Add')}</button>
+          <button type="button" className="btn btn-secondary" onClick={() => ui.closeDialog(dialogId)}>{t('Discard')}</button>
+        </>
+      ),
+    });
+  };
+
+  const remove = (key: string) => onChange(Object.fromEntries(entries.filter(([name]) => name !== key)));
+  const isButton = (node.widget ?? '').endsWith('button');
+  if (isButton) {
+    return readonly ? null : (
+      <button type="button" className="btn btn-link btn-sm p-0" onClick={add}>
+        <i className="fa fa-plus me-1" aria-hidden="true" />{t({ en: 'Add an identifier', ar: 'إضافة معرّف' })}
+      </button>
+    );
+  }
+  if (!entries.length) return <span className="o_field_widget o_readonly text-muted">{t({ en: 'None', ar: 'لا شيء' })}</span>;
+  return (
+    <div className="o_field_widget o_identifiers d-flex flex-column gap-1">
+      {entries.map(([name, identifier]) => (
+        <span key={name} className="d-inline-flex align-items-center gap-2">
+          <span className="text-muted">{name}</span>
+          <span>{String(identifier ?? '')}</span>
+          {!readonly && <button type="button" className="btn btn-link btn-sm p-0 text-muted" onClick={() => remove(name)} aria-label={t('Delete')}><i className="fa fa-times" /></button>}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** `contact_statistics`: the counts Odoo prints beside a contact. */
+export function StatisticsField({ value }: FieldProps) {
+  const t = useT();
+  let stats: Record<string, unknown> = {};
+  if (value && typeof value === 'object') stats = value as Record<string, unknown>;
+  else if (typeof value === 'string' && value.trim().startsWith('{')) { try { stats = JSON.parse(value); } catch { stats = {}; } }
+  const entries = Object.entries(stats).filter(([, count]) => Number(count) > 0);
+  if (!entries.length) return <span className="o_field_widget o_readonly" />;
+  return (
+    <span className="o_field_widget o_readonly">
+      {entries.map(([name, count]) => (
+        <span key={name} className="badge rounded-pill text-bg-light border me-1">
+          {t(name.replace(/_/g, ' ').replace(/^./, (first) => first.toUpperCase()))} {String(count)}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * `open_decimal_precision_button`: the warning Odoo shows when a currency is
+ * rounded more finely than the decimal accuracy allows, with the way to that
+ * setting.
+ */
+export function RoundingWarningField({ value }: FieldProps) {
+  const t = useT();
+  if (!value) return null;
+  return (
+    <div className="alert alert-warning py-1 px-2 mb-0 d-inline-flex align-items-center gap-2">
+      <i className="fa fa-exclamation-triangle" aria-hidden="true" />
+      <span>{t({ en: 'This rounding is finer than the decimal accuracy of prices.', ar: 'هذا التقريب أدق من الدقة العشرية للأسعار.' })}</span>
+      <a className="btn btn-link btn-sm p-0" href="/odoo/m/decimal.precision">{t({ en: 'Decimal Accuracy', ar: 'الدقة العشرية' })}</a>
+    </div>
+  );
+}
+
+/**
+ * `hr_org_chart`: the employee's place in the organisation — the managers above,
+ * the colleagues beside and the direct reports below, each one a link.
+ */
+export function OrgChartField({ record }: FieldProps) {
+  const t = useT();
+  const id = Number(record.id) || 0;
+  const [chart, setChart] = useState<{ managers: Rec[]; reports: Rec[]; peers: Rec[] } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    if (!id) { setChart(null); return () => { alive = false; }; }
+    const load = async () => {
+      const managers: Rec[] = [];
+      let parent = idOf(record.parent_id);
+      // Up the line, at most four levels, as Odoo draws it.
+      for (let level = 0; level < 4 && parent; level += 1) {
+        const [manager] = await rpc<Rec[]>('read', 'hr.employee', { ids: [parent], fields: ['display_name', 'job_title', 'parent_id'] }, { silent: true }).catch(() => []);
+        if (!manager) break;
+        managers.unshift(manager);
+        parent = idOf(manager.parent_id);
+      }
+      const reports = await rpc<Rec[]>('searchRead', 'hr.employee', { domain: [['parent_id', '=', id]], fields: ['display_name', 'job_title'], limit: 20 }, { silent: true }).catch(() => []);
+      const peers = idOf(record.parent_id)
+        ? await rpc<Rec[]>('searchRead', 'hr.employee', { domain: [['parent_id', '=', idOf(record.parent_id)], ['id', '!=', id]], fields: ['display_name', 'job_title'], limit: 20 }, { silent: true }).catch(() => [])
+        : [];
+      if (alive) setChart({ managers, reports, peers });
+    };
+    void load();
+    return () => { alive = false; };
+  }, [id, record.parent_id]);
+
+  if (!id) return null;
+  const line = (employee: Rec, className = '') => (
+    <a key={String(employee.id)} className={`o_org_chart_entry d-flex align-items-center gap-2 ${className}`} href={`/odoo/m/hr.employee/${employee.id}`}>
+      <span className="o_avatar" style={{ width: 24, height: 24, fontSize: 11, borderRadius: '50%', background: avatarColor(String(employee.display_name ?? '')) }}>
+        {String(employee.display_name ?? '').slice(0, 1)}
+      </span>
+      <span>{String(employee.display_name ?? '')}</span>
+      {employee.job_title ? <span className="text-muted small">{String(employee.job_title)}</span> : null}
+    </a>
+  );
+  return (
+    <div className="o_org_chart">
+      {chart?.managers.map((manager) => line(manager, 'o_org_chart_manager'))}
+      <div className="o_org_chart_self d-flex align-items-center gap-2 fw-bold">
+        <i className="fa fa-user text-muted" aria-hidden="true" />
+        <span>{String(record.display_name ?? '')}</span>
+      </div>
+      {chart?.peers.length ? (
+        <details className="o_org_chart_peers">
+          <summary className="text-muted small">{t({ en: 'Colleagues', ar: 'الزملاء' })} ({chart.peers.length})</summary>
+          {chart.peers.map((peer) => line(peer))}
+        </details>
+      ) : null}
+      {chart?.reports.length ? (
+        <div className="o_org_chart_reports">
+          <div className="text-muted small mt-1">{t({ en: 'Direct reports', ar: 'التابعون المباشرون' })}</div>
+          {chart.reports.map((report) => line(report, 'ms-3'))}
+        </div>
+      ) : null}
+      {!chart?.managers.length && !chart?.reports.length && (
+        <div className="text-muted small">{t({ en: 'No manager and no direct report yet.', ar: 'لا يوجد مدير ولا تابعون بعد.' })}</div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * `resume_one2many` and `skills_one2many`: the employee's résumé and skills,
+ * which Odoo shows grouped — the résumé by kind of entry, the skills by kind of
+ * skill, each skill with its level.
+ */
+export function GroupedLinesField({ field, value, node }: FieldProps) {
+  const t = useT();
+  const lang = useLang();
+  const ids = Array.isArray(value) ? (value as unknown[]).map((item) => idOf(item)).filter(Boolean) as number[] : [];
+  const isSkills = (node.widget ?? '').startsWith('skills');
+  const [rows, setRows] = useState<Rec[]>([]);
+  const key = ids.join(',');
+
+  useEffect(() => {
+    if (!ids.length || !field.relation) { setRows([]); return; }
+    const fieldNames = isSkills
+      ? ['display_name', 'skill_type_id', 'skill_id', 'skill_level_id', 'level_progress']
+      : ['display_name', 'line_type_id', 'name', 'date_start', 'date_end', 'description'];
+    rpc<Rec[]>('searchRead', field.relation, { domain: [['id', 'in', ids]], fields: fieldNames, limit: 200 }, { silent: true })
+      .then((found) => setRows(found))
+      .catch(() => setRows([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, field.relation, isSkills]);
+
+  if (!rows.length) return <span className="o_field_widget o_readonly text-muted">{t(isSkills ? { en: 'No skill yet.', ar: 'لا توجد مهارات بعد.' } : { en: 'No entry yet.', ar: 'لا توجد مدخلات بعد.' })}</span>;
+  const groupField = isSkills ? 'skill_type_id' : 'line_type_id';
+  const groups = new Map<string, Rec[]>();
+  for (const row of rows) {
+    const name = nameOf(row[groupField]) || t({ en: 'Other', ar: 'أخرى' });
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name)!.push(row);
+  }
+  const period = (row: Rec) => [row.date_start, row.date_end].filter(Boolean).map((date) => formatDate(String(date), lang)).join(' — ');
+  return (
+    <div className="o_field_widget o_grouped_lines">
+      {[...groups.entries()].map(([group, lines]) => (
+        <div key={group} className="o_grouped_lines_group mb-2">
+          <div className="text-muted small text-uppercase">{group}</div>
+          {lines.map((row) => (
+            <div key={String(row.id)} className="d-flex align-items-baseline gap-2">
+              {isSkills ? (
+                <>
+                  <span>{nameOf(row.skill_id) || String(row.display_name ?? '')}</span>
+                  <span className="badge rounded-pill text-bg-light border">{nameOf(row.skill_level_id) || `${Math.round(Number(row.level_progress ?? 0))}%`}</span>
+                </>
+              ) : (
+                <>
+                  <span className="fw-bold">{String(row.name ?? row.display_name ?? '')}</span>
+                  <span className="text-muted small">{period(row)}</span>
+                  {row.description ? <span className="text-muted small">{String(row.description).replace(/<[^>]+>/g, '').slice(0, 80)}</span> : null}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** `document_size`: bytes as Odoo prints them — "1.21 MB". */
+export function FileSizeField({ value }: FieldProps) {
+  const bytes = Number(value ?? 0);
+  if (!bytes) return <span className="o_field_widget o_readonly" />;
+  const units = ['B', 'kB', 'MB', 'GB', 'TB'];
+  let size = bytes;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) { size /= 1024; unit += 1; }
+  return <span className="o_field_widget o_readonly">{`${unit === 0 ? size : size.toFixed(2)} ${units[unit]}`}</span>;
 }

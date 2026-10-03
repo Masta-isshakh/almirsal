@@ -2,6 +2,7 @@ import type { Environment } from '@engine/orm/env';
 import { postMessage } from '@engine/orm/mail';
 import { UserError } from '@engine/orm/errors';
 import { getSetting } from '@/packages/apps/base/settings';
+import { portalUrl } from '@/packages/apps/common';
 import { findReport, renderReport } from './reports';
 import { renderReportDocument, REPORT_CSS } from '@/components/report/ReportDocument';
 
@@ -85,6 +86,18 @@ export async function sendDocumentMail(env: Environment, options: SendDocumentOp
   const recipients = partners.filter((partner) => typeof partner.email === 'string' && partner.email.includes('@')).map((partner) => ({ email: String(partner.email), name: String(partner.name ?? '') }));
   if (recipients.length === 0) throw new UserError({ en: 'None of the recipients has an email address.', ar: 'لا يملك أي من المستلمين عنوان بريد إلكتروني.' });
 
+  // Odoo's email carries a button to the customer's own page. The link holds the
+  // record's token, so following it needs no account.
+  let portalButton = '';
+  if (options.model === 'sale.order' || options.model === 'account.move') {
+    const base = (process.env.RODEO_APP_URL ?? '').replace(/\/$/, '');
+    const link = `${base}${await portalUrl(env, options.model, options.id)}`;
+    const label = options.model === 'sale.order'
+      ? (env.lang === 'ar_001' ? 'عرض عرض السعر والموافقة عليه' : 'View and accept online')
+      : (env.lang === 'ar_001' ? 'عرض الفاتورة' : 'View the invoice');
+    portalButton = `<p style="margin:20px 0"><a href="${link}" style="background:#714b67;color:#fff;text-decoration:none;border-radius:4px;padding:10px 18px;display:inline-block">${label}</a></p>`;
+  }
+
   let documentHtml = '';
   if (options.reportName) {
     const spec = findReport(options.reportName);
@@ -96,7 +109,7 @@ export async function sendDocumentMail(env: Environment, options: SendDocumentOp
   const [author] = await env.sudo().model('res.users').read(env.uid, ['name', 'email', 'login']);
   const company = await env.sudo().model('res.company').read(env.companyId, ['name', 'email']);
   const from = senderAddress();
-  const html = `<div dir="${env.lang === 'ar_001' ? 'rtl' : 'ltr'}" style="font-family:Noto Sans,system-ui,sans-serif;font-size:14px;color:#111827">${options.body}${documentHtml}<p style="color:#6b7280;font-size:12px;margin-top:24px">${String(company[0]?.name ?? '')}</p></div>`;
+  const html = `<div dir="${env.lang === 'ar_001' ? 'rtl' : 'ltr'}" style="font-family:Noto Sans,system-ui,sans-serif;font-size:14px;color:#111827">${options.body}${portalButton}${documentHtml}<p style="color:#6b7280;font-size:12px;margin-top:24px">${String(company[0]?.name ?? '')}</p></div>`;
 
   const active = await sesTransport();
   let sent = false;
@@ -108,7 +121,27 @@ export async function sendDocumentMail(env: Environment, options: SendDocumentOp
     body: `${options.body}${sent ? '' : `<p style="color:#b45309"><i>${env.lang === 'ar_001' ? 'لم يتم الإرسال: لم يتم إعداد خادم بريد صادر (RODEO_MAIL_FROM).' : 'Not sent: no outgoing mail server is configured (RODEO_MAIL_FROM).'}</i></p>`}`,
     subject: options.subject, messageType: 'email', isInternal: false, partnerIds: options.partnerIds,
   });
+  await markSent(env, options.model, options.id);
   return { sent, messageId, recipients: recipients.map((r) => r.email) };
+}
+
+/**
+ * A document that has been sent says so, as in Odoo: a quotation moves from
+ * Quotation to Quotation Sent, and an invoice is marked as sent so the list
+ * stops nagging. The message is in the chatter either way, so this follows a
+ * composed email even when no transport is configured.
+ */
+async function markSent(env: Environment, model: string, id: number): Promise<void> {
+  const fields = env.registry.models[model]?.fields;
+  if (!fields) return;
+  if (model === 'sale.order') {
+    const [order] = await env.model(model).read(id, ['state']).catch(() => []);
+    if (order?.state === 'draft') await env.model(model).write(id, { state: 'sent' }).catch(() => undefined);
+    return;
+  }
+  if (model === 'account.move' && fields.is_move_sent) {
+    await env.model(model).write(id, { is_move_sent: true }).catch(() => undefined);
+  }
 }
 
 /** Default subject / body / recipients for the composer, per document type. */

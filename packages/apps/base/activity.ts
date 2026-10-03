@@ -148,6 +148,8 @@ export function registerActivities(): void {
           if (env.registry.models[model]) await postMessage(env, model, resId, { body, messageType: 'comment', isInternal: true, subject: 'Activity done' });
           await env.cr.query(`UPDATE mail_activity SET active = false, date_done = $2::date WHERE id = $1`, [row.id, today(env).toString()]);
           // Chain the next activity (type.triggered_next_type_id) when configured.
+          // The export has no such field, so this runs only where it exists.
+          // sql-columns-check: guarded
           const typeId = m2oId(row.activity_type_id);
           if (typeId && env.registry.models['mail.activity.type']?.fields.triggered_next_type_id) {
             const next = await env.cr.query<{ triggered_next_type_id: number | null; chaining_type: string | null }>(`SELECT triggered_next_type_id, chaining_type FROM mail_activity_type WHERE id = $1`, [typeId]);

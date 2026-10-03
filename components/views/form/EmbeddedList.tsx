@@ -44,7 +44,7 @@ export function EmbeddedList({ node, field, arch, comodelFields, rows, parent, r
   const parentScope = makeRecordScope(parent, { uid: user.uid, companyIds: user.companyIds, parent });
   const columns = arch.columns.filter((column): column is FieldNode =>
     column.kind === 'field' && !column.hidden && column.optional !== 'hide' && column.widget !== 'handle' && Boolean(comodelFields[column.name])
-    && !(column.columnInvisible === true || (typeof column.columnInvisible === 'string' && evalCondition(column.columnInvisible.replace(/parent./g, ''), parentScope, false))));
+    && !(column.columnInvisible === true || (typeof column.columnInvisible === 'string' && evalCondition(column.columnInvisible.replace(/\bparent\./g, ''), parentScope, false))));
   const visible = rows.filter((row) => !row.deleted);
   const editable = !readonly && arch.editable !== undefined;
   const isSection = (row: LineRow) => typeof row.values.display_type === 'string' && String(row.values.display_type).startsWith('line_');
@@ -159,7 +159,7 @@ export function EmbeddedList({ node, field, arch, comodelFields, rows, parent, r
             if (isSection(row)) {
               const note = row.values.display_type === 'line_note';
               return (
-                <tr key={row.key} onClick={() => editable && setEditing(row.key)}>
+                <tr key={row.key} className="o_data_row" onClick={() => editable && setEditing(row.key)}>
                   <td colSpan={columns.length} className={note ? 'fst-italic text-muted' : 'fw-bold'}>
                     {isEditing ? (
                       <input className="o_input w-100" value={String(row.values.name ?? '')} autoFocus placeholder={t(note ? 'Add a note' : 'Section name')}
@@ -171,7 +171,7 @@ export function EmbeddedList({ node, field, arch, comodelFields, rows, parent, r
               );
             }
             return (
-              <tr key={row.key} onClick={() => editable && setEditing(row.key)}>
+              <tr key={row.key} className="o_data_row" onClick={() => editable && setEditing(row.key)}>
                 {columns.map((column) => {
                   const def = comodelFields[column.name];
                   const numeric = ['integer', 'float', 'monetary'].includes(def.type);

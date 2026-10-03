@@ -1,5 +1,6 @@
 import type { I18n } from '../i18n/types.js';
 import { applySqlViews } from './sql-views.js';
+import { addCounterExpressions } from './counters.js';
 import { pgIdentifier } from '../db/identifiers.js';
 import type {
   ActivityArch,
@@ -1071,6 +1072,12 @@ function m2mTableFor(model: string, field: FieldDef): Pick<FieldDef, 'm2mTable' 
 export interface ExtraModels {
   model_names: Record<string, { name: string; transient: boolean }>;
   models: Record<string, Record<string, RawField>>;
+  /**
+   * SQL for fields the export declares but computes in Python. `models` above
+   * only fills gaps — a captured field is never overridden — so a field the
+   * screens read (a vehicle's contract reminders) is given its expression here.
+   */
+  field_sql?: Record<string, Record<string, string> | string>;
 }
 
 /** One2many fields Odoo declares `copy=True`: duplicating the parent duplicates these lines. */
@@ -1082,6 +1089,25 @@ const COPIED_LINES = new Set([
   'approval.category.approver_ids', 'sign.template.sign_item_ids', 'resource.calendar.attendance_ids',
   'planning.slot.template_id', 'appointment.type.slot_ids', 'appointment.type.question_ids', 'account.asset.depreciation_move_ids',
 ]);
+
+/**
+ * The field a record is named by. Odoo's `_rec_name` is `name` unless the model
+ * says otherwise, and the export does not carry the exception — so a model
+ * without a `name` is named by the field that reads as its name (a survey
+ * answer by its `value`, a bank statement by its `reference`). Without this a
+ * many2one to such a model shows the id, which is what Odoo never does.
+ */
+const REC_NAME_ORDER = ['name', 'complete_name', 'display_name', 'title', 'subject', 'reference', 'key', 'code', 'value', 'label', 'login', 'email', 'description'];
+
+function chooseRecName(fields: Record<string, FieldDef>): string {
+  for (const candidate of REC_NAME_ORDER) {
+    const field = fields[candidate];
+    if (!field) continue;
+    if (candidate === 'display_name') return candidate;
+    if (['char', 'text'].includes(field.type)) return candidate;
+  }
+  return 'id';
+}
 
 export function convertModels(spec: RawSpec, extra?: ExtraModels): Record<string, ModelDef> {
   const models: Record<string, ModelDef> = {};
@@ -1109,7 +1135,7 @@ export function convertModels(spec: RawSpec, extra?: ExtraModels): Record<string
       name,
       description,
       table: tableNameOf(name),
-      recName: converted.name ? 'name' : (converted.display_name ? 'display_name' : 'id'),
+      recName: chooseRecName(converted),
       order: 'id',
       fields: converted,
       access: [],
@@ -1387,6 +1413,19 @@ export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
   addAuditFields(models);
   validateRelatedFields(models);
   applySqlViews(models);
+  addMissingRequiredFields(models, views);
+  // Smart-button counters, read from the relation they count.
+  addCounterExpressions(models);
+  for (const [model, fields] of Object.entries(extra?.field_sql ?? {})) {
+    if (typeof fields === 'string') continue; // the section's own README
+    for (const [name, sql] of Object.entries(fields)) {
+      const field = models[model]?.fields[name];
+      if (!field) continue;
+      field.sqlExpr = sql;
+      field.readonly = true;
+      field.store = false;
+    }
+  }
 
   return {
     session: spec.session,
@@ -1401,6 +1440,41 @@ export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
     appIcons: convertAppIcons(spec),
     seed: spec.seed,
   };
+}
+
+/**
+ * A required field the form never shows makes the screen refuse to save for a
+ * reason the person cannot act on: Odoo's own form has the field, the export
+ * dropped it (the view was captured from a record where it was set). Put it
+ * back at the end of the sheet so New and Save work.
+ */
+const AUDIT = new Set(['id', 'create_uid', 'create_date', 'write_uid', 'write_date', 'display_name', '__last_update']);
+
+function addMissingRequiredFields(models: Record<string, ModelDef>, views: Record<string, ViewDef>): void {
+  const namesIn = (node: unknown, out: Set<string>, depth = 0): void => {
+    if (!node || typeof node !== 'object' || depth > 16) return;
+    if (Array.isArray(node)) { for (const item of node) namesIn(item, out, depth + 1); return; }
+    const obj = node as Record<string, unknown>;
+    if (obj.kind === 'field' && typeof obj.name === 'string') { out.add(obj.name); return; }
+    for (const value of Object.values(obj)) if (value && typeof value === 'object') namesIn(value, out, depth + 1);
+  };
+  for (const view of Object.values(views)) {
+    if (view.arch.type !== 'form') continue;
+    const model = models[view.model];
+    if (!model || model.sqlView) continue;
+    const shown = new Set<string>();
+    namesIn(view.arch.body, shown);
+    const missing = Object.values(model.fields).filter((field) => (
+      field.required === true && field.default === undefined && !field.sqlExpr && !field.compute && !field.related
+      && field.readonly !== true && !shown.has(field.name) && !AUDIT.has(field.name)
+    ));
+    if (!missing.length) continue;
+    view.arch.body.push({
+      kind: 'group',
+      children: missing.map((field) => ({ kind: 'field', name: field.name, decorations: {}, attrs: {} } as FormNode)),
+      attrs: {},
+    } as FormNode);
+  }
 }
 
 /* ------------------------------------------------------------------ *

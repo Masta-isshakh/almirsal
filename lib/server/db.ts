@@ -5,6 +5,8 @@ import { syncSchema } from '@engine/schema/ddl';
 import { brandCompany, ensureLoginUnique, loadSeed } from '@engine/seed/load';
 import { getRegistry } from './registry';
 import { registerApps } from '@/packages/apps/index';
+import { setFileStore } from '@engine/orm/filestore';
+import { s3FileStore } from './files';
 import { setIdentityProvider, setTemporaryPasswordMailer } from '@/packages/apps/base/users';
 import { sendPlainMail } from './mail';
 import { cognitoIdentityProvider } from './cognito';
@@ -54,6 +56,11 @@ function auroraConfig(): AuroraConfig | null {
 async function connect(): Promise<Database> {
   const registry = getRegistry();
   registerApps(registry);
+  // Attachment payloads go to the bucket `amplify/storage` defines when there
+  // is one; otherwise they stay in the row, as they always have.
+  const files = await s3FileStore();
+  setFileStore(files);
+  if (files) console.log(`Attachments: ${files.description}`);
   // Settings › Users provisions Cognito accounts when a user pool is configured.
   setIdentityProvider(cognitoIdentityProvider());
   setTemporaryPasswordMailer((env, email, name, password) => sendPlainMail(env, {

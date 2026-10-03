@@ -4726,6 +4726,27 @@
      "in_invoices=Vendor Bills ⇔ فواتير الموردين",
      "out_and_in_invoices=Customer Invoices and Vendor Bills ⇔ فواتير العملاء والموردين"
     ]
+   },
+   "report_header": {
+    "s": "Company Tagline",
+    "ar": "شعار الشركة النصي",
+    "t": "text"
+   },
+   "report_footer": {
+    "s": "Report Footer",
+    "ar": "تذييل التقرير",
+    "t": "html"
+   },
+   "company_details": {
+    "s": "Company Details",
+    "ar": "تفاصيل الشركة",
+    "t": "html"
+   },
+   "paperformat_id": {
+    "s": "Paper Format",
+    "ar": "تنسيق الورق",
+    "t": "many2one",
+    "rel": "report.paperformat"
    }
   },
   "knowledge.article": {
@@ -4847,6 +4868,26 @@
     "ar": "منتهي الصلاحية",
     "t": "boolean",
     "sql": "({alias}.validity_date IS NOT NULL AND {alias}.validity_date < CURRENT_DATE AND {alias}.state IN ('draft', 'sent'))"
+   },
+   "access_token": {
+    "s": "Security Token",
+    "ar": "رمز الأمان",
+    "t": "char"
+   },
+   "signature": {
+    "s": "Signature",
+    "ar": "التوقيع",
+    "t": "binary"
+   },
+   "signed_by": {
+    "s": "Signed By",
+    "ar": "وقّع بواسطة",
+    "t": "char"
+   },
+   "signed_on": {
+    "s": "Signed On",
+    "ar": "تاريخ التوقيع",
+    "t": "datetime"
    }
   },
   "sale.order.line": {
@@ -4968,6 +5009,11 @@
     "ar": "بادئة التسلسل",
     "t": "char",
     "sql": "regexp_replace(coalesce({alias}.name, ''), '[0-9]+$', '')"
+   },
+   "access_token": {
+    "s": "Security Token",
+    "ar": "رمز الأمان",
+    "t": "char"
    }
   },
   "sale.advance.payment.inv": {
@@ -5718,6 +5764,37 @@
     "t": "many2one",
     "rel": "res.lang"
    }
+  },
+  "sign.request.item": {
+   "access_token": {
+    "s": "Security Token",
+    "ar": "رمز الأمان",
+    "t": "char"
+   },
+   "signing_date": {
+    "s": "Signed on",
+    "ar": "تاريخ التوقيع",
+    "t": "date"
+   },
+   "signature": {
+    "s": "Signature",
+    "ar": "التوقيع",
+    "t": "binary"
+   }
+  }
+ },
+ "field_sql": {
+  "README": "SQL for fields the export declares but computes in Python. The capture always wins over `models` above, so a computed field the screens need is given its expression here. {alias} is the row, {uid} the user, {model} the model name.",
+  "fleet.vehicle": {
+   "contract_renewal_overdue": "EXISTS (SELECT 1 FROM fleet_vehicle_log_contract c WHERE c.vehicle_id = {alias}.\"id\" AND c.state IN ('open', 'expired') AND c.expiration_date IS NOT NULL AND c.expiration_date < current_date AND coalesce(c.active, true))",
+   "contract_renewal_due_soon": "EXISTS (SELECT 1 FROM fleet_vehicle_log_contract c WHERE c.vehicle_id = {alias}.\"id\" AND c.state IN ('open', 'expired') AND c.expiration_date IS NOT NULL AND c.expiration_date >= current_date AND c.expiration_date <= current_date + 15 AND coalesce(c.active, true))",
+   "service_activity": "SELECT CASE WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') < current_date THEN 'overdue' WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') = current_date THEN 'today' WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') IS NOT NULL THEN 'planned' ELSE 'none' END FROM fleet_vehicle_log_services s WHERE s.vehicle_id = {alias}.\"id\" AND coalesce(s.active, true)"
+  },
+  "fleet.vehicle.log.contract": {
+   "has_open_contract": "EXISTS (SELECT 1 FROM fleet_vehicle_log_contract o WHERE o.vehicle_id = {alias}.\"vehicle_id\" AND o.state = 'open' AND coalesce(o.active, true))"
+  },
+  "account.move": {
+   "alerts": "SELECT coalesce(jsonb_object_agg(x.code, jsonb_build_object('level', x.level)), '{}'::jsonb) FROM (  SELECT 'no_lines' AS code, 'warning' AS level   WHERE {alias}.state = 'draft'     AND NOT EXISTS (SELECT 1 FROM account_move_line l WHERE l.move_id = {alias}.\"id\" AND coalesce(l.display_type, 'product') NOT IN ('tax', 'payment_term'))  UNION ALL SELECT 'no_partner', 'warning'   WHERE {alias}.move_type <> 'entry' AND {alias}.partner_id IS NULL  UNION ALL SELECT 'no_invoice_date', 'warning'   WHERE {alias}.state = 'draft' AND {alias}.invoice_date IS NULL AND {alias}.move_type IN ('in_invoice', 'in_refund', 'in_receipt')  UNION ALL SELECT 'unbalanced', 'danger'   WHERE {alias}.state = 'draft' AND {alias}.move_type = 'entry'     AND coalesce((SELECT round(sum(coalesce(l.debit, 0) - coalesce(l.credit, 0))::numeric, 2) FROM account_move_line l WHERE l.move_id = {alias}.\"id\"), 0) <> 0  UNION ALL SELECT 'duplicated_ref', 'warning'   WHERE coalesce({alias}.ref, '') <> ''     AND EXISTS (SELECT 1 FROM account_move m2 WHERE m2.\"id\" <> {alias}.\"id\" AND m2.ref = {alias}.ref                   AND m2.move_type = {alias}.move_type AND m2.partner_id IS NOT DISTINCT FROM {alias}.partner_id)) x"
   }
  }
 }

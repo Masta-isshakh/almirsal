@@ -34,6 +34,14 @@ const backend = defineBackend({ auth, storage, migrate });
 const { cfnUserPool } = backend.auth.resources.cfnResources;
 cfnUserPool.adminCreateUserConfig = { ...(cfnUserPool.adminCreateUserConfig as object), allowAdminCreateUserOnly: true };
 cfnUserPool.userPoolAddOns = { advancedSecurityMode: 'OFF' };
+// The user pool's update handler sends every schema entry to Cognito as a custom
+// attribute to add: without a data type it fails with "Invalid AttributeDataType
+// input", with one it fails with "Required custom attributes are not supported".
+// The only attribute in the schema is the standard email one, which every pool
+// already has (and Cognito never removes an attribute), so the schema is left out
+// of the template and updates to the pool go through. Email is the username
+// attribute, so a new pool still requires it at sign-in.
+cfnUserPool.addPropertyDeletionOverride('Schema');
 
 const dbStack = backend.createStack('database');
 const branch = process.env.AWS_BRANCH ?? 'sandbox';
@@ -43,7 +51,10 @@ const database = new AuroraDatabase(dbStack, 'Aurora', { production: branch === 
 // Names are left to CloudFormation: a nested stack's name is ~80 characters,
 // which would push a hand-built IAM role name past the 64-character limit.
 const dataApiPolicy = new iam.ManagedPolicy(dbStack, 'DataApiAccess', {
-  description: 'Almirsal: Aurora Data API and DB secret access for the Amplify Hosting compute role',
+  // Keep this text as deployed: IAM cannot change a managed policy's description
+  // in place, so editing it means replacing the policy, which a sandbox stack
+  // (deployed without rollback) refuses to do.
+  description: 'Rodeo ERP: Aurora Data API and DB secret access for the Amplify Hosting compute role',
   statements: [
     new iam.PolicyStatement({
       actions: [
@@ -74,6 +85,16 @@ const computeRole = new iam.Role(dbStack, 'ComputeRole', {
 // Outgoing email (Send quotation / invoice) goes through SES; the sender identity
 // is verified once in the SES console and set as RODEO_MAIL_FROM on the branch.
 computeRole.addToPolicy(new iam.PolicyStatement({ actions: ['ses:SendEmail', 'ses:SendRawEmail'], resources: ['*'] }));
+
+/**
+ * Attachment payloads live in the bucket `storage/resource.ts` defines, and the
+ * SSR compute reads and writes them as itself — the bucket's own rules cover
+ * browser identities, not this role. Odoo's file store, in other words; the
+ * row keeps only the key. Aurora's Data API refuses a result over a megabyte,
+ * so a large attachment could not be read back any other way.
+ */
+const filesBucket = backend.storage.resources.bucket;
+filesBucket.grantReadWrite(computeRole);
 
 // Settings › Users provisions accounts in the pool (invite, disable, reset).
 computeRole.addToPolicy(new iam.PolicyStatement({

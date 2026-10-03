@@ -204,16 +204,12 @@ export function registerUsers(registry?: Registry): void {
       }
     },
     computes: [{
-      fields: ['companies_count', 'active_partner'],
-      depends: ['company_ids', 'partner_id', 'active'],
+      fields: ['active_partner'],
+      depends: ['partner_id', 'active'],
       compute: async (env, ids) => {
-        const companies = env.registry.models['res.users'].fields.company_ids;
-        const counts = companies?.m2mTable
-          ? await env.cr.query<{ id: number; n: number }>(`SELECT "${companies.m2mColumn1}" AS id, count(*)::int AS n FROM "${companies.m2mTable}" WHERE "${companies.m2mColumn1}" = ANY($1) GROUP BY 1`, [ids])
-          : { rows: [] as { id: number; n: number }[] };
         const partners = await env.cr.query<{ id: number; active: boolean | null }>(`SELECT u.id, p.active FROM res_users u LEFT JOIN res_partner p ON p.id = u.partner_id WHERE u.id = ANY($1)`, [ids]);
         const out: Record<number, Values> = {};
-        for (const id of ids) out[id] = { companies_count: counts.rows.find((row) => Number(row.id) === id)?.n ?? 0, active_partner: partners.rows.find((row) => Number(row.id) === id)?.active ?? true };
+        for (const id of ids) out[id] = { active_partner: partners.rows.find((row) => Number(row.id) === id)?.active ?? true };
         return out;
       },
     }],

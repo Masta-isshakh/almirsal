@@ -79,9 +79,39 @@ export function registerModelHooks(model: string, hooks: ModelHooks): void {
     HOOKS.set(model, { ...hooks });
     return;
   }
+  // Two modules may both give a model defaults (its own app and the shared
+  // form defaults); merging keeps both, with the later registration winning
+  // per field, so registration order does not decide what a new record gets.
+  const defaults = existing.defaults && hooks.defaults
+    ? async (env: Environment) => ({ ...(await existing.defaults!(env)), ...(await hooks.defaults!(env)) })
+    : hooks.defaults ?? existing.defaults;
+  // The same is true of the lifecycle: two modules may each have something to
+  // do when a record is created (an app's own rule and renting's period), so
+  // both run, in registration order, the later one seeing the earlier's values.
+  const beforeCreate = existing.beforeCreate && hooks.beforeCreate
+    ? async (env: Environment, vals: Values) => hooks.beforeCreate!(env, await existing.beforeCreate!(env, vals))
+    : hooks.beforeCreate ?? existing.beforeCreate;
+  const beforeWrite = existing.beforeWrite && hooks.beforeWrite
+    ? async (env: Environment, ids: number[], vals: Values) => hooks.beforeWrite!(env, ids, await existing.beforeWrite!(env, ids, vals))
+    : hooks.beforeWrite ?? existing.beforeWrite;
+  const onCreate = existing.onCreate && hooks.onCreate
+    ? async (env: Environment, ids: number[], vals: Values[]) => { await existing.onCreate!(env, ids, vals); await hooks.onCreate!(env, ids, vals); }
+    : hooks.onCreate ?? existing.onCreate;
+  const onWrite = existing.onWrite && hooks.onWrite
+    ? async (env: Environment, ids: number[], vals: Values, previous: Values[]) => { await existing.onWrite!(env, ids, vals, previous); await hooks.onWrite!(env, ids, vals, previous); }
+    : hooks.onWrite ?? existing.onWrite;
+  const onUnlink = existing.onUnlink && hooks.onUnlink
+    ? async (env: Environment, ids: number[]) => { await existing.onUnlink!(env, ids); await hooks.onUnlink!(env, ids); }
+    : hooks.onUnlink ?? existing.onUnlink;
   HOOKS.set(model, {
     ...existing,
     ...hooks,
+    defaults,
+    beforeCreate,
+    beforeWrite,
+    onCreate,
+    onWrite,
+    onUnlink,
     computes: [...(existing.computes ?? []), ...(hooks.computes ?? [])],
     tracked: [...new Set([...(existing.tracked ?? []), ...(hooks.tracked ?? [])])],
     searchFields: [...new Set([...(existing.searchFields ?? []), ...(hooks.searchFields ?? [])])],

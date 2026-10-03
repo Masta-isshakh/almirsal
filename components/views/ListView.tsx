@@ -9,6 +9,9 @@ import { rpc } from '@/lib/client/rpc';
 import { useLang, useT } from '@/lib/client/i18n';
 import { badgeClass, decorationClasses, listColumns, listFieldNames, makeRecordScope, specificationFor } from '@/lib/client/arch';
 import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
+import { AnalyticDistributionField, StatisticsField } from '../fields/widgets';
+import { Field } from '../fields/Field';
+import { widgetKind } from '../fields/routing';
 import type { SessionInfo } from '../webclient/WebClient';
 import { EmptyState } from './EmptyState';
 import { ListSkeleton } from './Skeleton';
@@ -112,11 +115,28 @@ export function ListView(props: Props) {
   const sortField = order?.split(',')[0]?.trim().split(/\s+/) ?? [];
   const isEmpty = !loading && ((records && records.length === 0) || (groups && groups.length === 0));
 
-  const renderRow = (record: Rec) => {
+  // Odoo's `handle` widget: a grip in the first column that drags a row to a
+  // new place and writes the order back on the sequence field.
+  const handleColumn = columns.find((column) => column.widget === 'handle');
+  const reorder = async (from: number, to: number) => {
+    if (!handleColumn || !records || from === to) return;
+    const ordered = [...records];
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    setRecords(ordered);
+    await Promise.all(ordered.map((record, index) => rpc('write', model, { ids: [record.id], values: { [handleColumn.name]: (index + 1) * 10 } })))
+      .catch(() => undefined);
+  };
+
+  const renderRow = (record: Rec, position = 0) => {
     const scope = makeRecordScope(record, { uid: user.uid, context, companyIds: user.companyIds, fields });
     const rowClass = decorationClasses(arch.decorations, scope);
     return (
-      <tr key={record.id as number} className={`${rowClass} ${selected.has(record.id as number) ? 'o_selected' : ''}`} onClick={() => onOpen(record.id as number)} onMouseEnter={() => onHover?.(record.id as number)}>
+      <tr key={record.id as number} draggable={Boolean(handleColumn)}
+        onDragStart={(event) => { if (handleColumn) event.dataTransfer.setData('text/plain', String(position)); }}
+        onDragOver={(event) => { if (handleColumn) event.preventDefault(); }}
+        onDrop={(event) => { if (!handleColumn) return; event.preventDefault(); void reorder(Number(event.dataTransfer.getData('text/plain')), position); }}
+        className={`o_data_row ${rowClass} ${selected.has(record.id as number) ? 'o_selected' : ''}`} onClick={() => onOpen(record.id as number)} onMouseEnter={() => onHover?.(record.id as number)}>
         <td className="o_list_record_selector" onClick={(event) => event.stopPropagation()}><input type="checkbox" className="form-check-input" checked={selected.has(record.id as number)} onChange={() => toggleSelected(record.id as number)} /></td>
         {columns.map((column, index) => <Cell key={`${column.name}-${index}`} column={column} field={fields[column.name]} record={record} scope={scope} />)}
         <td />
@@ -137,7 +157,7 @@ export function ListView(props: Props) {
               const field = fields[column.name];
               const numeric = field && ['integer', 'float', 'monetary'].includes(field.type);
               return (
-                <th key={`${column.name}-${index}`} className={`o_column_sortable ${numeric ? 'o_list_number_th' : ''}`} onClick={() => toggleSort(column)}>
+                <th key={`${column.name}-${index}`} data-name={column.name} className={`o_column_sortable ${numeric ? 'o_list_number_th' : ''}`} onClick={() => toggleSort(column)}>
                   {t(column.string ?? field?.label ?? column.name)}
                   {sortField[0] === column.name && <i className={`fa ${sortField[1] === 'desc' ? 'fa-angle-down' : 'fa-angle-up'}`} />}
                 </th>
@@ -152,7 +172,7 @@ export function ListView(props: Props) {
         </thead>
         <tbody>
           {isEmpty && arch.sample && <SampleRows columns={columns} fields={fields} />}
-          {records?.map(renderRow)}
+          {records?.map((record, index) => renderRow(record, index))}
           {groups?.map((row) => {
             const key = JSON.stringify(row.__domain);
             const groupField = groupBy[0]?.split(':')[0];
@@ -218,37 +238,93 @@ function Cell({ column, field, record, scope }: { column: FieldNode; field: Fiel
   const numeric = ['integer', 'float', 'monetary'].includes(field.type);
   const classes = [numeric ? 'o_list_number' : '', decorationClasses(column.decorations, scope)].filter(Boolean).join(' ');
 
+  if (column.widget === 'handle') {
+    return <td data-name={column.name} className="o_row_handle" title={t('Drag to reorder')}><i className="fa fa-ellipsis-v" aria-hidden="true" /><i className="fa fa-ellipsis-v" aria-hidden="true" /></td>;
+  }
   if (column.widget === 'badge' || column.widget === 'label_selection') {
     const text = formatValue(field, value, { lang, widget: column.widget, record, currencies });
-    return <td className={classes}>{text && <span className={`badge rounded-pill ${badgeClass(column.decorations, scope)}`}>{text}</span>}</td>;
+    return <td data-name={column.name} className={classes}>{text && <span className={`badge rounded-pill ${badgeClass(column.decorations, scope)}`}>{text}</span>}</td>;
   }
   if (column.widget === 'many2many_tags' && Array.isArray(value)) {
     return (
-      <td className={classes}>
+      <td data-name={column.name} className={classes}>
         {value.map((item, index) => <span key={index} className="badge rounded-pill text-bg-secondary me-1">{nameOf(item) || idOf(item)}</span>)}
       </td>
     );
   }
   if (column.widget === 'boolean_toggle' || field.type === 'boolean') {
-    return <td className={classes}><input type="checkbox" className="form-check-input" checked={Boolean(value)} readOnly /></td>;
+    return <td data-name={column.name} className={classes}><input type="checkbox" className="form-check-input" checked={Boolean(value)} readOnly /></td>;
   }
   if (column.widget === 'many2one_avatar_user' && value) {
     const name = nameOf(value);
     return (
-      <td className={classes}>
+      <td data-name={column.name} className={classes}>
         <span className="o_avatar me-2" style={{ width: 20, height: 20, fontSize: 10, borderRadius: '50%', background: `hsl(${[...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % 360}, 68%, 52%)` }}>{name.slice(0, 1)}</span>{name}
       </td>
     );
   }
   if (column.widget === 'priority') {
     const level = Number(value) || 0;
-    return <td className={classes}>{[1, 2, 3].map((star) => <i key={star} className={`fa ${level >= star ? 'fa-star text-warning' : 'fa-star-o text-muted'}`} />)}</td>;
+    return <td data-name={column.name} className={classes}>{[1, 2, 3].map((star) => <i key={star} className={`fa ${level >= star ? 'fa-star text-warning' : 'fa-star-o text-muted'}`} />)}</td>;
+  }
+  // `shortcut`: a canned response is typed as ":hello".
+  if (column.widget === 'shortcut') {
+    const text = value === false || value == null ? '' : String(value);
+    return <td data-name={column.name} className={classes}>{text ? <span className="o_shortcut badge rounded-pill text-bg-light border font-monospace">{`:${text}`}</span> : null}</td>;
+  }
+  if (column.widget === 'contact_statistics') {
+    return <td data-name={column.name} className={classes}><StatisticsField node={column} field={field} value={value} record={record} readonly required={false} onChange={() => undefined} /></td>;
+  }
+  if (column.widget === 'analytic_distribution') {
+    return <td data-name={column.name} className={classes}><AnalyticDistributionField node={column} field={field} value={value} record={record} readonly required={false} onChange={() => undefined} /></td>;
+  }
+  // `char_with_placeholder_field`: an unnumbered draft shows its placeholder.
+  if (column.widget === 'char_with_placeholder_field') {
+    const text = value === false || value == null || value === '/' ? '' : String(value);
+    return <td data-name={column.name} className={classes}>{text || <span className="text-muted">{t(column.placeholder ?? 'Draft')}</span>}</td>;
+  }
+  if (column.widget === 'activity_exception') {
+    return <td data-name={column.name} className={classes}>{value ? <i className="fa fa-exclamation-triangle text-warning" title={t('Exception')} /> : null}</td>;
+  }
+  // `rotting`: the stage, with the clock Odoo adds when a record sits too long.
+  if (column.widget === 'rotting') {
+    return (
+      <td data-name={column.name} className={classes}>
+        {formatValue(field, value, { lang, record, currencies })}
+        {record.is_rotting ? <i className="fa fa-clock-o text-danger ms-1" title={t('This record has been in this stage for a while')} /> : null}
+      </td>
+    );
+  }
+  // `name_with_subtask_count`: "Design (2 sub-tasks)".
+  if (column.widget === 'name_with_subtask_count') {
+    const subtasks = Number(record.subtask_count ?? 0);
+    return <td data-name={column.name} className={classes}>{String(value ?? '')}{subtasks ? <span className="text-muted ms-1">{subtasks === 1 ? t('(1 sub-task)') : `(${subtasks} ${t('sub-tasks')})`}</span> : null}</td>;
   }
   if (column.widget === 'list_activity' || column.widget === 'kanban_activity') {
-    return <td className={classes}><i className="fa fa-clock-o text-muted" title={t('Activities')} /></td>;
+    return <td data-name={column.name} className={classes}><i className="fa fa-clock-o text-muted" title={t('Activities')} /></td>;
   }
-  return <td className={classes}>{formatValue(field, value, { lang, widget: column.widget, record, currencies })}</td>;
+  // A widget the cells above do not draw themselves, but the field renderer
+  // does, is drawn by it — a file size, a star, a badge or a link then looks
+  // the same in a list as it does on a form.
+  if (column.widget && CELL_WIDGETS.has(widgetKind(column.widget, field) ?? '')) {
+    return (
+      <td data-name={column.name} className={classes}>
+        <Field node={column} field={field} value={value} record={record} readonly required={false} onChange={() => undefined} />
+      </td>
+    );
+  }
+  return <td data-name={column.name} className={classes}>{formatValue(field, value, { lang, widget: column.widget, record, currencies })}</td>;
 }
+
+/**
+ * The widget kinds a list cell hands to the field renderer. They all draw a
+ * value rather than an editor, so a cell stays a cell.
+ */
+const CELL_WIDGETS = new Set([
+  'file_size', 'favorite', 'statistics', 'selection_badge', 'relative_date', 'open_record', 'presence_status',
+  'activity_exception', 'percentpie', 'progressbar', 'clipboard', 'link', 'remaining_days', 'analytic_distribution',
+  'image', 'color', 'x2many_buttons',
+]);
 
 function OptionalColumns({ columns, fields, shown, onToggle }: { columns: FieldNode[]; fields: Record<string, FieldDef>; shown: Set<string>; onToggle: (name: string) => void }) {
   const t = useT();

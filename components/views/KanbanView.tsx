@@ -143,7 +143,15 @@ export function KanbanView({ arch, fields, model, domain, groupBy, offset, limit
   const cardButtons = ((card?.buttons ?? []) as CardButton[]).filter((b) => b.name && (b.type === 'object' || b.type === 'action'));
   const menuButtons = (((arch.templates as Record<string, { buttons?: CardButton[] }>).menu?.buttons ?? []) as CardButton[]).filter((b) => (b.type === 'object' || b.type === 'action') && b.name || b.type === 'archive' || b.type === 'unarchive' || b.type === 'open' || b.type === 'edit');
   /** A card button: object method, registry action, archive/unarchive, or open the form. */
+  /**
+   * A card button. A refusal from the server ("add a question first") is
+   * already shown as a dialog by the RPC layer; swallowing it here keeps it
+   * from surfacing again as an unhandled error.
+   */
   const runButton = async (record: Rec, button: CardButton) => {
+    try { await runCardButton(record, button); } catch { /* the dialog said it */ }
+  };
+  const runCardButton = async (record: Rec, button: CardButton) => {
     const id = record.id as number;
     if (button.type === 'open' || button.type === 'edit') { onOpen(id); return; }
     if (button.type === 'archive' || button.type === 'unarchive') { await rpc('toggleActive', model, { ids: [id] }); setReload((n) => n + 1); return; }

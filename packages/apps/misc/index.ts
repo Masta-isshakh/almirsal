@@ -114,17 +114,39 @@ export function registerMisc(): void {
   });
   registerModelHooks('base.document.layout', {
     defaults: async (env) => {
-      const rows = await env.sudo().model('res.company').read(env.companyId, ['logo', 'primary_color', 'secondary_color', 'font', 'external_report_layout_id', 'name']).catch(() => [] as Values[]);
+      const wanted = ['logo', 'primary_color', 'secondary_color', 'font', 'external_report_layout_id', 'name', 'report_header', 'report_footer', 'company_details', 'paperformat_id']
+        .filter((name) => env.registry.models['res.company'].fields[name]);
+      const rows = await env.sudo().model('res.company').read(env.companyId, wanted).catch(() => [] as Values[]);
       const c = rows[0] ?? {};
-      return { company_id: env.companyId, logo: c.logo ?? false, primary_color: c.primary_color || '#714B67', secondary_color: c.secondary_color || '#017E84', font: c.font || 'Lato', external_report_layout_id: m2o(c.external_report_layout_id) || false, report_tables_id: 'light', custom_colors: true, name: c.name };
+      const layout = await env.model('report.layout').search([], { limit: 1 }).catch(() => [] as number[]);
+      return {
+        company_id: env.companyId, logo: c.logo ?? false,
+        primary_color: c.primary_color || '#714B67', secondary_color: c.secondary_color || '#017E84',
+        font: c.font || 'Lato', external_report_layout_id: m2o(c.external_report_layout_id) || false,
+        report_layout_id: layout[0] ?? false, report_tables_id: 'light', custom_colors: true, name: c.name,
+        report_header: c.report_header ?? false, report_footer: c.report_footer ?? false,
+        company_details: c.company_details ?? false, paperformat_id: m2o(c.paperformat_id) || false,
+      };
     },
     methods: {
+      /** "Continue" on the layout wizard: the choices belong to the company. */
       document_layout_save: async (env, ids) => {
-        const [w] = await env.model('base.document.layout').read(ids[0], ['logo', 'primary_color', 'secondary_color', 'font', 'external_report_layout_id', 'company_details', 'report_header', 'report_footer']);
+        const [w] = await env.model('base.document.layout').read(ids[0], ['logo', 'primary_color', 'secondary_color', 'font', 'external_report_layout_id', 'report_layout_id', 'company_details', 'report_header', 'report_footer', 'paperformat_id']);
+        const companyFields = env.registry.models['res.company'].fields;
         const vals: Values = { primary_color: w.primary_color, secondary_color: w.secondary_color, font: w.font };
         if (w.logo) vals.logo = w.logo;
+        // The layout is either the view the wizard names or the sample the
+        // gallery offers; both end up on the company.
         if (m2o(w.external_report_layout_id)) vals.external_report_layout_id = m2o(w.external_report_layout_id);
+        else if (m2o(w.report_layout_id)) {
+          const [layout] = await env.model('report.layout').read(m2o(w.report_layout_id) as number, ['view_id', 'name']).catch(() => [] as Values[]);
+          if (m2o(layout?.view_id)) vals.external_report_layout_id = m2o(layout.view_id);
+        }
+        for (const key of ['report_header', 'report_footer', 'company_details']) if (companyFields[key] && w[key] !== undefined) vals[key] = w[key];
+        if (companyFields.paperformat_id && m2o(w.paperformat_id)) vals.paperformat_id = m2o(w.paperformat_id);
         await env.sudo().model('res.company').write(env.companyId, vals);
+        // Older databases kept these three as parameters; keep them in step so
+        // nothing that still reads them goes stale.
         for (const key of ['company_details', 'report_header', 'report_footer']) if (w[key] !== undefined) await setParameter(env.cr, `rodeo.layout.${key}`, String(w[key] ?? ''));
         return notify({ en: 'Document layout saved.', ar: 'تم حفظ تخطيط المستند.' }, 'success', { next: closeDialog() });
       },
@@ -293,15 +315,14 @@ export function registerMisc(): void {
         const pid = await partnerOfUser(env, env.uid);
         for (const id of ids) {
           const exists = await env.cr.query<{ n: number }>(`SELECT count(*)::int AS n FROM discuss_channel_member WHERE discuss_channel_id = $1 AND partner_id = $2`, [id, pid]);
+          // member_count is counted from the membership rows (registry/counters).
           if (!exists.rows[0]?.n) await env.model('discuss.channel.member').create({ discuss_channel_id: id, partner_id: pid });
-          await env.cr.query(`UPDATE discuss_channel SET member_count = (SELECT count(*) FROM discuss_channel_member WHERE discuss_channel_id = $1) WHERE id = $1`, [id]).catch(() => undefined);
         }
         return urlAction(`/odoo/discuss?active_id=discuss.channel_${ids[0]}`, 'self');
       },
       action_unfollow: async (env, ids) => {
         const pid = await partnerOfUser(env, env.uid);
         await env.cr.query(`DELETE FROM discuss_channel_member WHERE discuss_channel_id = ANY($1) AND partner_id = $2`, [ids, pid]);
-        for (const id of ids) await env.cr.query(`UPDATE discuss_channel SET member_count = (SELECT count(*) FROM discuss_channel_member WHERE discuss_channel_id = $1) WHERE id = $1`, [id]).catch(() => undefined);
       },
       open_chat_window_action: async (_env, ids) => urlAction(`/odoo/discuss?active_id=discuss.channel_${ids[0]}`, 'self'),
       action_open_discuss: async (_env, ids) => urlAction(`/odoo/discuss?active_id=discuss.channel_${ids[0]}`, 'self'),

@@ -509,6 +509,61 @@ script. Seeded record names (journal names, chart of accounts) are data from
 an English export, not labels; the accounting dashboard renders journal
 titles through the catalog, as Odoo's language pack does.
 
+Screens behind the menus (2026-09-29): the menus opened their screens, but
+"working" had never been tested — only that a view rendered. Three checks now
+use the screens the way a person does, and the fixes came from what they
+found.
+
+- `scripts/dev/screen-check.js` opens every menu action and switches through
+  each view in the switcher, applies the first search filter, groups the
+  rows, presses New and opens a record — 236 screens.
+- `scripts/dev/create-check.js` fills a new record's empty fields, saves it,
+  checks it was written and deletes it again.
+- `scripts/dev/button-check.js` presses each header button, smart button and
+  cog entry on a saved record and reports any that do nothing at all.
+- `scripts/dev/create-probe.mts` is the fast version of the same question at
+  the data layer: can each model be created from a name, and when it refuses,
+  is the field it asks for one the form actually shows?
+
+What they found: a save that failed left the form silent — the error dialog
+named the fields but nothing on the form pointed at them, so the record just
+stayed dirty. The form now marks the refused fields, scrolls to the first and
+clears the mark when you edit it, and required fields carry a marker
+(`o_field_required`). Underneath, a dozen models could not be saved at all
+from their own screen, because a required field with no default sat behind a
+tab or was missing from the form: `packages/apps/base/form-defaults.ts` gives
+those fields the defaults Odoo defines (journal reference type, fleet units,
+activity delays, payment method code, mail server authentication…), the
+loader adds a required field the export dropped back to the end of the sheet,
+and model hooks make the records Odoo makes on the side (a project's mail
+alias, an appointment resource's resource). Knowledge's article editor is a
+custom widget in Odoo, so the export had no visible form for it and New
+opened an empty page; `components/clientactions/Knowledge.tsx` is that screen
+— the tree of workspace, shared and private articles with favourites and
+trash, the title and body, new child articles, duplicate, trash and restore.
+
+The button pass found the rest: 26 buttons the export declares had no
+implementation (`scripts/dev/buttons.mts` counts them), so pressing them
+answered with "Method … is not implemented" or with nothing at all.
+`packages/apps/base/screen-buttons.ts` implements them — the helpdesk team
+dashboard's ticket counters, a sale order's transactions, rentals, projects
+and planning, a company's branches, a message's record, leaving a channel —
+and where this build genuinely cannot do the thing (installing a module,
+two-factor authentication, the spreadsheet editor) the button says so
+instead of failing silently. `scripts/dev/sql-columns-check.mts` catches the
+other silent kind: raw SQL naming a column the schema does not have, which
+aborts the transaction and makes every later statement in the request fail
+with a message that names nothing — one of those was why the lock-date
+wizard could not be opened.
+
+What the checks say now, on a production build over a seeded database: 236
+screens open, switch views, filter, group, offer New and open a record with
+no problem; 191 screens take a new record through New, Save and Delete (the
+rest ask first for a record that does not exist yet on an empty database);
+every button answers; 247 menu visits and 88 dropdowns behave. A button that
+refuses on purpose ("add a question before sharing the survey") counts as
+working — the check reads the error kind and only a crash fails it.
+
 Running the checks: `scripts/dev/nav-check.js` needs a server that is not the
 one under `next dev` in the same folder. Two Next processes in one project
 share `.next/`, and the loser starts serving 404 chunks — the page then
@@ -534,6 +589,238 @@ modules. Binary payloads live in the database until the S3 attachment
 path (`amplify/storage`) is wired.
 
 **177 tests pass; `tsc --noEmit` and `next build` are clean.**
+
+### Accounting, Sales, Renting and Fleet against Odoo (2026-09-30)
+
+A pass through the four apps the screens are used from most, asking of each
+screen not "does it draw" but "does it do what Odoo's does", plus the fields
+and buttons behind them. Two new checks came out of it:
+
+- `scripts/dev/form-fidelity.js` reads the export's own form and list views as
+  the specification and compares them with the screen: every field on the
+  sheet, every tab, every default list column. A field the view hides behind a
+  condition is not expected; everything else is. 176 forms and their lists are
+  compared.
+- `scripts/dev/search-check.js` presses every entry of the Filters and Group By
+  menus of every screen and asserts the screen survived and the search
+  actually changed. A filter whose domain names a column the registry does not
+  have, or a group by the reader cannot group, answers with a server error and
+  leaves an empty screen — nothing else in the suite sees that.
+
+What they found, and what now exists:
+
+- **Renting was a shell.** `is_rental`, `rental_status`, `has_pickable_lines`
+  and `has_returnable_lines` were never written, so the Rental app's own list
+  was empty whatever you created, the Scheduled Rentals gantt found nothing,
+  and Pickup and Return said "nothing to pick up" on every order.
+  `packages/apps/sale/rental.ts` is the app: a line with a rental period is a
+  rental line and inherits the order's period, Pickup records the delivered
+  quantity and Return the returned one, the order's rental status follows its
+  lines (Reserved → Picked-up → Returned), and Update Rental Prices prices the
+  lines from their products again.
+- **Quotation templates did nothing.** Picking a template on a quotation left
+  it empty. `packages/apps/sale/template.ts` copies the template's lines with
+  their products, quantities, discounts and taxes, its sections, its terms,
+  its validity and its signature and payment requirements — and leaves a
+  quotation that already has lines alone. Optional template lines stay out:
+  the export carries no model to keep a customer's options in.
+- **The invoice had no payment panels.** Odoo draws the payments applied to an
+  invoice and the outstanding credits that can be applied with one click;
+  `PaymentsWidget` (the `payment` widget) draws both, and
+  `js_assign_outstanding_line` / `js_remove_outstanding_partial` on
+  `account.move` apply and take off a payment, with the invoice's residual and
+  payment state following.
+- **Fleet never warned about a contract.** `contract_renewal_due_soon`,
+  `contract_renewal_overdue`, `service_activity` and `has_open_contract` are
+  in the export with no compute, so the vehicle list showed no warning and the
+  "contracts to renew" filter found nothing. They are SQL now, declared in
+  `registry/extra-models.json` under `field_sql` (a section for fields the
+  export declares but computes in Python).
+- **Smart-button counters were always zero.** 41 `*_count` fields had nothing
+  to fill them, and a smart button that hides on a zero count stayed hidden —
+  fewer buttons than Odoo shows. `packages/engine/registry/counters.ts` reads
+  each counter from the relation its button opens, as a SQL expression, so 22
+  of them are now always current; the rest are left alone on purpose, because
+  their name says they count a subset ("closed_subtask_count") or belong to a
+  related record ("partner_bill_count") and a count of everything would put a
+  wrong number on the screen. `packages/engine/registry/stems.ts` holds the
+  naming knowledge the counters and the smart-button resolver share.
+- **Widget routing was a chain nobody could audit.** `widgetKind`
+  (`components/fields/routing.ts`) decides which control draws a widget, and
+  `Field` and `scripts/dev/widget-check.mts` now ask the same function — so
+  what the audit calls handled is what the screen draws. That turned a report
+  of 116 "unhandled" widgets, most of them false, into a real list: the
+  remaining 45 are single uses of features this build does not have (OCR
+  extraction, the spreadsheet editor, partner autocomplete over IAP, the mail
+  composer's internals) or names for a control that is already right. Along
+  the way the aliases picked up what Odoo actually asks for: tags where the
+  flavour name comes first (`helpdesk_sla_many2many_tags`), state badges
+  (`state_selection`), favourite stars (`project_is_favorite`), hours as
+  `float_time` (`timesheet_uom`), percentages, embedded lists for the o2m
+  flavours, and the analytic distribution, activity exception, presence
+  status and duplicate-document buttons as their own widgets.
+- **Two hook kinds were silently dropped.** `registerModelHooks` merged
+  `computes`, `tracked` and `defaults` but *replaced* `beforeCreate`,
+  `beforeWrite`, `onCreate`, `onWrite` and `onUnlink`, so a second module
+  registering one of those threw the first away — renting's line rule cost the
+  sale app's own. They chain now, in registration order.
+- The seed no longer writes a field the registry computes in SQL, and the
+  calendar and Discuss code no longer updates counters that are computed.
+
+- **Some menu entries showed a technical name.** About thirty filters and
+  group-bys in Odoo's own search views carry no label (`<filter
+  name="groupby_category" context="{'group_by': 'category'}"/>`), and the menu
+  printed the name: "groupby_category", "myinvoices". `entryLabel`
+  (`components/webclient/search.ts`) does what Odoo does — the label of the
+  field the entry acts on, else the name read as words — and the facet that
+  lands in the search box uses the same label, so both sides also translate.
+
+- **Filters of one group were AND-ed.** Odoo reads the filters between two
+  separators as one question: Customer Invoices switches on both "Invoices" and
+  "Receipts" by default, which asks for either. Ours asked for both at once, so
+  the list was empty on a database that had invoices — the facet now reads
+  "Invoices or Receipts", as Odoo writes it, and the domains are OR-ed
+  (`filterGroups` / `orDomains`, `tests/search-groups.test.ts`).
+- **List rows had no `o_data_row` class.** Odoo names every list row that way;
+  ours did not, so the checks that click a row to open a record silently skipped
+  every list screen and pressed buttons on 14 screens instead of 57. The class
+  is on the rows now (and on the rows of an embedded list), which is both
+  Odoo's markup and what made the button pass real.
+
+`scripts/dev/buttons.mts` also had to be taught that Odoo spells a method
+button more than one way, and to read a view-level click action
+(`<kanban action="…" type="object">`, how the Sales Teams board opens a team)
+as the button it is — which found two unimplemented: all 435 buttons the export
+declares now have an implementation.
+
+`scripts/dev/populate.mts` came out of the same lesson: on an empty database a
+check that needs a record skips the screen and reports nothing, which reads like
+a pass. It puts a record in front of every screen (a required relation is filled
+the way `verify-backend --crud` does) and then builds what the four apps show —
+a quotation, a confirmed order, a posted invoice, a vendor bill, a rental order
+out on rental, a vehicle with a contract, a service and an odometer reading.
+
+What the checks say on the final code, on a production build over a database
+`populate.mts` filled: 236 screens 0 problems (125 of them opening a real
+record, where the earlier rounds could only reach 16), 1054 filter and group-by
+presses on 170 screens 0 broken, 224 buttons pressed on 57 screens 0 dead, 176
+forms missing nothing their view declares, 191 New-and-Save screens 0 failures,
+247 menu visits in English and 247 in Arabic 0 problems, 88 dropdowns painted,
+`verify-backend` 13 782 checks 0 failures, `verify-workflows` 153 checks 0
+failures (renting and fleet among them), 194 unit tests, `tsc --noEmit` and
+`next build` clean, 0 English strings without Arabic. Two runs each flagged one
+item that passed on its own — a click that timed out at six seconds while the
+rest of the suite was running; the fix for a slow machine is to run one check at
+a time, not to trust a single red line.
+
+Known differences from Odoo that remain, on purpose: the invoice `alerts`
+banner (Odoo's actionable errors) is not computed — posting refuses with the
+same message instead; rental prices come from the product, because the export
+carries no `product.pricing` recurrences; a quotation template's optional lines
+are dropped, because the export has no model to keep a customer's options in;
+and 45 single-use widgets draw generically (`scripts/dev/widget-check.mts`
+lists them) — OCR extraction, the spreadsheet editor, partner autocomplete over
+IAP, the mail composer's internals.
+
+### The public pages, the document layout and the last widgets (2026-09-30)
+
+What "not implemented" still covered, closed in order of what a business needs
+most. Every page here is reached by a link that carries its own token; none of
+them creates, reads or touches a session, so nothing about signing in changed.
+
+- **The customer portal** (`app/my/[kind]/[id]`): the page a customer opens from
+  a quotation or an invoice — the document as it prints, what it is waiting for,
+  Accept & Sign (the name they type is kept in `signed_by`/`signed_on` and the
+  order is confirmed), Decline with a reason (the order is cancelled), Print, and
+  the amount due on an invoice. Both answers land in the chatter. Odoo's Preview
+  buttons now open this page instead of the print view, and
+  `_portal_ensure_token` is `portalToken` in `packages/apps/common.ts`.
+- **Signing from a link** (`app/sign/[item]`): every `sign.request.item` carries
+  its own token, so a signer outside the company can read the documents and
+  sign; the request's counters follow, and the last signature closes it. There
+  is no mail gateway in this build, so sending a request puts each signer's link
+  in the chatter for whoever sent it.
+- **The public survey** (`app/survey/start/[token]`): the questions as a form —
+  single and multiple choice, short and long text, numbers and scales, dates —
+  answered into `survey.user_input` with one `survey.user_input.line` per
+  question (a skipped question included), which is what the survey's own
+  reporting reads. An invitation-only survey needs its answer token.
+- **Appointment booking** (`app/appointment/[id]`): the free times of the next
+  fortnight from the type's weekly slots, minus what is already booked, and a
+  booking writes the `calendar.event` and the `appointment.booking.line` Odoo
+  writes. A posted time that the page did not offer is refused.
+- **The document layout reaches the paper.** "Configure Document Layout" saved
+  the logo, the colours, the font, the tagline and the footer, and every report
+  ignored them. They are on the company now (the wizard writes the fields the
+  export dropped), and the report reads them: the logo, the two colours as CSS
+  variables, the font, the tagline, the footer, the paper format (size, margins,
+  landscape) and Odoo's four layouts — Light, Boxed, Bold, Striped. Html the
+  company supplies is stripped of scripts and event handlers before it prints.
+- **The invoice alerts banner** (Odoo's `actionable_errors`): a draft with no
+  lines, without a partner, a bill without its date, an entry whose sides do not
+  match, a reference another document of the same partner already uses. It is a
+  SQL expression, so it is never stale, and it says nothing about a document that
+  is ready.
+- **Widgets**: 45 drawn generically became 4. The employee org chart, the grouped
+  résumé and skills, the timezone mismatch warning, company identifiers (with the
+  dialog that adds one), contact statistics, the rounding warning, file sizes as
+  "1.2 MB", canned-response shortcuts as ":hello", and a date that will not go
+  before the date another field holds. A list cell now hands a readonly widget to
+  the field renderer, so a star, a badge or a size looks the same in a list as on
+  a form. What is left needs a service this build does not have: Odoo's IAP
+  partner autocomplete, OCR extraction and the spreadsheet editor.
+- **Two silent bugs**, both from a backspace character standing where `` was
+  meant in a regular expression: `column_invisible` on an embedded list kept its
+  `parent.` prefix (so the condition could never resolve), and the portal's
+  language sniffing never matched Arabic. A check for control characters in the
+  source is part of the sweep now.
+- **Record names**: 40 models had no `name` field and showed their id — a survey
+  answer read "3" instead of "Well". The loader picks the field a record is
+  actually named by (`value`, `title`, `reference`, `key`…), as Odoo's `_rec_name`
+  does.
+- Tokens come from the platform's cryptographic source rather than
+  `Math.random()`, which also covers the kiosk key and meeting codes.
+
+**Attachments can leave the database.** The bucket
+`amplify/storage/resource.ts` defines was already deployed and nothing used it:
+every payload sat base64 in `ir_attachment.datas`, which Aurora's Data API cannot
+read back past a megabyte — a large attachment was not merely expensive, it was
+unreadable. `packages/engine/orm/filestore.ts` is the seam (the apps know only
+the interface), `packages/apps/base/attachments.ts` writes anything over 64 KB to
+the store and keeps the key, the size and the sha1 on the row as Odoo does, and
+`lib/server/files.ts` is the S3 store, read from the same `amplify_outputs.json`
+the database details come from. Without a bucket — a PGlite dev box — payloads
+stay in the row exactly as before, and the tests run against a store in memory,
+so none of this needs AWS to be exercised. Two things are needed to turn it on:
+`npm install` (the `@aws-sdk/client-s3` dependency is in `package.json`) and a
+deploy, because the SSR compute role's new `grantReadWrite` on the bucket is part
+of `amplify/backend.ts`.
+
+Still not implemented, and why: **SMS** has no screen anywhere in the export (only
+`sms.template`, with no view and no action), so there is nothing to reach without
+a gateway; **WebRTC calls**, the **spreadsheet editor** and the **website
+builder** are subsystems of their own, not gaps in these apps.
+
+**The sandbox deploys again (2026-10-03).** Three things stood in the way, each
+fixed in `amplify/backend.ts`:
+
+- The user pool's update handler sends every schema entry to Cognito as a custom
+  attribute to add — "Invalid AttributeDataType input" without a data type,
+  "Required custom attributes are not supported" with one. The schema holds only
+  the standard email attribute, which every pool already has and Cognito never
+  removes, so it is left out of the template (`addPropertyDeletionOverride`).
+  Nothing about signing in changed: the live pool's email attribute is still
+  String, required, mutable, and email is still the username.
+- The Data API policy's description had been renamed (Rodeo → Almirsal). IAM
+  cannot change a managed policy's description in place, so CloudFormation must
+  replace the policy, and a sandbox stack (deployed without rollback) refuses
+  replacements. The deployed text is back, with a comment saying why.
+- The SSO session had expired (`aws sso login --profile almirsal`).
+
+All six stacks are `UPDATE_COMPLETE`; the migration trigger added the 12 new
+columns and 1 foreign key on Aurora; `verify-backend --db aurora` passes all
+13 782 checks; the S3 store round-trips a file on the deployed bucket; and the
+compute role holds read, write and delete on it.
 
 ## Next — J-1 build phases
 

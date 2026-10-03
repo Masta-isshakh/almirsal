@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SearchArch, SearchFilter, SearchGroupBy } from '@engine/registry/arch';
-import type { Domain, ViewType } from '@engine/registry/types';
+import type { Domain, FieldDef, ViewType } from '@engine/registry/types';
 import { PyDate } from '@engine/expr/pydate';
 import type { ResolvedAction } from '@/lib/server/actions';
 import { useLang, useT } from '@/lib/client/i18n';
@@ -28,10 +28,11 @@ import { HierarchyView } from '../views/HierarchyView';
 import { ListActions } from '../views/ListActions';
 import { UnsupportedView } from '../views/UnsupportedView';
 import { ClientAction, ReportAction } from '../clientactions';
+import { Knowledge } from '../clientactions/Knowledge';
 import { ServerActionRunner, UrlActionPage } from './ServerActionRunner';
 import { RECORD_CACHE_MS, formSpecification, listFieldNames } from '@/lib/client/arch';
 import {
-  EMPTY_STATE, facetsFromState, periodOptions, safeEval, stateFromContext, textFacetDomain,
+  EMPTY_STATE, entryLabel, facetsFromState, periodOptions, safeEval, stateFromContext, textFacetDomain,
   type EvalEnv, type Facet, type SearchState,
 } from './search';
 
@@ -165,7 +166,7 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
     return () => { cancelled = true; };
   }, [action.model, resolution.slug, user.uid, isForm]);
 
-  const facets = useMemo(() => facetsFromState(state, search, env, today, lang), [state, search, env, today, lang]);
+  const facets = useMemo(() => facetsFromState(state, search, env, today, lang, fields), [state, search, env, today, lang, fields]);
   const domain = useMemo<Domain>(() => {
     const parts: Domain[] = [actionDomain];
     if (idsParam) parts.push([['id', 'in', idsParam.split(',').map(Number).filter((id) => id > 0)]]);
@@ -204,7 +205,10 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
   };
   const removeFacet = (facet: Facet) => change((current) => {
     const [kind, name] = facet.id.split(':');
-    if (kind === 'filter') return { ...current, filters: current.filters.filter((item) => item !== name) };
+    if (kind === 'filter') {
+      const names = facet.names ?? [name];
+      return { ...current, filters: current.filters.filter((item) => !names.includes(item)) };
+    }
     if (kind === 'groupby') return { ...current, groupbys: current.groupbys.filter((item) => item !== name) };
     if (kind === 'date') { const dates = { ...current.dates }; delete dates[name]; return { ...current, dates }; }
     if (kind === 'field') return { ...current, texts: current.texts.filter((_, index) => String(index) !== name) };
@@ -307,6 +311,11 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
     : facets;
 
   // Client actions render their own screen; server actions run and follow their result.
+  // Knowledge's article editor is a custom widget in Odoo, so the export has
+  // no visible form for it: render the screen it stands for.
+  if (action.model === 'knowledge.article') {
+    return <Knowledge recordId={resolution.recordId} />;
+  }
   if (action.type === 'client') return <CurrencyProvider><ClientAction action={action} context={actionContext} user={user} /></CurrencyProvider>;
   if (action.type === 'server') return <ServerActionRunner resolution={resolution} query={urlQuery} user={user} render={(inline) => <ActionContainer resolution={inline} query={urlQuery} user={user} />} />;
   if (action.type === 'url') return <UrlActionPage action={action} />;
@@ -317,10 +326,10 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
       <div className="o_control_panel">
         <div className="o_control_panel_main">
           <div className="o_control_panel_breadcrumbs">
-            {!isForm && action.type === 'act_window' && views.form && (
+            {!isForm && action.type === 'act_window' && views.form && !resolution.readOnlyModel && (
               <button type="button" className="btn btn-primary" onClick={createRecord} accessKey="c">{t('New')}</button>
             )}
-            {isForm && views.form && !isSettings && <button type="button" className="btn btn-outline-primary" onClick={createRecord}>{t('New')}</button>}
+            {isForm && views.form && !isSettings && !resolution.readOnlyModel && <button type="button" className="btn btn-outline-primary" onClick={createRecord}>{t('New')}</button>}
             <div className="o_breadcrumb">
               {isForm && !isSettings ? (
                 <>
@@ -342,7 +351,7 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
             <div className="o_cp_searchview">
               <SearchBox facets={displayFacets} query={query} onQuery={setQuery} onSubmit={addText}
                 onRemove={(facet) => (facet.kind === 'favorite' ? (setActiveFavorite(null), setState(EMPTY_STATE)) : removeFacet(facet))}
-                search={search} state={state} onToggleFilter={toggleFilter} onTogglePeriod={togglePeriod} onToggleGroupBy={toggleGroupBy}
+                search={search} state={state} fields={fields} onToggleFilter={toggleFilter} onTogglePeriod={togglePeriod} onToggleGroupBy={toggleGroupBy}
                 favorites={favorites} activeFavorite={activeFavorite} onSaveFavorite={saveFavorite} onApplyFavorite={applyFavorite} onDeleteFavorite={deleteFavorite}
                 periods={periodOptions(today, lang)} />
             </div>
@@ -412,14 +421,14 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
 
 interface SearchBoxProps {
   facets: Facet[]; query: string; onQuery: (value: string) => void; onSubmit: (value: string) => void; onRemove: (facet: Facet) => void;
-  search: SearchArch; state: SearchState;
+  search: SearchArch; state: SearchState; fields: Record<string, FieldDef>;
   onToggleFilter: (filter: SearchFilter) => void; onTogglePeriod: (filter: SearchFilter, key: string) => void; onToggleGroupBy: (group: SearchGroupBy) => void;
   favorites: Favorite[]; activeFavorite: number | null; onSaveFavorite: () => void; onApplyFavorite: (favorite: Favorite) => void; onDeleteFavorite: (favorite: Favorite) => void;
   periods: ReturnType<typeof periodOptions>;
 }
 
 function SearchBox(props: SearchBoxProps) {
-  const { facets, query, onQuery, onSubmit, onRemove, search, state, onToggleFilter, onTogglePeriod, onToggleGroupBy, favorites, activeFavorite, onSaveFavorite, onApplyFavorite, onDeleteFavorite, periods } = props;
+  const { facets, query, onQuery, onSubmit, onRemove, search, state, fields, onToggleFilter, onTogglePeriod, onToggleGroupBy, favorites, activeFavorite, onSaveFavorite, onApplyFavorite, onDeleteFavorite, periods } = props;
   const t = useT();
   const [openDate, setOpenDate] = useState<string | null>(null);
   const filters = search.filters.filter((item) => !('separator' in item) && item.invisible !== true) as SearchFilter[];
@@ -458,7 +467,7 @@ function SearchBox(props: SearchBoxProps) {
               return (
                 <div key={filter.name}>
                   <button type="button" className="o_dropdown_item d-flex justify-content-between" onClick={() => setOpenDate(openDate === filter.name ? null : filter.name)}>
-                    <span><span style={{ display: 'inline-block', width: 16 }}>{keys.length ? '✓' : ''}</span>{t(filter.string ?? filter.name)}</span>
+                    <span><span style={{ display: 'inline-block', width: 16 }}>{keys.length ? '✓' : ''}</span>{t(entryLabel(filter, fields))}</span>
                     <i className={`fa ${openDate === filter.name ? 'fa-caret-down' : 'fa-caret-right'} text-muted`} />
                   </button>
                   {openDate === filter.name && (
@@ -480,7 +489,7 @@ function SearchBox(props: SearchBoxProps) {
             }
             return (
               <button key={filter.name} type="button" className="o_dropdown_item" onClick={() => onToggleFilter(filter)}>
-                <span style={{ display: 'inline-block', width: 16 }}>{state.filters.includes(filter.name) ? '✓' : ''}</span>{t(filter.string ?? filter.name)}
+                <span style={{ display: 'inline-block', width: 16 }}>{state.filters.includes(filter.name) ? '✓' : ''}</span>{t(entryLabel(filter, fields))}
               </button>
             );
           })}
@@ -490,7 +499,7 @@ function SearchBox(props: SearchBoxProps) {
           <div className="o_dropdown_header"><i className="fa fa-bars me-1" />{t('Group By')}</div>
           {groupbys.map((group) => (
             <button key={group.name} type="button" className="o_dropdown_item" onClick={() => onToggleGroupBy(group)}>
-              <span style={{ display: 'inline-block', width: 16 }}>{state.groupbys.includes(group.name) ? '✓' : ''}</span>{t(group.string ?? group.name)}
+              <span style={{ display: 'inline-block', width: 16 }}>{state.groupbys.includes(group.name) ? '✓' : ''}</span>{t(entryLabel(group, fields))}
             </button>
           ))}
         </div>

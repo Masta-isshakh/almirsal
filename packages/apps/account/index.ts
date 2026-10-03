@@ -1,4 +1,5 @@
 import { registerModelHooks, type Values } from '../../engine/orm/hooks.js';
+import { portalUrl } from '../common.js';
 import type { Environment } from '../../engine/orm/env.js';
 import type { Registry } from '../../engine/registry/types.js';
 import { UserError, ValidationError } from '../../engine/orm/errors.js';
@@ -322,8 +323,36 @@ export function registerAccount(registry: Registry): void {
       },
       action_invoice_sent: async (_env, ids) => ({ type: 'ir.actions.client', tag: 'mail.compose', params: { model: 'account.move', res_id: ids[0] } }),
       message_sent: async (env, ids) => { await env.model('account.move').write(ids, { is_move_sent: true }); },
-      preview_invoice: async (_env, ids) => ({ type: 'ir.actions.act_url', url: `/report/account.report_invoice_with_payments/${ids[0]}`, target: 'new' }),
+      /** "Preview": the page the customer sees, token and all (lib/server/portal). */
+      preview_invoice: async (env, ids) => ({ type: 'ir.actions.act_url', url: await portalUrl(env, 'account.move', ids[0]), target: 'new' }),
       action_print_pdf: async (_env, ids) => ({ type: 'ir.actions.report', report_name: 'account.report_invoice_with_payments', context: { active_ids: ids } }),
+      /**
+       * The payment widget on an invoice: apply an outstanding payment of the
+       * same partner to this invoice, or take one off again. The residual and
+       * the payment state are computed from the applied payments, so linking
+       * the payment is all there is to do.
+       */
+      js_assign_outstanding_line: async (env, ids, context) => {
+        const paymentId = Number((context as Values).payment_id ?? 0);
+        const moveId = ids[0];
+        if (!paymentId || !moveId) throw new UserError({ en: 'Select a payment to add.', ar: 'اختر دفعة لإضافتها.' });
+        const [move] = await env.model('account.move').read(moveId, ['state', 'partner_id', 'amount_residual', 'move_type']);
+        if (move.state !== 'posted') throw new UserError({ en: 'Only a posted invoice can be paid.', ar: 'يمكن دفع الفاتورة المرحّلة فقط.' });
+        if (Number(move.amount_residual) <= 0) throw new UserError({ en: 'This invoice is already paid.', ar: 'هذه الفاتورة مدفوعة بالفعل.' });
+        const [payment] = await env.model('account.payment').read(paymentId, ['partner_id', 'state', 'reconciled_invoice_ids']);
+        if (m2oId(payment.partner_id) !== m2oId(move.partner_id)) throw new UserError({ en: 'The payment belongs to another partner.', ar: 'الدفعة تتعلق بشريك آخر.' });
+        if (!['paid', 'in_process'].includes(String(payment.state))) throw new UserError({ en: 'Only a confirmed payment can be applied.', ar: 'يمكن تطبيق الدفعات المؤكدة فقط.' });
+        await env.model('account.payment').write(paymentId, { reconciled_invoice_ids: [[4, moveId]] });
+        // The residual is computed from the applied payments, and the write
+        // above was on the payment, so the invoice has to be recomputed.
+        await env.model('account.move').recompute([moveId], ['line_ids'], false);
+      },
+      js_remove_outstanding_partial: async (env, ids, context) => {
+        const paymentId = Number((context as Values).payment_id ?? 0);
+        if (!paymentId || !ids[0]) throw new UserError({ en: 'Select a payment to remove.', ar: 'اختر دفعة لإزالتها.' });
+        await env.model('account.payment').write(paymentId, { reconciled_invoice_ids: [[3, ids[0]]] });
+        await env.model('account.move').recompute([ids[0]], ['line_ids'], false);
+      },
       /** "Pay": the Register Payment wizard (D-3), see payment.ts. */
       action_register_payment: async (_env, ids) => ({
         type: 'ir.actions.act_window', res_model: 'account.payment.register', view_mode: 'form', target: 'new', name: { en: 'Register Payment', ar: 'تسجيل الدفع' },

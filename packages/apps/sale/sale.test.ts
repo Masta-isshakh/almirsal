@@ -118,3 +118,106 @@ describe('sales', () => {
     expect(result.value).toMatchObject({ partner_invoice_id: partner, partner_shipping_id: partner });
   });
 });
+
+/** The Rental app: a rental line is one with a period; pickup and return move it on. */
+describe('renting', () => {
+  it('marks a rental order, picks it up and returns it', async () => {
+    const partner = await env.model('res.partner').create({ name: 'Rental Customer' });
+    const template = await env.model('product.template').create({ name: 'Scissor Lift', list_price: 200, type: 'consu' });
+    const [variant] = await env.model('product.product').search([['product_tmpl_id', '=', template]]);
+    const orders = env.model('sale.order');
+    const lines = env.model('sale.order.line');
+    const id = await orders.create({
+      partner_id: partner,
+      rental_start_date: '2026-10-01 08:00:00',
+      rental_return_date: '2026-10-05 08:00:00',
+      order_line: [[0, 0, { product_id: variant, product_uom_qty: 2 }]],
+    });
+
+    // The line inherits the order's period, which is what makes it a rental.
+    const [line] = await lines.read((await orders.read(id, ['order_line']))[0].order_line as number[], ['start_date', 'return_date', 'is_rental', 'rental_status']);
+    expect(line.is_rental).toBe(true);
+    expect(String(line.start_date)).toContain('2026-10-01');
+    expect(String(line.return_date)).toContain('2026-10-05');
+    expect(line.rental_status).toBe('pickup');
+    expect((await orders.read(id, ['is_rental_order', 'rental_status', 'has_pickable_lines']))[0])
+      .toMatchObject({ is_rental_order: true, rental_status: 'draft', has_pickable_lines: false });
+
+    // Nothing can be picked up before the order is confirmed.
+    await expect(orders.callButton(id, 'action_open_pickup')).rejects.toMatchObject({ kind: 'user_error' });
+    await orders.callButton(id, 'action_confirm');
+    expect((await orders.read(id, ['rental_status', 'has_pickable_lines', 'has_returnable_lines']))[0])
+      .toMatchObject({ rental_status: 'pickup', has_pickable_lines: true, has_returnable_lines: false });
+
+    await orders.callButton(id, 'action_open_pickup');
+    expect((await lines.read(line.id as number, ['qty_delivered', 'rental_status']))[0]).toMatchObject({ qty_delivered: 2, rental_status: 'return' });
+    expect((await orders.read(id, ['rental_status', 'has_pickable_lines', 'has_returnable_lines']))[0])
+      .toMatchObject({ rental_status: 'return', has_pickable_lines: false, has_returnable_lines: true });
+    // Pressing it again says so instead of picking up twice.
+    await orders.callButton(id, 'action_open_pickup');
+    expect((await lines.read(line.id as number, ['qty_delivered']))[0].qty_delivered).toBe(2);
+
+    await orders.callButton(id, 'action_open_return');
+    expect((await lines.read(line.id as number, ['qty_returned', 'rental_status']))[0]).toMatchObject({ qty_returned: 2, rental_status: 'returned' });
+    expect((await orders.read(id, ['rental_status', 'has_returnable_lines']))[0]).toMatchObject({ rental_status: 'returned', has_returnable_lines: false });
+
+    // The Rental app's own list and the schedule find it by these two fields.
+    expect(await orders.search([['is_rental_order', '=', true]])).toContain(id);
+    expect(await lines.search([['is_rental', '=', true], ['state', '!=', 'cancel']])).toContain(line.id);
+  });
+
+  it('leaves an ordinary order alone', async () => {
+    const partner = await env.model('res.partner').create({ name: 'Plain Customer' });
+    const template = await env.model('product.template').create({ name: 'Plain Service', list_price: 50, type: 'service' });
+    const [variant] = await env.model('product.product').search([['product_tmpl_id', '=', template]]);
+    const id = await env.model('sale.order').create({ partner_id: partner, order_line: [[0, 0, { product_id: variant, product_uom_qty: 1 }]] });
+    expect((await env.model('sale.order').read(id, ['is_rental_order', 'rental_status', 'has_pickable_lines']))[0])
+      .toMatchObject({ is_rental_order: false, rental_status: false, has_pickable_lines: false });
+  });
+});
+
+/** Quotation templates: picking one fills the quotation. */
+describe('quotation templates', () => {
+  it('copies the template lines, terms and validity onto a new quotation', async () => {
+    const partner = await env.model('res.partner').create({ name: 'Template Customer' });
+    const template = await env.model('product.template').create({ name: 'Workshop Day', list_price: 750, type: 'service' });
+    const [variant] = await env.model('product.product').search([['product_tmpl_id', '=', template]]);
+    const templates = env.model('sale.order.template');
+    // The type comes from the model's defaults, as on the form.
+    expect(await templates.defaultGet()).toMatchObject({ template_type: 'quotation' });
+    const quoteTemplate = await templates.create({
+      ...(await templates.defaultGet()),
+      name: 'Standard Workshop',
+      number_of_days: 20,
+      note: 'Payment within 15 days.',
+      sale_order_template_line_ids: [
+        [0, 0, { display_type: 'line_section', name: 'Workshop', sequence: 1 }],
+        [0, 0, { product_id: variant, product_uom_qty: 3, sequence: 2 }],
+        [0, 0, { product_id: variant, product_uom_qty: 1, discount: 50, is_optional: true, sequence: 3 }],
+      ],
+    });
+
+    const orders = env.model('sale.order');
+    const id = await orders.create({ partner_id: partner, sale_order_template_id: quoteTemplate });
+    const [order] = await orders.read(id, ['order_line', 'note', 'validity_date', 'amount_untaxed']);
+    const lines = await env.model('sale.order.line').read(order.order_line as number[], ['display_type', 'name', 'product_uom_qty', 'price_unit', 'price_subtotal']);
+    // The section and the product line come over; the optional extra does not.
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatchObject({ display_type: 'line_section', name: 'Workshop' });
+    expect(lines[1]).toMatchObject({ product_uom_qty: 3, price_unit: 750, price_subtotal: 2250 });
+    expect(order.amount_untaxed).toBe(2250);
+    expect(order.note).toBe('Payment within 15 days.');
+    expect(String(order.validity_date)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    // A quotation that already has lines keeps them.
+    const own = await orders.create({ partner_id: partner, order_line: [[0, 0, { product_id: variant, product_uom_qty: 9 }]] });
+    await orders.write(own, { sale_order_template_id: quoteTemplate });
+    const keptIds = (await orders.read(own, ['order_line']))[0].order_line as number[];
+    expect(keptIds).toHaveLength(1);
+    expect((await env.model('sale.order.line').read(keptIds[0], ['product_uom_qty']))[0].product_uom_qty).toBe(9);
+
+    // Picking the template in the form fills the terms straight away.
+    const onchange = await orders.onchange({ sale_order_template_id: quoteTemplate }, ['sale_order_template_id']);
+    expect(onchange.value).toMatchObject({ note: 'Payment within 15 days.' });
+  });
+});

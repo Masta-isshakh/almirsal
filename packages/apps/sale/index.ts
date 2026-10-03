@@ -1,4 +1,5 @@
 import { registerModelHooks, type Values } from '../../engine/orm/hooks.js';
+import { portalUrl } from '../common.js';
 import type { Environment } from '../../engine/orm/env.js';
 import { UserError } from '../../engine/orm/errors.js';
 import { nextByCode } from '../../engine/orm/sequence.js';
@@ -181,7 +182,8 @@ export function registerSale(): void {
       },
       action_lock: async (env, ids) => { await env.model('sale.order').write(ids, { locked: true }); },
       action_unlock: async (env, ids) => { await env.model('sale.order').write(ids, { locked: false }); },
-      action_preview_sale_order: async (_env, ids) => ({ type: 'ir.actions.act_url', url: `/report/sale.report_saleorder/${ids[0]}`, target: 'new' }),
+      /** "Preview": the page the customer sees, token and all (lib/server/portal). */
+      action_preview_sale_order: async (env, ids) => ({ type: 'ir.actions.act_url', url: await portalUrl(env, 'sale.order', ids[0]), target: 'new' }),
       action_print_quotation: async (_env, ids) => ({ type: 'ir.actions.report', report_name: 'sale.report_saleorder', context: { active_ids: ids } }),
       action_reopen_order: async (env, ids) => { await env.model('sale.order').write(ids, { invoicing_closed: false }); },
     },

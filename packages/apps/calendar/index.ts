@@ -30,7 +30,9 @@ async function syncAttendees(env: Environment, eventId: number): Promise<void> {
 async function refreshCounts(env: Environment, eventId: number): Promise<void> {
   const rows = await env.cr.query<{ state: string; n: number }>(`SELECT state, count(*)::int AS n FROM calendar_attendee WHERE calendar_event_id = $1 GROUP BY state`, [eventId]).catch(() => ({ rows: [] as { state: string; n: number }[] }));
   const count = (s: string) => rows.rows.find((r) => r.state === s)?.n ?? 0;
-  await env.cr.query(`UPDATE calendar_event SET attendees_count = $2, accepted_count = $3, declined_count = $4 WHERE id = $1`, [eventId, rows.rows.reduce((s, r) => s + r.n, 0), count('accepted'), count('declined')]).catch(() => undefined);
+  // attendees_count is counted from the attendees (registry/counters.ts); the
+  // per-answer counters name a subset, so they are kept here.
+  await env.cr.query(`UPDATE calendar_event SET accepted_count = $2, declined_count = $3 WHERE id = $1`, [eventId, count('accepted'), count('declined')]).catch(() => undefined);
 }
 
 export function registerCalendar(): void {
@@ -115,7 +117,18 @@ export function registerCalendar(): void {
   });
   registerModelHooks('appointment.invite', {
     defaults: () => ({ short_code: randomToken(8) }),
-    beforeCreate: async (_env, vals) => { const out = { ...vals }; if (!out.short_code) out.short_code = randomToken(8); if (!out.book_url) out.book_url = `/appointment?invite=${out.short_code}`; return out; },
+    beforeCreate: async (_env, vals) => {
+      const out = { ...vals };
+      if (!out.short_code) out.short_code = randomToken(8);
+      if (!out.book_url) {
+        // The link points at the page a visitor books on (app/appointment/[id]).
+        const first = Array.isArray(out.appointment_type_ids) && Array.isArray(out.appointment_type_ids[0])
+          ? (out.appointment_type_ids[0] as unknown[])[2] : undefined;
+        const typeId = Array.isArray(first) ? Number((first as unknown[])[0]) : undefined;
+        out.book_url = typeId ? `/appointment/${typeId}?invite=${out.short_code}` : `/appointment?invite=${out.short_code}`;
+      }
+      return out;
+    },
   });
   registerModelHooks('appointment.question', { methods: { action_view_appointment_types: async (_env, ids) => windowAction('appointment.type', { en: 'Appointment Types', ar: 'أنواع المواعيد' }, { domain: [['question_ids', 'in', ids]], viewMode: 'kanban,list,form' }) } });
 

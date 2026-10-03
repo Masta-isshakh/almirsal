@@ -177,6 +177,8 @@ export async function loadSeed(db: Database, registry: Registry, options: { uid?
           const field = model.fields[key];
           if (!field) { ignored.add(`${modelName}.${key}`); continue; }
           if (field.name === 'display_name') continue;
+          // A field the registry computes in SQL has no column to write to.
+          if (field.sqlExpr || field.store === false) continue;
           if (X2MANY.has(field.type)) {
             if (Array.isArray(value) && value.length) pending.push({ model, id, field, value });
             continue;

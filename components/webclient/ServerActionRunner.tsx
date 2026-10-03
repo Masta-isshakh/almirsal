@@ -31,7 +31,7 @@ export function ServerActionRunner({ resolution, query, user, render }: {
   const { doAction } = useActions();
   const ui = useUi();
   const ran = useRef(false);
-  const [described, setDescribed] = useState<{ action: ActionDef; views: ActionDescription['views']; searchView: ActionDescription['searchView']; fields: ActionDescription['fields']; relatedFields: ActionDescription['relatedFields'] } | null>(null);
+  const [described, setDescribed] = useState<{ action: ActionDef; views: ActionDescription['views']; searchView: ActionDescription['searchView']; fields: ActionDescription['fields']; relatedFields: ActionDescription['relatedFields']; readOnlyModel: boolean } | null>(null);
   const [opened, setOpened] = useState<string | null>(null);
   const { action } = resolution;
   void user;
@@ -55,7 +55,7 @@ export function ServerActionRunner({ resolution, query, user, render }: {
             viewMode: available.length ? available : (['list', 'form'] as ViewType[]).filter((type) => views.views[type]),
             domain: pySource(result.domain), context: pySource(result.context ?? {}), target: 'current', help: action.help,
           };
-          setDescribed({ action: synthetic, views: views.views, searchView: views.searchView, fields: views.fields, relatedFields: views.relatedFields });
+          setDescribed({ action: synthetic, views: views.views, searchView: views.searchView, fields: views.fields, relatedFields: views.relatedFields, readOnlyModel: Boolean((views as { readOnlyModel?: boolean }).readOnlyModel) });
           return;
         }
         await doAction(result, {});

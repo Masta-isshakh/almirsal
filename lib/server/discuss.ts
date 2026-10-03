@@ -110,20 +110,17 @@ export async function discussJoin(env: Environment, channelId: number): Promise<
   if (!partnerId) return;
   const exists = await env.cr.query<{ n: number }>(`SELECT count(*)::int AS n FROM discuss_channel_member WHERE discuss_channel_id = $1 AND partner_id = $2`, [channelId, partnerId]);
   if (!exists.rows[0]?.n) await env.sudo().model('discuss.channel.member').create({ discuss_channel_id: channelId, partner_id: partnerId });
-  await env.cr.query(`UPDATE discuss_channel SET member_count = (SELECT count(*) FROM discuss_channel_member WHERE discuss_channel_id = $1) WHERE id = $1`, [channelId]).catch(() => undefined);
 }
 
 export async function discussLeave(env: Environment, channelId: number): Promise<void> {
   const partnerId = await partnerOfUser(env, env.uid);
   await env.cr.query(`DELETE FROM discuss_channel_member WHERE discuss_channel_id = $1 AND partner_id = $2`, [channelId, partnerId]);
-  await env.cr.query(`UPDATE discuss_channel SET member_count = (SELECT count(*) FROM discuss_channel_member WHERE discuss_channel_id = $1) WHERE id = $1`, [channelId]).catch(() => undefined);
 }
 
 export async function discussCreateChannel(env: Environment, name: string, type: 'channel' | 'group', partnerIds: number[] = []): Promise<number> {
   const partnerId = await partnerOfUser(env, env.uid);
   const id = await env.sudo().model('discuss.channel').create({ name: name.trim() || 'New channel', channel_type: type, active: true });
   for (const pid of [...new Set([partnerId, ...partnerIds])]) if (pid) await env.sudo().model('discuss.channel.member').create({ discuss_channel_id: id, partner_id: pid });
-  await env.cr.query(`UPDATE discuss_channel SET member_count = (SELECT count(*) FROM discuss_channel_member WHERE discuss_channel_id = $1) WHERE id = $1`, [id]).catch(() => undefined);
   await postMessage(env, 'discuss.channel', id, { body: `<p>${env.lang === 'ar_001' ? 'تم إنشاء القناة' : 'Channel created'}</p>`, messageType: 'notification' }).catch(() => undefined);
   return id;
 }
@@ -142,7 +139,6 @@ export async function discussChat(env: Environment, partnerId: number): Promise<
   const names = await env.cr.query<{ name: string }>(`SELECT name FROM res_partner WHERE id = ANY($1) ORDER BY name`, [[me, partnerId]]);
   const id = await env.sudo().model('discuss.channel').create({ name: names.rows.map((r) => r.name).join(', '), channel_type: 'chat', active: true });
   for (const pid of new Set([me, partnerId])) await env.sudo().model('discuss.channel.member').create({ discuss_channel_id: id, partner_id: pid });
-  await env.cr.query(`UPDATE discuss_channel SET member_count = (SELECT count(*) FROM discuss_channel_member WHERE discuss_channel_id = $1) WHERE id = $1`, [id]).catch(() => undefined);
   return id;
 }
 

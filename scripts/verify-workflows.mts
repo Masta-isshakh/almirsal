@@ -459,6 +459,58 @@ await scenario('Smart buttons resolve to related records', async () => {
   await rejects('unknown method still raises', env.model('res.partner').callButton(partner, 'action_do_something_impossible'), 'user_error');
 });
 
+await scenario('Renting: rental order → pickup → return', async () => {
+  const { variant, partner } = await fixtures();
+  const orders = env.model('sale.order');
+  const lines = env.model('sale.order.line');
+  const id = track('sale.order', await orders.create({
+    partner_id: partner,
+    rental_start_date: `${new Date().toISOString().slice(0, 10)} 08:00:00`,
+    rental_return_date: `${new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10)} 08:00:00`,
+    order_line: [[0, 0, { product_id: variant, product_uom_qty: 2 }]],
+  }));
+  const [order] = await orders.read(id, ['is_rental_order', 'rental_status', 'order_line']);
+  eq('rental order is marked as one', order.is_rental_order, true);
+  eq('rental status follows the quotation', order.rental_status, 'draft');
+  const line = (order.order_line as number[])[0];
+  eq('the line took the order period', (await lines.read(line, ['is_rental']))[0].is_rental, true);
+
+  await rejects('pickup refuses an unconfirmed order', orders.callButton(id, 'action_open_pickup'), 'user_error');
+  await orders.callButton(id, 'action_confirm');
+  eq('confirmed rental is reserved', (await orders.read(id, ['rental_status']))[0].rental_status, 'pickup');
+  await orders.callButton(id, 'action_open_pickup');
+  eq('pickup records the delivered quantity', (await lines.read(line, ['qty_delivered']))[0].qty_delivered, 2);
+  eq('picked-up order is out on rental', (await orders.read(id, ['rental_status']))[0].rental_status, 'return');
+  await orders.callButton(id, 'action_open_return');
+  eq('return records the returned quantity', (await lines.read(line, ['qty_returned']))[0].qty_returned, 2);
+  eq('returned order is returned', (await orders.read(id, ['rental_status']))[0].rental_status, 'returned');
+  eq('the Rental app finds it', (await orders.search([['is_rental_order', '=', true], ['id', '=', id]])).length, 1);
+});
+
+await scenario('Fleet: vehicle → driver history → contract reminders → odometer', async () => {
+  const vehicles = env.model('fleet.vehicle');
+  const brand = track('fleet.vehicle.model.brand', await env.model('fleet.vehicle.model.brand').create({ name: `Brand ${stamp}` }));
+  const model = track('fleet.vehicle.model', await env.model('fleet.vehicle.model').create({ name: `Model ${stamp}`, brand_id: brand, vehicle_type: 'car' }));
+  const id = track('fleet.vehicle', await vehicles.create({ model_id: model, license_plate: `PLATE-${stamp}` }));
+  matches('vehicle is named after brand and model', (await vehicles.read(id, ['name']))[0].name, /Brand .* \/ ?Model |Brand .*\/Model /);
+  eq('the model counts its vehicles', (await env.model('fleet.vehicle.model').read(model, ['vehicle_count']))[0].vehicle_count, 1);
+
+  const driver = track('res.partner', await env.model('res.partner').create({ name: `Driver ${stamp}` }));
+  await vehicles.write(id, { driver_id: driver });
+  eq('the driver is kept in the history', (await env.model('fleet.vehicle.assignation.log').search([['vehicle_id', '=', id]])).length, 1);
+
+  const contracts = env.model('fleet.vehicle.log.contract');
+  const contract = track('fleet.vehicle.log.contract', await contracts.create({ vehicle_id: id, amount: 300, expiration_date: new Date(Date.now() + 8 * 86_400_000).toISOString().slice(0, 10) }));
+  eq('a contract about to run out is due soon', (await vehicles.read(id, ['contract_renewal_due_soon']))[0].contract_renewal_due_soon, true);
+  await contracts.write(contract, { expiration_date: new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10) });
+  eq('a contract past its date is overdue', (await vehicles.read(id, ['contract_renewal_overdue']))[0].contract_renewal_overdue, true);
+  eq('the contract state follows the date', (await contracts.read(contract, ['state']))[0].state, 'expired');
+  eq('the vehicle counts its contracts', (await vehicles.read(id, ['contract_count']))[0].contract_count, 1);
+
+  track('fleet.vehicle.odometer', await env.model('fleet.vehicle.odometer').create({ vehicle_id: id, value: 4200 }));
+  eq('the odometer reads the last log', (await vehicles.read(id, ['odometer']))[0].odometer, 4200);
+});
+
 /* ---------- cleanup ---------- */
 current = 'cleanup';
 let removed = 0;

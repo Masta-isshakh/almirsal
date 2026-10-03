@@ -6452,5 +6452,20 @@
   "Next Week": "الأسبوع القادم",
   "In 2 Weeks": "خلال أسبوعين",
   "Later": "لاحقاً",
-  "Balance in GL": "الرصيد في دفتر الأستاذ"
+  "Balance in GL": "الرصيد في دفتر الأستاذ",
+  "New article": "مقال جديد",
+  "Trash": "المهملات",
+  "(1 sub-task)": "(مهمة فرعية واحدة)",
+  "Drag to reorder": "اسحب لإعادة الترتيب",
+  "No article found.": "لم يتم العثور على مقالات.",
+  "Pick an article on the left, or write a new one.": "اختر مقالاً من القائمة، أو اكتب مقالاً جديداً.",
+  "Results": "النتائج",
+  "Saved": "تم الحفظ",
+  "Search articles...": "البحث في المقالات...",
+  "sub-tasks": "مهام فرعية",
+  "This record has been in this stage for a while": "هذا السجل في هذه المرحلة منذ فترة",
+  "Trash is empty.": "المهملات فارغة.",
+  "Write your article here…": "اكتب مقالك هنا…",
+  "Outstanding credits": "الأرصدة الدائنة المستحقة",
+  "Unreconcile": "إلغاء التسوية"
 }
