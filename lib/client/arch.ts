@@ -37,10 +37,27 @@ export function formFields(arch: FormArch): FieldNode[] {
 }
 
 /** Visible list columns: not hidden, not column_invisible, optional shown. */
-export function listColumns(arch: ListArch, optionalShown?: Set<string>): FieldNode[] {
+/**
+ * The columns a list shows. `column_invisible` is usually an expression over
+ * the action's context — the Invoices and the Bills lists share one view, and
+ * `context.get('default_move_type')` decides whether the column says Customer or
+ * Vendor, Invoice Date or Bill Date — so it is evaluated, not only compared
+ * with `true`. An embedded list passes its parent record too (`parent.state`).
+ */
+export function listColumns(arch: ListArch, optionalShown?: Set<string>, scope?: { context?: Record<string, unknown>; uid?: number; companyIds?: number[]; parent?: Record<string, unknown> | null }): FieldNode[] {
+  const conditionScope = makeScope({
+    record: {},
+    parent: scope?.parent ?? null,
+    context: scope?.context ?? {},
+    uid: scope?.uid ?? 0,
+    allowedCompanyIds: scope?.companyIds ?? [1],
+    now: PyDateTime.fromJsUtc(new Date()),
+    strictNames: false,
+  });
   return arch.columns.filter((column): column is FieldNode => column.kind === 'field').filter((column) => {
     if (column.hidden) return false;
     if (column.columnInvisible === true) return false;
+    if (typeof column.columnInvisible === 'string' && evalCondition(column.columnInvisible, conditionScope, false)) return false;
     if (column.optional === 'hide' && !optionalShown?.has(column.name)) return false;
     if (column.optional === 'show' && optionalShown && !optionalShown.has(column.name)) return false;
     return true;

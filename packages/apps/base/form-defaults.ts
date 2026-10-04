@@ -36,6 +36,9 @@ export function registerFormDefaults(): void {
   // Mail and payments
   registerModelHooks('ir.mail_server', { defaults: () => ({ smtp_encryption: 'none', smtp_authentication: 'login' }) });
   registerModelHooks('mail.activity.type', { defaults: () => ({ delay_unit: 'days', delay_count: 0, delay_from: 'current_date' }) });
+  // Odoo's `_compute_is_editable`: a response being created is editable (saved
+  // ones are, for their author and administrators — SQL in extra-models).
+  registerModelHooks('mail.canned.response', { defaults: () => ({ is_editable: true }) });
   registerModelHooks('product.attribute', { defaults: () => ({ display_type: 'radio', create_variant: 'always' }) });
   registerModelHooks('payment.provider', { defaults: () => ({ code: 'none' }) });
   registerModelHooks('payment.method', {

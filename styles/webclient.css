@@ -705,10 +705,10 @@
 .o_statusbar_field .o_form_label { color: var(--o-text-muted); }
 
 /* The payment panels under an invoice total (Odoo's `payment` widget). */
-.o_payments_widget { font-size: 0.8125rem; text-align: end; }
-.o_payments_widget .o_payments_title { display: block; font-size: 0.75rem; }
-.o_payments_widget .o_payment_line { white-space: nowrap; }
-.o_payments_widget .o_payment_line a { color: var(--o-brand-primary, #714b67); }
+.o_payments_widget { font-size: 0.875rem; border-collapse: collapse; }
+.o_payments_widget td { padding: 2px 0; white-space: nowrap; }
+.o_payments_widget .o_payments_title { font-weight: 700; padding-top: 8px; }
+.o_outstanding_credits { margin-top: 12px; }
 .o_x2many_buttons .btn { padding: 0 0.25rem; }
 .o_presence_status { font-size: 0.6875rem; }
 
@@ -722,3 +722,44 @@
 .o_grouped_lines_group .text-uppercase { letter-spacing: 0.04em; }
 .o_shortcut { font-size: 0.75rem; }
 .o_actionable_errors { font-size: 0.8125rem; }
+
+/* Odoo's `decoration-muted` on a badge (Posted, Sent, Partially Paid): a light
+   grey pill. Bootstrap has no text-bg-muted, so without this the text is white
+   on nothing. */
+.badge.text-bg-muted { background-color: #e7e9ed !important; color: #4a4f59 !important; }
+
+/* Editable list: the row being edited, as Odoo draws it — a lighter band with
+   underlined inputs filling their cells. */
+.o_list_editable .o_data_row { cursor: pointer; }
+.o_list_editable .o_selected_row { background: var(--o-list-selected-bg, #f2f9fa); cursor: default; }
+.o_list_editable .o_selected_row > td { padding-top: 2px; padding-bottom: 2px; }
+.o_list_editable .o_selected_row .o_list_editable_cell .o_field_widget { width: 100%; }
+.o_list_editable .o_selected_row .o_list_editable_cell .o_input,
+.o_list_editable .o_selected_row .o_list_editable_cell select { width: 100%; border: 0; border-bottom: 1px solid var(--o-border-color, #d8dadd); border-radius: 0; background: transparent; padding: 2px 0; }
+.o_list_editable .o_selected_row .o_list_editable_cell.o_list_number .o_input { text-align: end; }
+.o_list_editable .o_selected_row .o_list_editable_cell.o_field_invalid .o_input { border-bottom-color: var(--o-danger); }
+
+/* Invoice totals: "Amount Due  2,500.00 QR" on one right-aligned line. */
+.o_form_sheet .d-flex.justify-content-end { align-items: baseline; margin-top: 4px; }
+.o_form_sheet .d-flex.justify-content-end > .o_form_label { white-space: nowrap; margin: 0; font-weight: 600; }
+.o_form_sheet .d-flex.justify-content-end > :not(.o_form_label) { flex: 0 0 auto; width: auto; font-weight: 600; }
+.o_form_sheet .d-flex.justify-content-end .o_input { width: auto; text-align: end; font-weight: 600; }
+
+/* web_ribbon: Odoo's diagonal band across the sheet's top corner. */
+.o_form_sheet { position: relative; }
+.o_widget_web_ribbon { position: absolute; top: 0; inset-inline-end: 0; width: 180px; height: 180px; overflow: hidden; pointer-events: none; z-index: 1; }
+.o_widget_web_ribbon .ribbon { position: absolute; inset: 0; background: transparent !important; }
+.o_widget_web_ribbon .ribbon span { position: absolute; display: block; width: 255px; padding: 9px 0; top: 34px; inset-inline-start: -10px; transform: rotate(45deg);
+  text-align: center; font-size: 15px; font-weight: 700; text-transform: uppercase; line-height: 1.2; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-inline: 40px; }
+[dir="rtl"] .o_widget_web_ribbon .ribbon span { transform: rotate(-45deg); }
+.o_widget_web_ribbon .text-bg-success span { background: #28a745; color: #fff; }
+.o_widget_web_ribbon .text-bg-danger span { background: #dc3545; color: #fff; }
+.o_widget_web_ribbon .text-bg-info span { background: #17a2b8; color: #fff; }
+.o_widget_web_ribbon .text-bg-warning span { background: #ffc107; color: #212529; }
+
+/* Smart button body: counter (bold) over its label, as Odoo's statinfo. */
+.oe_stat_button .o_stat_info { display: flex; flex-direction: column; justify-content: center; line-height: 1.2; min-width: 0; }
+.oe_stat_button .o_stat_text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oe_stat_button .o_stat_value + .o_stat_text { color: var(--o-text-muted); }
+/* A sheet with a ribbon keeps its smart buttons clear of the corner band. */
+.o_form_sheet:has(> .o_widget_web_ribbon) > .oe_button_box { padding-inline-end: 120px; }

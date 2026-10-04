@@ -822,6 +822,53 @@ columns and 1 foreign key on Aurora; `verify-backend --db aurora` passes all
 13 782 checks; the S3 store round-trips a file on the deployed bucket; and the
 compute role holds read, write and delete on it.
 
+### Accounting against Odoo, editable lists and smart buttons (2026-10-03)
+
+- **Payment statuses.** The Status column of invoices and bills is Odoo's
+  `status_in_payment` (Draft, Posted, Sent, In Payment, Partially Paid, Paid,
+  Reversed, Cancelled) with Odoo's badge colours; the invoice form carries the
+  corner ribbon (Paid, Partial, In Payment, Sent…) instead of a pill, the "Paid
+  on" lines under the totals and "Amount Due" on one line. Confirm / Send / Reset
+  to Draft follow Odoo's `hide_post_button`, `display_send_button`,
+  `show_reset_to_draft_button`. Signed amounts follow the money (bills and
+  customer credit notes negative). A document always lands in a journal of its
+  own kind.
+- **Partners rank on posting.** Posting a sale document raises the partner's
+  (and its company's) `customer_rank`, a purchase document its `supplier_rank`,
+  as Odoo's `_post` does — the Customers and Vendors menus filter on these. The
+  ranks of invoices posted before are filled once by `sync_sql`.
+- **Opening balances.** The chart-of-accounts setup list (`/odoo/accounts`)
+  edits Opening Debit / Credit in place. They are lines of the company's draft
+  "Opening Journal Entry" (miscellaneous journal, 1 January), balanced by one
+  "Automatic Balancing Line" on the Current Year Earnings account; clearing a
+  value drops its line; "Validate and Post" posts the entry, after which the
+  balances are locked (Odoo's `_set_opening_debit_credit` /
+  `_auto_balance_opening_move`). `extra-models.json` `inverse_fields` keeps such
+  SQL-computed fields editable; the hook in `packages/apps/account/extra.ts`
+  writes what they mean.
+- **Editable lists** (`editable="top|bottom"`, 31 menu lists — tags, stages,
+  fleet odometer and service types, opening balances…): a click edits the row in
+  place, New adds a row at the top or the bottom, Enter / a click outside / Save
+  saves (onchange applied, required fields marked), Escape / Discard drops the
+  edit; the control panel shows Save and Discard instead of New meanwhile.
+  `boolean_toggle` columns write at once; `no_symbol` monetary columns drop the
+  currency.
+- **Smart buttons.** The export kept the buttons but not what is inside them
+  (the `statinfo` counter, the `o_stat_text` label), so 142 of them were bare
+  icons. `extra-models.json` `stat_buttons` gives each its Odoo label (EN/AR)
+  and counter; a button opening an action takes the action's name. 66 counters
+  are read live in SQL (`npx tsx scripts/dev/stat-counters.mts` lists any
+  without a source — none).
+- **Editable lists that were locked.** `create="false"` on a list or kanban now
+  hides New (API keys). Columns whose `readonly` reads a computed field nothing
+  filled stayed read-only: canned responses (`is_editable`, `is_shared`), the
+  odometer unit, planning's `is_past`, the departure reason's country, the
+  account's asset conditions and code placeholder are SQL now.
+  `screen-check.js` accepts a row edited in place where it used to expect a form.
+- **Schema sync** also runs `fill_defaults` (Odoo defaults for rows that predate
+  them) and `sync_sql` (idempotent data fixes); both are part of the schema
+  hash, so the next sync after a change runs them once.
+
 ## Next — J-1 build phases
 
 J-1 fixes the order and the gate for each phase:

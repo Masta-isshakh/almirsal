@@ -400,13 +400,19 @@ export function RelativeDateField({ value, field, record, node }: FieldProps) {
   const lang = useLang();
   const currencies = useCurrencies();
   if (!value) return <span className="o_field_widget o_readonly" />;
-  const when = new Date(String(value).replace(' ', 'T') + (String(value).length <= 10 ? 'T00:00:00' : '') + 'Z').getTime();
-  const days = Math.round((when - Date.now()) / 86_400_000);
+  const raw = String(value);
+  // Calendar days, the way Odoo counts them: a due date of today is "Today" all
+  // day long, not "yesterday" once it is past noon in UTC. A date has no time,
+  // so it is compared with the local calendar; a datetime is taken to the local
+  // day it falls on first.
+  const local = raw.length <= 10 ? new Date(`${raw}T00:00:00`) : new Date(`${raw.replace(' ', 'T')}Z`);
+  const startOf = (date: Date) => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.round((startOf(local) - startOf(new Date())) / 86_400_000);
   const rtf = new Intl.RelativeTimeFormat(lang === 'ar_001' ? 'ar' : 'en', { numeric: 'auto' });
-  const text = Math.abs(days) >= 45 ? rtf.format(Math.round(days / 30), 'month')
-    : Math.abs(days) >= 1 ? rtf.format(days, 'day')
-    : rtf.format(Math.round((when - Date.now()) / 3_600_000), 'hour');
-  return <span className="o_field_widget o_readonly" title={formatValue(field, value, { lang, widget: node.widget, record, currencies })}>{text}</span>;
+  const phrase = Math.abs(days) >= 45 ? rtf.format(Math.round(days / 30), 'month') : rtf.format(days, 'day');
+  const text = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  const tone = field.type === 'date' && days < 0 ? 'text-danger' : days === 0 ? 'text-warning' : '';
+  return <span className={`o_field_widget o_readonly ${tone}`} title={formatValue(field, value, { lang, widget: node.widget, record, currencies })}>{text}</span>;
 }
 
 /** A selection shown as a coloured pill, the way Odoo badges a state. */
@@ -488,23 +494,48 @@ export function PaymentsWidget({ node, record }: FieldProps) {
   };
 
   if (!rows.length) return null;
+  // Odoo's layout: under the total, one italic "Paid on <date>" line per
+  // payment with its amount and a way into it; above, the partner's outstanding
+  // credits, each with an Add link that applies it.
+  if (outstanding) {
+    return (
+      <table className="o_payments_widget o_outstanding_credits ms-auto">
+        <tbody>
+          <tr><td colSpan={2} className="o_payments_title">{t('Outstanding credits')}</td></tr>
+          {rows.map((row) => (
+            <tr key={row.id} className="o_payment_line">
+              <td className="pe-3">
+                {form ? <button type="button" className="btn btn-link btn-sm p-0 me-2 align-baseline" disabled={busy} onClick={() => void apply(row.id, true)}>{t('Add')}</button> : null}
+                <a href={`/odoo/m/account.payment/${row.id}`} className="text-muted">{row.name}</a>
+              </td>
+              <td className="text-end">{money(row.amount, row.currency)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
   return (
-    <div className={`o_payments_widget ${outstanding ? 'o_outstanding_credits' : ''}`}>
-      <span className="o_payments_title text-muted">{t(outstanding ? 'Outstanding credits' : 'Payments')}</span>
-      {rows.map((row) => (
-        <div key={row.id} className="o_payment_line">
-          <a href={`/odoo/m/account.payment/${row.id}`}>{row.name}</a>
-          <span className="text-muted mx-1">{row.date ? formatDate(row.date, lang) : ''}</span>
-          <span className="fw-bold">{money(row.amount, row.currency)}</span>
-          {form ? (
-            <button type="button" className="btn btn-link btn-sm p-0 ms-1" disabled={busy}
-              title={t(outstanding ? 'Add' : 'Unreconcile')} onClick={() => void apply(row.id, outstanding)}>
-              <i className={`fa ${outstanding ? 'fa-plus' : 'fa-times'}`} aria-hidden="true" />
-            </button>
-          ) : null}
-        </div>
-      ))}
-    </div>
+    <table className="o_payments_widget ms-auto">
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.id} className="o_payment_line">
+            <td className="pe-3 text-end">
+              <a href={`/odoo/m/account.payment/${row.id}`} className="text-muted me-1" title={row.name}><i className="fa fa-info-circle" aria-hidden="true" /></a>
+              <i>{t('Paid on')} {row.date ? formatDate(row.date, lang) : ''}</i>
+            </td>
+            <td className="text-end">
+              {money(row.amount, row.currency)}
+              {form ? (
+                <button type="button" className="btn btn-link btn-sm p-0 ms-2 text-muted" disabled={busy} title={t('Unreconcile')} onClick={() => void apply(row.id, false)}>
+                  <i className="fa fa-times" aria-hidden="true" />
+                </button>
+              ) : null}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 

@@ -222,3 +222,50 @@ describe('payments', () => {
     expect(outstanding).toContain(paymentId);
   });
 });
+
+describe('partners and opening balances', () => {
+  it('ranks the partner a customer when an invoice is posted, and a vendor for a bill', async () => {
+    const customer = await env.model('res.partner').create({ name: 'Ranked Customer' });
+    const vendor = await env.model('res.partner').create({ name: 'Ranked Vendor' });
+    const moves = env.model('account.move');
+    const invoice = await moves.create({ move_type: 'out_invoice', partner_id: customer, invoice_line_ids: [[0, 0, { name: 'Work', quantity: 1, price_unit: 50 }]] });
+    const bill = await moves.create({ move_type: 'in_invoice', partner_id: vendor, invoice_date: '2026-01-10', invoice_line_ids: [[0, 0, { name: 'Supplies', quantity: 1, price_unit: 20 }]] });
+    const [before] = await env.model('res.partner').read(customer, ['customer_rank']);
+    expect(Number(before.customer_rank ?? 0)).toBe(0);
+    await moves.callButton(invoice, 'action_post');
+    await moves.callButton(bill, 'action_post');
+    const [c] = await env.model('res.partner').read(customer, ['customer_rank', 'supplier_rank']);
+    const [v] = await env.model('res.partner').read(vendor, ['customer_rank', 'supplier_rank']);
+    expect(c).toMatchObject({ customer_rank: 1 });
+    expect(Number(c.supplier_rank ?? 0)).toBe(0);
+    expect(v).toMatchObject({ supplier_rank: 1 });
+  });
+
+  it('keeps opening balances as lines of a balanced draft opening entry, then posts it', async () => {
+    const accounts = env.model('account.account');
+    const [bank] = await accounts.search([['account_type', '=', 'asset_cash']], { limit: 1 });
+    const [payable] = await accounts.search([['account_type', '=', 'liability_payable']], { limit: 1 });
+    expect(bank && payable).toBeTruthy();
+    await accounts.write(bank, { opening_debit: 1000 });
+    await accounts.write(payable, { opening_credit: 300 });
+    const [b] = await accounts.read(bank, ['opening_debit', 'opening_credit', 'opening_balance']);
+    expect(b).toMatchObject({ opening_debit: 1000, opening_credit: 0, opening_balance: 1000 });
+    const [opening] = await env.model('account.move').search([['ref', '=', 'Opening Journal Entry']]);
+    const lines = await env.model('account.move.line').searchRead([['move_id', '=', opening]], ['name', 'debit', 'credit']);
+    const total = (key: string) => lines.reduce((sum, line) => sum + Number(line[key] ?? 0), 0);
+    expect(total('debit')).toBeCloseTo(total('credit'));
+    expect(lines.find((line) => line.name === 'Automatic Balancing Line')).toMatchObject({ credit: 700 });
+
+    // Changing a balance updates its line; clearing it drops the line.
+    await accounts.write(bank, { opening_balance: 400 });
+    await accounts.write(payable, { opening_credit: 0 });
+    const after = await env.model('account.move.line').searchRead([['move_id', '=', opening]], ['name', 'debit', 'credit']);
+    expect(after).toHaveLength(2);
+    expect(after.find((line) => line.name === 'Automatic Balancing Line')).toMatchObject({ credit: 400 });
+
+    await accounts.callButton(bank, 'action_validate_opening_move');
+    const [move] = await env.model('account.move').read(opening, ['state']);
+    expect(move.state).toBe('posted');
+    await expect(accounts.write(bank, { opening_debit: 5 })).rejects.toMatchObject({ kind: 'user_error' });
+  });
+});

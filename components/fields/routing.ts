@@ -24,7 +24,10 @@ export function widgetKind(widget: string, field: Pick<FieldDef, 'type' | 'selec
   if (widget === field.type) return 'type';
   if (widget === 'relative_date') return 'relative_date';
   if (widget === 'open_move_widget' || widget === 'line_open_move_widget' || widget === 'matching_link_widget') return 'open_record';
-  if (/selection.*badge|badges_selection|(^|_)state_selection|account_type_selection|filterable_selection|_badges?$|smiley_badge/.test(widget) && field.selection) return 'selection_badge';
+  // `account_type_selection` is a dropdown grouped by kind of account; read, it is
+  // plain text, so it falls through to the selection below.
+  if (/selection.*badge|badges_selection|(^|_)state_selection|filterable_selection|_badges?$|smiley_badge/.test(widget) && field.selection) return 'selection_badge';
+  if (widget === 'account_type_selection') return 'selection';
   if (widget === 'priority' || widget === 'priority_switch') return 'priority';
   // `helpdesk_sla_many2many_tags`, `planning_many2many_avatar_resource`: the
   // flavour name can come before the widget it is a flavour of.

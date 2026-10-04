@@ -4447,6 +4447,11 @@
     "s": "Set Password",
     "ar": "تعيين كلمة المرور",
     "t": "char"
+   },
+   "employee_count": {
+    "s": "Employee Count",
+    "ar": "عدد الموظفين",
+    "t": "integer"
    }
   },
   "ir.translation": {
@@ -4554,6 +4559,66 @@
     "ar": "الاسم الكامل",
     "t": "char",
     "sql": "coalesce((SELECT par.name || ', ' FROM res_partner par WHERE par.id = {alias}.parent_id), '') || coalesce({alias}.name, '')"
+   },
+   "sale_order_count": {
+    "s": "Sale Order Count",
+    "ar": "عدد أوامر البيع",
+    "t": "integer"
+   },
+   "total_invoiced": {
+    "s": "Total Invoiced",
+    "ar": "إجمالي المفوتر",
+    "t": "monetary"
+   },
+   "supplier_invoice_count": {
+    "s": "# Vendor Bills",
+    "ar": "عدد فواتير الموردين",
+    "t": "integer"
+   },
+   "purchase_order_count": {
+    "s": "Purchase Order Count",
+    "ar": "عدد أوامر الشراء",
+    "t": "integer"
+   },
+   "meeting_count": {
+    "s": "# Meetings",
+    "ar": "عدد الاجتماعات",
+    "t": "integer"
+   },
+   "task_count": {
+    "s": "# Tasks",
+    "ar": "عدد المهام",
+    "t": "integer"
+   },
+   "ticket_count": {
+    "s": "Ticket Count",
+    "ar": "عدد التذاكر",
+    "t": "integer"
+   },
+   "payment_token_count": {
+    "s": "Payment Token Count",
+    "ar": "عدد رموز الدفع",
+    "t": "integer"
+   },
+   "employees_count": {
+    "s": "Employees Count",
+    "ar": "عدد الموظفين",
+    "t": "integer"
+   },
+   "signature_count": {
+    "s": "# Signatures",
+    "ar": "عدد التوقيعات",
+    "t": "integer"
+   },
+   "document_count": {
+    "s": "Document Count",
+    "ar": "عدد المستندات",
+    "t": "integer"
+   },
+   "partner_cars_count": {
+    "s": "Cars Count",
+    "ar": "عدد السيارات",
+    "t": "integer"
    }
   },
   "product.category": {
@@ -4567,6 +4632,11 @@
     "s": "Parent Path",
     "ar": "مسار الأصل",
     "t": "char"
+   },
+   "product_count": {
+    "s": "# Products",
+    "ar": "عدد المنتجات",
+    "t": "integer"
    }
   },
   "uom.uom": {
@@ -4645,6 +4715,11 @@
     "ar": "مستخدم",
     "t": "boolean",
     "sql": "EXISTS (SELECT 1 FROM account_move_line l WHERE l.account_id = {alias}.\"id\")"
+   },
+   "current_balance": {
+    "s": "Current Balance",
+    "ar": "الرصيد الحالي",
+    "t": "monetary"
    }
   },
   "res.company": {
@@ -5014,6 +5089,31 @@
     "s": "Security Token",
     "ar": "رمز الأمان",
     "t": "char"
+   },
+   "reversal_move_count": {
+    "s": "Reversal Move Count",
+    "ar": "عدد القيود العكسية",
+    "t": "integer"
+   },
+   "payment_count": {
+    "s": "Payment Count",
+    "ar": "عدد المدفوعات",
+    "t": "integer"
+   },
+   "sale_order_count": {
+    "s": "Sale Order Count",
+    "ar": "عدد أوامر البيع",
+    "t": "integer"
+   },
+   "purchase_order_count": {
+    "s": "Purchase Order Count",
+    "ar": "عدد أوامر الشراء",
+    "t": "integer"
+   },
+   "service_count": {
+    "s": "Service Count",
+    "ar": "عدد الخدمات",
+    "t": "integer"
    }
   },
   "sale.advance.payment.inv": {
@@ -5077,6 +5177,16 @@
     "t": "one2many",
     "rel": "product.product",
     "inverse": "product_tmpl_id"
+   },
+   "sales_count": {
+    "s": "Sold",
+    "ar": "تم بيعه",
+    "t": "float"
+   },
+   "purchased_product_qty": {
+    "s": "Purchased",
+    "ar": "تم شراؤه",
+    "t": "float"
    }
   },
   "account.journal": {
@@ -5204,6 +5314,26 @@
     "ar": "الفواتير المسوّاة",
     "t": "many2many",
     "rel": "account.move"
+   },
+   "reconciled_invoices_count": {
+    "s": "# Reconciled Invoices",
+    "ar": "عدد الفواتير المسواة",
+    "t": "integer"
+   },
+   "reconciled_bills_count": {
+    "s": "# Reconciled Bills",
+    "ar": "عدد فواتير الموردين المسواة",
+    "t": "integer"
+   },
+   "reconciled_statement_lines_count": {
+    "s": "# Reconciled Statement Lines",
+    "ar": "عدد بنود الكشف المسواة",
+    "t": "integer"
+   },
+   "refunds_count": {
+    "s": "Refunds Count",
+    "ar": "عدد المبالغ المستردة",
+    "t": "integer"
    }
   },
   "account.invoice.report": {
@@ -5323,6 +5453,11 @@
     "ar": "عضو في القسم",
     "t": "boolean",
     "sql": "EXISTS (SELECT 1 FROM hr_employee e WHERE e.user_id = {uid} AND e.department_id IS NOT NULL AND e.department_id = {alias}.department_id)"
+   },
+   "employee_cars_count": {
+    "s": "Cars",
+    "ar": "السيارات",
+    "t": "integer"
    }
   },
   "hr.version": {
@@ -5349,6 +5484,11 @@
     "ar": "الأعضاء",
     "t": "many2many",
     "rel": "res.users"
+   },
+   "task_count": {
+    "s": "Task Count",
+    "ar": "عدد المهام",
+    "t": "integer"
    }
   },
   "report.project.task.user": {
@@ -5510,6 +5650,11 @@
     "ar": "اسم العميل",
     "t": "char",
     "related": "partner_id.name"
+   },
+   "partner_ticket_count": {
+    "s": "Number of other tickets from the same partner",
+    "ar": "عدد التذاكر الأخرى من نفس الشريك",
+    "t": "integer"
    }
   },
   "helpdesk.ticket.report.analysis": {
@@ -5628,6 +5773,11 @@
     "ar": "متأخر",
     "t": "boolean",
     "sql": "({alias}.date_planned IS NOT NULL AND {alias}.date_planned < now() AND {alias}.state IN ('purchase', 'done'))"
+   },
+   "invoice_count": {
+    "s": "Bill Count",
+    "ar": "عدد فواتير الموردين",
+    "t": "integer"
    }
   },
   "purchase.report": {
@@ -5735,6 +5885,11 @@
     "ar": "لديه صلاحية القراءة",
     "t": "boolean",
     "sql": "TRUE"
+   },
+   "plans_count": {
+    "s": "Plans",
+    "ar": "الخطط",
+    "t": "integer"
    }
   },
   "rating.rating": {
@@ -5781,6 +5936,72 @@
     "ar": "التوقيع",
     "t": "binary"
    }
+  },
+  "account.asset": {
+   "depreciation_entries_count": {
+    "s": "Number of Depreciation Entries",
+    "ar": "عدد قيود الإهلاك",
+    "t": "integer"
+   },
+   "gross_increase_count": {
+    "s": "Number of Gross Increases",
+    "ar": "عدد الزيادات الإجمالية",
+    "t": "integer"
+   }
+  },
+  "account.depreciation.model": {
+   "asset_count": {
+    "s": "Number of Assets",
+    "ar": "عدد الأصول",
+    "t": "integer"
+   }
+  },
+  "fleet.vehicle": {
+   "bill_count": {
+    "s": "Bills Count",
+    "ar": "عدد الفواتير",
+    "t": "integer"
+   },
+   "history_count": {
+    "s": "Drivers History Count",
+    "ar": "عدد سجلات السائقين",
+    "t": "integer"
+   }
+  },
+  "helpdesk.stage": {
+   "ticket_count": {
+    "s": "Ticket Count",
+    "ar": "عدد التذاكر",
+    "t": "integer"
+   }
+  },
+  "appointment.type": {
+   "meeting_count": {
+    "s": "# Appointments",
+    "ar": "عدد المواعيد",
+    "t": "integer"
+   }
+  },
+  "approval.request": {
+   "attachment_number": {
+    "s": "Number of Attachments",
+    "ar": "عدد المرفقات",
+    "t": "integer"
+   }
+  },
+  "payment.provider": {
+   "token_count": {
+    "s": "Token Count",
+    "ar": "عدد الرموز",
+    "t": "integer"
+   }
+  },
+  "payment.transaction": {
+   "refunds_count": {
+    "s": "Refunds Count",
+    "ar": "عدد المبالغ المستردة",
+    "t": "integer"
+   }
   }
  },
  "field_sql": {
@@ -5788,13 +6009,878 @@
   "fleet.vehicle": {
    "contract_renewal_overdue": "EXISTS (SELECT 1 FROM fleet_vehicle_log_contract c WHERE c.vehicle_id = {alias}.\"id\" AND c.state IN ('open', 'expired') AND c.expiration_date IS NOT NULL AND c.expiration_date < current_date AND coalesce(c.active, true))",
    "contract_renewal_due_soon": "EXISTS (SELECT 1 FROM fleet_vehicle_log_contract c WHERE c.vehicle_id = {alias}.\"id\" AND c.state IN ('open', 'expired') AND c.expiration_date IS NOT NULL AND c.expiration_date >= current_date AND c.expiration_date <= current_date + 15 AND coalesce(c.active, true))",
-   "service_activity": "SELECT CASE WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') < current_date THEN 'overdue' WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') = current_date THEN 'today' WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') IS NOT NULL THEN 'planned' ELSE 'none' END FROM fleet_vehicle_log_services s WHERE s.vehicle_id = {alias}.\"id\" AND coalesce(s.active, true)"
+   "service_activity": "SELECT CASE WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') < current_date THEN 'overdue' WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') = current_date THEN 'today' WHEN min(s.date_from) FILTER (WHERE s.state <> 'done') IS NOT NULL THEN 'planned' ELSE 'none' END FROM fleet_vehicle_log_services s WHERE s.vehicle_id = {alias}.\"id\" AND coalesce(s.active, true)",
+   "bill_count": "SELECT count(DISTINCT l.move_id) FROM account_move_line l WHERE l.vehicle_id = {alias}.id",
+   "history_count": "SELECT count(*) FROM fleet_vehicle_assignation_log g WHERE g.vehicle_id = {alias}.id"
   },
   "fleet.vehicle.log.contract": {
    "has_open_contract": "EXISTS (SELECT 1 FROM fleet_vehicle_log_contract o WHERE o.vehicle_id = {alias}.\"vehicle_id\" AND o.state = 'open' AND coalesce(o.active, true))"
   },
   "account.move": {
-   "alerts": "SELECT coalesce(jsonb_object_agg(x.code, jsonb_build_object('level', x.level)), '{}'::jsonb) FROM (  SELECT 'no_lines' AS code, 'warning' AS level   WHERE {alias}.state = 'draft'     AND NOT EXISTS (SELECT 1 FROM account_move_line l WHERE l.move_id = {alias}.\"id\" AND coalesce(l.display_type, 'product') NOT IN ('tax', 'payment_term'))  UNION ALL SELECT 'no_partner', 'warning'   WHERE {alias}.move_type <> 'entry' AND {alias}.partner_id IS NULL  UNION ALL SELECT 'no_invoice_date', 'warning'   WHERE {alias}.state = 'draft' AND {alias}.invoice_date IS NULL AND {alias}.move_type IN ('in_invoice', 'in_refund', 'in_receipt')  UNION ALL SELECT 'unbalanced', 'danger'   WHERE {alias}.state = 'draft' AND {alias}.move_type = 'entry'     AND coalesce((SELECT round(sum(coalesce(l.debit, 0) - coalesce(l.credit, 0))::numeric, 2) FROM account_move_line l WHERE l.move_id = {alias}.\"id\"), 0) <> 0  UNION ALL SELECT 'duplicated_ref', 'warning'   WHERE coalesce({alias}.ref, '') <> ''     AND EXISTS (SELECT 1 FROM account_move m2 WHERE m2.\"id\" <> {alias}.\"id\" AND m2.ref = {alias}.ref                   AND m2.move_type = {alias}.move_type AND m2.partner_id IS NOT DISTINCT FROM {alias}.partner_id)) x"
+   "alerts": "SELECT coalesce(jsonb_object_agg(x.code, jsonb_build_object('level', x.level)), '{}'::jsonb) FROM (  SELECT 'no_lines' AS code, 'warning' AS level   WHERE {alias}.state = 'draft'     AND NOT EXISTS (SELECT 1 FROM account_move_line l WHERE l.move_id = {alias}.\"id\" AND coalesce(l.display_type, 'product') NOT IN ('tax', 'payment_term'))  UNION ALL SELECT 'no_partner', 'warning'   WHERE {alias}.move_type <> 'entry' AND {alias}.partner_id IS NULL  UNION ALL SELECT 'no_invoice_date', 'warning'   WHERE {alias}.state = 'draft' AND {alias}.invoice_date IS NULL AND {alias}.move_type IN ('in_invoice', 'in_refund', 'in_receipt')  UNION ALL SELECT 'unbalanced', 'danger'   WHERE {alias}.state = 'draft' AND {alias}.move_type = 'entry'     AND coalesce((SELECT round(sum(coalesce(l.debit, 0) - coalesce(l.credit, 0))::numeric, 2) FROM account_move_line l WHERE l.move_id = {alias}.\"id\"), 0) <> 0  UNION ALL SELECT 'duplicated_ref', 'warning'   WHERE coalesce({alias}.ref, '') <> ''     AND EXISTS (SELECT 1 FROM account_move m2 WHERE m2.\"id\" <> {alias}.\"id\" AND m2.ref = {alias}.ref                   AND m2.move_type = {alias}.move_type AND m2.partner_id IS NOT DISTINCT FROM {alias}.partner_id)) x",
+   "status_in_payment": "CASE WHEN {alias}.state IN ('draft', 'cancel') THEN {alias}.state WHEN coalesce({alias}.payment_state, 'not_paid') = 'not_paid' THEN CASE WHEN coalesce({alias}.is_move_sent, false) THEN 'sent' ELSE 'posted' END ELSE {alias}.payment_state END",
+   "hide_post_button": "{alias}.state <> 'draft' OR (coalesce({alias}.auto_post, 'no') <> 'no' AND {alias}.date > current_date)",
+   "show_reset_to_draft_button": "{alias}.state IN ('posted', 'cancel') AND coalesce({alias}.inalterable_hash, '') = ''",
+   "display_send_button": "{alias}.state = 'posted' AND {alias}.move_type IN ('out_invoice', 'out_refund', 'out_receipt')",
+   "highlight_send_button": "{alias}.state = 'posted' AND {alias}.move_type IN ('out_invoice', 'out_refund', 'out_receipt') AND NOT coalesce({alias}.is_move_sent, false)",
+   "is_being_sent": "FALSE",
+   "move_sent_values": "CASE WHEN coalesce({alias}.is_move_sent, false) THEN 'sent' ELSE 'not_sent' END",
+   "invoice_has_outstanding": "{alias}.state = 'posted' AND coalesce({alias}.amount_residual, 0) > 0 AND {alias}.move_type <> 'entry' AND EXISTS (SELECT 1 FROM account_payment p WHERE p.partner_id = {alias}.partner_id AND p.state IN ('paid', 'in_process') AND p.payment_type = CASE WHEN {alias}.move_type IN ('out_invoice', 'out_receipt', 'in_refund') THEN 'inbound' ELSE 'outbound' END AND NOT EXISTS (SELECT 1 FROM account_payment_reconciled_invoice_ids_rel r WHERE r.account_payment_id = p.id))",
+   "has_reconciled_entries": "EXISTS (SELECT 1 FROM account_payment_reconciled_invoice_ids_rel r WHERE r.account_move_id = {alias}.id)",
+   "company_currency_id": "SELECT c.currency_id FROM res_company c WHERE c.id = {alias}.company_id",
+   "country_code": "SELECT co.code FROM res_company c JOIN res_country co ON co.id = c.country_id WHERE c.id = {alias}.company_id",
+   "invoice_partner_display_name": "SELECT p.name FROM res_partner p WHERE p.id = {alias}.partner_id",
+   "display_inactive_currency_warning": "FALSE",
+   "quick_edit_mode": "FALSE",
+   "display_qr_code": "FALSE",
+   "is_self_billing": "FALSE",
+   "restrict_mode_hash_table": "SELECT coalesce(j.restrict_mode_hash_table, false) FROM account_journal j WHERE j.id = {alias}.journal_id",
+   "is_exact_move_duplicate": "coalesce({alias}.ref, '') <> '' AND EXISTS (SELECT 1 FROM account_move m2 WHERE m2.id <> {alias}.id AND m2.ref = {alias}.ref AND m2.move_type = {alias}.move_type AND m2.partner_id IS NOT DISTINCT FROM {alias}.partner_id AND coalesce(m2.amount_total, 0) = coalesce({alias}.amount_total, 0) AND m2.state <> 'cancel')",
+   "invoice_payments_widget": "SELECT CASE WHEN count(*) = 0 THEN NULL ELSE jsonb_build_object('title', 'Less Payment', 'outstanding', false, 'content', jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name, 'date', p.date, 'amount', p.amount, 'currency_id', p.currency_id) ORDER BY p.date, p.id)) END FROM account_payment p JOIN account_payment_reconciled_invoice_ids_rel r ON r.account_payment_id = p.id WHERE r.account_move_id = {alias}.id AND p.state IN ('paid', 'in_process', 'reconciled')",
+   "invoice_outstanding_credits_debits_widget": "SELECT CASE WHEN count(*) = 0 THEN NULL ELSE jsonb_build_object('title', 'Outstanding credits', 'outstanding', true, 'content', jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name, 'date', p.date, 'amount', p.amount, 'currency_id', p.currency_id) ORDER BY p.date, p.id)) END FROM account_payment p WHERE {alias}.state = 'posted' AND coalesce({alias}.amount_residual, 0) > 0 AND {alias}.move_type <> 'entry' AND p.partner_id = {alias}.partner_id AND p.state IN ('paid', 'in_process') AND p.payment_type = CASE WHEN {alias}.move_type IN ('out_invoice', 'out_receipt', 'in_refund') THEN 'inbound' ELSE 'outbound' END AND NOT EXISTS (SELECT 1 FROM account_payment_reconciled_invoice_ids_rel r WHERE r.account_payment_id = p.id)",
+   "count_asset": "SELECT count(DISTINCT r.account_asset_id) FROM account_asset_original_move_line_ids_rel r JOIN account_move_line l ON l.id = r.account_move_line_id WHERE l.move_id = {alias}.id",
+   "reversal_move_count": "SELECT count(*) FROM account_move r WHERE r.reversed_entry_id = {alias}.id",
+   "payment_count": "SELECT count(*) FROM account_payment_reconciled_invoice_ids_rel r WHERE r.account_move_id = {alias}.id",
+   "sale_order_count": "SELECT count(DISTINCT sl.order_id) FROM sale_order_line_invoice_lines_rel r JOIN sale_order_line sl ON sl.id = r.sale_order_line_id JOIN account_move_line l ON l.id = r.account_move_line_id WHERE l.move_id = {alias}.id",
+   "purchase_order_count": "SELECT count(DISTINCT pl.order_id) FROM account_move_line l JOIN purchase_order_line pl ON pl.id = l.purchase_line_id WHERE l.move_id = {alias}.id",
+   "service_count": "SELECT count(*) FROM fleet_vehicle_log_services s JOIN account_move_line l ON l.id = s.account_move_line_id WHERE l.move_id = {alias}.id"
+  },
+  "account.payment": {
+   "amount_signed": "CASE WHEN {alias}.payment_type = 'outbound' THEN -coalesce({alias}.amount, 0) ELSE coalesce({alias}.amount, 0) END",
+   "amount_company_currency_signed": "CASE WHEN {alias}.payment_type = 'outbound' THEN -coalesce({alias}.amount, 0) ELSE coalesce({alias}.amount, 0) END",
+   "company_currency_id": "SELECT c.currency_id FROM res_company c WHERE c.id = {alias}.company_id",
+   "country_code": "SELECT co.code FROM res_company c JOIN res_country co ON co.id = c.country_id WHERE c.id = {alias}.company_id",
+   "payment_method_code": "SELECT pm.code FROM account_payment_method_line l JOIN account_payment_method pm ON pm.id = l.payment_method_id WHERE l.id = {alias}.payment_method_line_id",
+   "is_matched": "{alias}.state IN ('paid', 'reconciled')",
+   "reconciled_invoices_type": "CASE WHEN EXISTS (SELECT 1 FROM account_payment_reconciled_invoice_ids_rel r JOIN account_move m ON m.id = r.account_move_id WHERE r.account_payment_id = {alias}.id AND m.move_type IN ('out_refund', 'in_refund')) THEN 'credit_note' ELSE 'invoice' END",
+   "amount_available_for_refund": "0",
+   "show_partner_bank_account": "FALSE",
+   "require_partner_bank_account": "FALSE",
+   "use_electronic_payment_method": "FALSE",
+   "reconciled_invoices_count": "SELECT count(*) FROM account_payment_reconciled_invoice_ids_rel r JOIN account_move m ON m.id = r.account_move_id WHERE r.account_payment_id = {alias}.id AND m.move_type IN ('out_invoice', 'out_refund', 'out_receipt')",
+   "reconciled_bills_count": "SELECT count(*) FROM account_payment_reconciled_invoice_ids_rel r JOIN account_move m ON m.id = r.account_move_id WHERE r.account_payment_id = {alias}.id AND m.move_type IN ('in_invoice', 'in_refund', 'in_receipt')",
+   "reconciled_statement_lines_count": "0",
+   "refunds_count": "0"
+  },
+  "account.move.line": {
+   "move_name": "SELECT m.name FROM account_move m WHERE m.id = {alias}.move_id",
+   "company_currency_id": "SELECT c.currency_id FROM res_company c WHERE c.id = {alias}.company_id",
+   "is_same_currency": "{alias}.currency_id IS NULL OR {alias}.currency_id = (SELECT c.currency_id FROM res_company c WHERE c.id = {alias}.company_id)",
+   "residual_at_date": "coalesce({alias}.amount_residual, 0)",
+   "account_internal_group": "SELECT a.internal_group FROM account_account a WHERE a.id = {alias}.account_id",
+   "is_account_reconcile": "SELECT coalesce(a.reconcile, false) FROM account_account a WHERE a.id = {alias}.account_id"
+  },
+  "res.partner": {
+   "total_due": "SELECT coalesce(sum(CASE WHEN m.move_type = 'out_refund' THEN -m.amount_residual ELSE m.amount_residual END), 0) FROM account_move m WHERE m.state = 'posted' AND m.move_type IN ('out_invoice', 'out_refund', 'out_receipt') AND coalesce(m.amount_residual, 0) <> 0 AND m.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "total_all_due": "SELECT coalesce(sum(CASE WHEN m.move_type = 'out_refund' THEN -m.amount_residual ELSE m.amount_residual END), 0) FROM account_move m WHERE m.state = 'posted' AND m.move_type IN ('out_invoice', 'out_refund', 'out_receipt') AND coalesce(m.amount_residual, 0) <> 0 AND m.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "total_overdue": "SELECT coalesce(sum(CASE WHEN m.move_type = 'out_refund' THEN -m.amount_residual ELSE m.amount_residual END), 0) FROM account_move m WHERE m.state = 'posted' AND m.move_type IN ('out_invoice', 'out_refund', 'out_receipt') AND coalesce(m.amount_residual, 0) <> 0 AND m.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id) AND coalesce(m.invoice_date_due, m.date) < current_date",
+   "has_moves": "EXISTS (SELECT 1 FROM account_move m WHERE m.partner_id = {alias}.id AND m.state = 'posted')",
+   "sale_order_count": "SELECT count(*) FROM sale_order o WHERE o.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "total_invoiced": "SELECT coalesce(sum(m.amount_untaxed_signed), 0) FROM account_move m WHERE m.state = 'posted' AND m.move_type IN ('out_invoice', 'out_refund') AND m.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "supplier_invoice_count": "SELECT count(*) FROM account_move m WHERE m.move_type IN ('in_invoice', 'in_refund') AND m.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "purchase_order_count": "SELECT count(*) FROM purchase_order o WHERE o.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "meeting_count": "SELECT count(*) FROM calendar_event_partner_ids_rel r WHERE r.res_partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "task_count": "SELECT count(*) FROM project_task t WHERE t.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id) AND coalesce(t.active, true)",
+   "ticket_count": "SELECT count(*) FROM helpdesk_ticket t WHERE t.partner_id IN (SELECT c.id FROM res_partner c WHERE c.id = {alias}.id OR c.commercial_partner_id = {alias}.id)",
+   "payment_token_count": "SELECT count(*) FROM payment_token t WHERE t.partner_id = {alias}.id",
+   "employees_count": "SELECT count(*) FROM hr_employee e WHERE e.work_contact_id = {alias}.id",
+   "signature_count": "SELECT count(*) FROM sign_request_item i WHERE i.partner_id = {alias}.id",
+   "document_count": "SELECT count(*) FROM documents_document d WHERE d.partner_id = {alias}.id",
+   "partner_cars_count": "SELECT count(*) FROM fleet_vehicle v WHERE v.driver_id = {alias}.id"
+  },
+  "account.account": {
+   "internal_group": "CASE WHEN {alias}.account_type = 'off_balance' THEN 'off' WHEN {alias}.account_type LIKE 'asset%' THEN 'asset' WHEN {alias}.account_type LIKE 'liability%' THEN 'liability' WHEN {alias}.account_type LIKE 'equity%' THEN 'equity' WHEN {alias}.account_type LIKE 'income%' THEN 'income' WHEN {alias}.account_type LIKE 'expense%' THEN 'expense' END",
+   "current_rate": "1.0",
+   "opening_debit": "SELECT coalesce(sum(l.debit), 0) FROM account_move_line l JOIN account_move m ON m.id = l.move_id WHERE l.account_id = {alias}.id AND m.move_type = 'entry' AND m.ref = 'Opening Journal Entry' AND m.state <> 'cancel'",
+   "opening_credit": "SELECT coalesce(sum(l.credit), 0) FROM account_move_line l JOIN account_move m ON m.id = l.move_id WHERE l.account_id = {alias}.id AND m.move_type = 'entry' AND m.ref = 'Opening Journal Entry' AND m.state <> 'cancel'",
+   "opening_balance": "SELECT coalesce(sum(coalesce(l.debit, 0) - coalesce(l.credit, 0)), 0) FROM account_move_line l JOIN account_move m ON m.id = l.move_id WHERE l.account_id = {alias}.id AND m.move_type = 'entry' AND m.ref = 'Opening Journal Entry' AND m.state <> 'cancel'",
+   "current_balance": "SELECT coalesce(sum(l.balance), 0) FROM account_move_line l JOIN account_move m ON m.id = l.move_id WHERE l.account_id = {alias}.id AND m.state = 'posted'",
+   "can_create_asset": "{alias}.account_type IN ('asset_fixed', 'asset_non_current')",
+   "display_asset_accounts": "{alias}.account_type IN ('asset_fixed', 'asset_non_current', 'expense', 'expense_depreciation')",
+   "placeholder_code": "{alias}.code"
+  },
+  "account.journal": {
+   "has_entries": "EXISTS (SELECT 1 FROM account_move m WHERE m.journal_id = {alias}.id)",
+   "has_posted_entries": "EXISTS (SELECT 1 FROM account_move m WHERE m.journal_id = {alias}.id AND m.state = 'posted')",
+   "default_account_type": "SELECT a.account_type FROM account_account a WHERE a.id = {alias}.default_account_id",
+   "country_code": "SELECT co.code FROM res_company c JOIN res_country co ON co.id = c.country_id WHERE c.id = {alias}.company_id",
+   "company_partner_id": "SELECT c.partner_id FROM res_company c WHERE c.id = {alias}.company_id",
+   "default_account_active": "SELECT coalesce(a.active, true) FROM account_account a WHERE a.id = {alias}.default_account_id"
+  },
+  "gamification.badge": {
+   "granted_count": "SELECT count(*) FROM gamification_badge_user b WHERE b.badge_id = {alias}.id"
+  },
+  "gamification.challenge": {
+   "user_count": "SELECT count(DISTINCT g.user_id) FROM gamification_goal g WHERE g.challenge_id = {alias}.id"
+  },
+  "hr.department": {
+   "total_employee": "SELECT count(*) FROM hr_employee e WHERE e.department_id = {alias}.id AND coalesce(e.active, true)",
+   "plans_count": "SELECT count(*) FROM mail_activity_plan p WHERE p.department_id = {alias}.id"
+  },
+  "hr.employee": {
+   "hours_last_month": "SELECT coalesce(sum(a.worked_hours), 0) FROM hr_attendance a WHERE a.employee_id = {alias}.id AND a.check_in >= date_trunc('month', now())",
+   "employee_cars_count": "SELECT count(*) FROM fleet_vehicle v WHERE v.driver_employee_id = {alias}.id"
+  },
+  "product.attribute": {
+   "number_related_products": "SELECT count(DISTINCT l.product_template_id) FROM product_template_attribute_line l WHERE l.attribute_id = {alias}.id"
+  },
+  "project.task": {
+   "subtask_count": "SELECT count(*) FROM project_task c WHERE c.parent_id = {alias}.id AND coalesce(c.active, true)"
+  },
+  "survey.survey": {
+   "answer_count": "SELECT count(*) FROM survey_user_input u WHERE u.survey_id = {alias}.id AND NOT coalesce(u.test_entry, false)",
+   "answer_done_count": "SELECT count(*) FROM survey_user_input u WHERE u.survey_id = {alias}.id AND NOT coalesce(u.test_entry, false) AND u.state = 'done'",
+   "success_count": "SELECT count(*) FROM survey_user_input u WHERE u.survey_id = {alias}.id AND NOT coalesce(u.test_entry, false) AND coalesce(u.scoring_success, false)"
+  },
+  "survey.user_input": {
+   "attempts_count": "SELECT count(*) FROM survey_user_input u WHERE u.survey_id = {alias}.survey_id AND u.partner_id IS NOT DISTINCT FROM {alias}.partner_id AND NOT coalesce(u.test_entry, false)"
+  },
+  "account.asset": {
+   "depreciation_entries_count": "SELECT count(*) FROM account_move m WHERE m.asset_id = {alias}.id AND m.state = 'posted'",
+   "gross_increase_count": "SELECT count(*) FROM account_asset c WHERE c.parent_id = {alias}.id"
+  },
+  "account.depreciation.model": {
+   "asset_count": "SELECT count(*) FROM account_asset a WHERE a.model_id = {alias}.id"
+  },
+  "res.users": {
+   "employee_count": "SELECT count(*) FROM hr_employee e WHERE e.user_id = {alias}.id"
+  },
+  "purchase.order": {
+   "invoice_count": "SELECT count(DISTINCT l.move_id) FROM account_move_line l JOIN purchase_order_line pl ON pl.id = l.purchase_line_id WHERE pl.order_id = {alias}.id"
+  },
+  "product.template": {
+   "sales_count": "SELECT coalesce(sum(l.product_uom_qty), 0) FROM sale_order_line l JOIN sale_order o ON o.id = l.order_id JOIN product_product p ON p.id = l.product_id WHERE p.product_tmpl_id = {alias}.id AND o.state = 'sale' AND o.date_order >= now() - interval '365 days'",
+   "purchased_product_qty": "SELECT coalesce(sum(l.product_qty), 0) FROM purchase_order_line l JOIN purchase_order o ON o.id = l.order_id JOIN product_product p ON p.id = l.product_id WHERE p.product_tmpl_id = {alias}.id AND o.state IN ('purchase', 'done') AND o.date_order >= now() - interval '365 days'"
+  },
+  "product.category": {
+   "product_count": "SELECT count(*) FROM product_template t WHERE t.categ_id = {alias}.id"
+  },
+  "project.project": {
+   "task_count": "SELECT count(*) FROM project_task t WHERE t.project_id = {alias}.id AND coalesce(t.active, true)"
+  },
+  "helpdesk.stage": {
+   "ticket_count": "SELECT count(*) FROM helpdesk_ticket t WHERE t.stage_id = {alias}.id"
+  },
+  "helpdesk.ticket": {
+   "partner_ticket_count": "SELECT count(*) FROM helpdesk_ticket t WHERE t.partner_id = {alias}.partner_id AND t.id <> {alias}.id"
+  },
+  "appointment.type": {
+   "meeting_count": "SELECT count(*) FROM calendar_event e WHERE e.appointment_type_id = {alias}.id"
+  },
+  "approval.request": {
+   "attachment_number": "SELECT count(*) FROM ir_attachment a WHERE a.res_model = 'approval.request' AND a.res_id = {alias}.id"
+  },
+  "payment.provider": {
+   "token_count": "SELECT count(*) FROM payment_token t WHERE t.provider_id = {alias}.id"
+  },
+  "payment.transaction": {
+   "refunds_count": "SELECT count(*) FROM payment_transaction r WHERE r.source_transaction_id = {alias}.id"
+  },
+  "mail.canned.response": {
+   "is_editable": "{alias}.create_uid = {uid} OR EXISTS (SELECT 1 FROM res_users_group_ids_rel r JOIN res_groups g ON g.id = r.res_groups_id WHERE r.res_users_id = {uid} AND g.name = 'Role / Administrator')",
+   "is_shared": "EXISTS (SELECT 1 FROM mail_canned_response_group_ids_rel r WHERE r.mail_canned_response_id = {alias}.id)"
+  },
+  "fleet.vehicle.odometer": {
+   "unit": "SELECT v.odometer_unit FROM fleet_vehicle v WHERE v.id = {alias}.vehicle_id"
+  },
+  "hr.departure.reason": {
+   "country_code": "SELECT co.code FROM res_users u JOIN res_company c ON c.id = u.company_id JOIN res_country co ON co.id = c.country_id WHERE u.id = {uid}"
+  },
+  "planning.slot": {
+   "is_past": "{alias}.end_datetime < now()"
   }
+ },
+ "fill_defaults": {
+  "README": "Odoo defaults for fields this build left empty on records it already holds. The loader makes them the field default, and schema sync fills existing rows where the field is still empty — what Odoo does when a module adds a field with a default.",
+  "account.move": {
+   "document_tax_mode": "tax_excluded"
+  }
+ },
+ "sync_sql": {
+  "README": "Idempotent statements schema sync runs after the default fills, for data that behaviour added later would have written.",
+  "statements": [
+   "UPDATE res_partner p SET customer_rank = r.n FROM (SELECT coalesce(c.commercial_partner_id, c.id) AS id, count(*)::int AS n FROM account_move m JOIN res_partner c ON c.id = m.partner_id WHERE m.state = 'posted' AND m.move_type IN ('out_invoice', 'out_refund', 'out_receipt') GROUP BY 1) r WHERE p.id = r.id AND coalesce(p.customer_rank, 0) < r.n",
+   "UPDATE res_partner p SET supplier_rank = r.n FROM (SELECT coalesce(c.commercial_partner_id, c.id) AS id, count(*)::int AS n FROM account_move m JOIN res_partner c ON c.id = m.partner_id WHERE m.state = 'posted' AND m.move_type IN ('in_invoice', 'in_refund', 'in_receipt') GROUP BY 1) r WHERE p.id = r.id AND coalesce(p.supplier_rank, 0) < r.n"
+  ]
+ },
+ "inverse_fields": {
+  "README": "field_sql fields Odoo computes with an inverse: read from SQL, still editable; a model hook writes what they mean (an opening balance becomes a line of the opening entry).",
+  "account.account": [
+   "opening_debit",
+   "opening_credit",
+   "opening_balance"
+  ]
+ },
+ "stat_buttons": {
+  "README": "Smart buttons whose content the export dropped (Odoo puts a statinfo field or an o_stat_text span inside the button). Key \"model|button name\" -> [label en, label ar, counter field, widget]. The loader gives the button its label and, when the model has the field, shows the counter above it as Odoo does.",
+  "account.account|account.action_move_line_select": [
+   "Balance",
+   "الرصيد",
+   "current_balance",
+   "monetary"
+  ],
+  "account.account|action_open_related_taxes": [
+   "Taxes",
+   "الضرائب",
+   "related_taxes_amount"
+  ],
+  "account.asset|action_open_linked_assets": [
+   "Related Assets",
+   "الأصول المرتبطة",
+   "count_linked_asset"
+  ],
+  "account.asset|action_open_linked_loans": [
+   "Loans",
+   "القروض",
+   "count_linked_loans"
+  ],
+  "account.asset|open_entries": [
+   "Posted Entries",
+   "القيود المرحلة",
+   "depreciation_entries_count"
+  ],
+  "account.asset|open_increase": [
+   "Gross Increase",
+   "الزيادة الإجمالية",
+   "gross_increase_count"
+  ],
+  "account.asset|open_related_entries": [
+   "Related Entries",
+   "القيود ذات الصلة"
+  ],
+  "account.depreciation.model|action_open_model_assets": [
+   "Assets",
+   "الأصول",
+   "asset_count"
+  ],
+  "account.fiscal.position|action_open_related_taxes": [
+   "Taxes",
+   "الضرائب"
+  ],
+  "account.journal|279": [
+   "Journal Items",
+   "عناصر اليومية"
+  ],
+  "account.loan|action_open_linked_assets": [
+   "Assets",
+   "الأصول",
+   "count_linked_assets"
+  ],
+  "account.loan|action_open_loan_entries": [
+   "Entries",
+   "القيود"
+  ],
+  "account.move|action_open_asset_ids": [
+   "Assets",
+   "الأصول",
+   "count_asset"
+  ],
+  "account.move|action_open_bank_reconciliation_widget": [
+   "Bank Transaction",
+   "المعاملة البنكية"
+  ],
+  "account.move|action_open_bank_reconciliation_widget_statement": [
+   "Statement",
+   "الكشف"
+  ],
+  "account.move|action_open_business_doc": [
+   "Payment",
+   "الدفعة"
+  ],
+  "account.move|action_open_reversal_moves": [
+   "Reversals",
+   "القيود العكسية",
+   "reversal_move_count"
+  ],
+  "account.move|action_open_reversed_entry": [
+   "Reversed Entry",
+   "القيد المعكوس"
+  ],
+  "account.move|action_purchase_matching": [
+   "Purchase Matching",
+   "مطابقة المشتريات"
+  ],
+  "account.move|action_show_services": [
+   "Services",
+   "الخدمات",
+   "service_count"
+  ],
+  "account.move|action_view_documents_account_move": [
+   "Documents",
+   "المستندات"
+  ],
+  "account.move|action_view_payment_transactions": [
+   "Transactions",
+   "المعاملات",
+   "transaction_count"
+  ],
+  "account.move|action_view_source_purchase_orders": [
+   "Purchases",
+   "المشتريات",
+   "purchase_order_count"
+  ],
+  "account.move|action_view_source_sale_orders": [
+   "Sales Orders",
+   "أوامر البيع",
+   "sale_order_count"
+  ],
+  "account.move|open_adjusting_entries": [
+   "Adjusting Entries",
+   "قيود التسوية"
+  ],
+  "account.move|open_adjusting_entry_origin_moves": [
+   "Origin Entries",
+   "القيود الأصلية"
+  ],
+  "account.move|open_asset_view": [
+   "Asset",
+   "الأصل"
+  ],
+  "account.move|open_created_caba_entries": [
+   "Cash Basis Entries",
+   "قيود الأساس النقدي"
+  ],
+  "account.move|open_journal_items": [
+   "Journal Items",
+   "عناصر اليومية"
+  ],
+  "account.move|open_payments": [
+   "Payments",
+   "المدفوعات",
+   "payment_count"
+  ],
+  "account.move|open_reconcile_view": [
+   "Reconciled Items",
+   "البنود المسواة"
+  ],
+  "account.payment|action_view_refunds": [
+   "Refunds",
+   "المبالغ المستردة",
+   "refunds_count"
+  ],
+  "account.payment|button_open_bills": [
+   "Bills",
+   "فواتير الموردين",
+   "reconciled_bills_count"
+  ],
+  "account.payment|button_open_invoices": [
+   "Invoices",
+   "الفواتير",
+   "reconciled_invoices_count"
+  ],
+  "account.payment|button_open_journal_entry": [
+   "Journal Entry",
+   "قيد اليومية"
+  ],
+  "account.payment|button_open_statement_lines": [
+   "Transactions",
+   "المعاملات",
+   "reconciled_statement_lines_count"
+  ],
+  "appointment.type|action_appointment_leaves": [
+   "Leaves",
+   "الإجازات",
+   "appointment_leave_count"
+  ],
+  "appointment.type|action_calendar_meetings": [
+   "Meetings",
+   "الاجتماعات",
+   "meeting_count"
+  ],
+  "appointment.type|appointment.appointment_invite_action_stat": [
+   "Invitations",
+   "الدعوات",
+   "appointment_invite_count"
+  ],
+  "appointment.type|appointment.appointment_resource_action_stat": [
+   "Resources",
+   "الموارد",
+   "resource_count"
+  ],
+  "approval.request|action_get_attachment_view": [
+   "Documents",
+   "المستندات",
+   "attachment_number"
+  ],
+  "approval.request|action_open_purchase_orders": [
+   "Purchase Orders",
+   "أوامر الشراء",
+   "purchase_order_count"
+  ],
+  "fleet.vehicle.log.contract|action_open_employee": [
+   "Employee",
+   "الموظف"
+  ],
+  "fleet.vehicle.log.services|action_create_account_move": [
+   "Create Bill",
+   "إنشاء فاتورة"
+  ],
+  "fleet.vehicle.log.services|action_open_account_move": [
+   "Bill",
+   "الفاتورة"
+  ],
+  "fleet.vehicle.model.brand|action_brand_model": [
+   "Models",
+   "الطرازات",
+   "model_count"
+  ],
+  "fleet.vehicle.model|action_model_vehicle": [
+   "Vehicles",
+   "المركبات",
+   "vehicle_count"
+  ],
+  "fleet.vehicle|action_open_documents": [
+   "Documents",
+   "المستندات",
+   "document_count"
+  ],
+  "fleet.vehicle|action_open_employee": [
+   "Driver",
+   "السائق"
+  ],
+  "fleet.vehicle|action_view_bills": [
+   "Bills",
+   "الفواتير",
+   "bill_count"
+  ],
+  "fleet.vehicle|open_assignation_logs": [
+   "Drivers History",
+   "سجل السائقين",
+   "history_count"
+  ],
+  "fleet.vehicle|return_action_to_open": [
+   "Odometer",
+   "عداد المسافات",
+   "odometer",
+   "float"
+  ],
+  "gamification.badge|get_granted_employees": [
+   "Granted",
+   "الممنوحة",
+   "granted_count"
+  ],
+  "gamification.challenge|494": [
+   "Related Goals",
+   "الأهداف ذات الصلة"
+  ],
+  "gamification.challenge|action_view_users": [
+   "Participants",
+   "المشاركون",
+   "user_count"
+  ],
+  "helpdesk.sla|action_open_helpdesk_ticket": [
+   "Tickets",
+   "التذاكر",
+   "ticket_count"
+  ],
+  "helpdesk.stage|action_open_helpdesk_ticket": [
+   "Tickets",
+   "التذاكر",
+   "ticket_count"
+  ],
+  "helpdesk.team|action_view_open_ticket_view": [
+   "Tickets",
+   "التذاكر",
+   "open_ticket_count"
+  ],
+  "helpdesk.team|action_view_sla_policy": [
+   "SLA Policies",
+   "سياسات مستوى الخدمة"
+  ],
+  "helpdesk.ticket|action_open_helpdesk_ticket": [
+   "Tickets",
+   "التذاكر",
+   "partner_ticket_count"
+  ],
+  "hr.attendance.overtime.ruleset|action_show_versions": [
+   "Employees",
+   "الموظفون"
+  ],
+  "hr.department|action_employee_from_department": [
+   "Employees",
+   "الموظفون",
+   "total_employee"
+  ],
+  "hr.department|action_plan_from_department": [
+   "Plans",
+   "الخطط",
+   "plans_count"
+  ],
+  "hr.employee.public|action_open_employee_cars": [
+   "Cars",
+   "السيارات",
+   "employee_cars_count"
+  ],
+  "hr.employee.public|action_open_last_month_attendances": [
+   "This Month",
+   "هذا الشهر",
+   "hours_last_month",
+   "float_time"
+  ],
+  "hr.employee.public|action_see_documents": [
+   "Documents",
+   "المستندات",
+   "document_count"
+  ],
+  "hr.employee.public|action_view_planning": [
+   "Planning",
+   "التخطيط"
+  ],
+  "hr.employee.public|open_employee_sign_requests": [
+   "Signature Requests",
+   "طلبات التوقيع",
+   "sign_request_count"
+  ],
+  "hr.employee|action_open_documents": [
+   "Documents",
+   "المستندات",
+   "document_count"
+  ],
+  "hr.employee|action_open_employee_cars": [
+   "Cars",
+   "السيارات",
+   "employee_cars_count"
+  ],
+  "hr.employee|action_open_last_month_attendances": [
+   "This Month",
+   "هذا الشهر",
+   "hours_last_month",
+   "float_time"
+  ],
+  "hr.employee|action_open_versions": [
+   "Versions",
+   "الإصدارات"
+  ],
+  "hr.employee|action_view_planning": [
+   "Planning",
+   "التخطيط"
+  ],
+  "hr.employee|open_employee_sign_requests": [
+   "Signature Requests",
+   "طلبات التوقيع",
+   "sign_request_count"
+  ],
+  "mail.activity|action_open_document": [
+   "Open Document",
+   "فتح المستند"
+  ],
+  "mail.message|action_open_document": [
+   "Open Document",
+   "فتح المستند"
+  ],
+  "payment.provider|action_toggle_is_published": [
+   "Unpublished",
+   "غير منشور"
+  ],
+  "payment.provider|action_view_payment_tokens": [
+   "Saved Payment Methods",
+   "طرق الدفع المحفوظة",
+   "token_count"
+  ],
+  "payment.provider|action_view_payment_transactions": [
+   "Transactions",
+   "المعاملات"
+  ],
+  "payment.transaction|action_view_invoices": [
+   "Invoices",
+   "الفواتير",
+   "invoices_count"
+  ],
+  "payment.transaction|action_view_refunds": [
+   "Refunds",
+   "المبالغ المستردة",
+   "refunds_count"
+  ],
+  "payment.transaction|action_view_sales_orders": [
+   "Sales Orders",
+   "أوامر البيع",
+   "sale_order_ids_nbr"
+  ],
+  "planning.slot|action_view_sale_order": [
+   "Sales Order",
+   "أمر البيع"
+  ],
+  "product.attribute|action_open_product_template_attribute_lines": [
+   "Related Products",
+   "المنتجات ذات الصلة",
+   "number_related_products"
+  ],
+  "product.category|214": [
+   "Products",
+   "المنتجات",
+   "product_count"
+  ],
+  "product.template|action_open_documents": [
+   "Documents",
+   "المستندات",
+   "product_document_count"
+  ],
+  "product.template|action_view_po": [
+   "Purchased",
+   "تم شراؤه",
+   "purchased_product_qty",
+   "float"
+  ],
+  "product.template|action_view_rentals": [
+   "Rentals",
+   "الإيجارات"
+  ],
+  "product.template|action_view_sales": [
+   "Sold",
+   "تم بيعه",
+   "sales_count",
+   "float"
+  ],
+  "project.project|action_customer_preview": [
+   "Customer Preview",
+   "معاينة العميل"
+  ],
+  "project.project|action_open_documents": [
+   "Documents",
+   "المستندات",
+   "document_count"
+  ],
+  "project.project|action_open_project_assets": [
+   "Assets",
+   "الأصول",
+   "assets_count"
+  ],
+  "project.project|action_open_project_invoices": [
+   "Invoices",
+   "الفواتير",
+   "invoice_count"
+  ],
+  "project.project|action_open_project_purchase_orders": [
+   "Purchase Orders",
+   "أوامر الشراء",
+   "purchase_orders_count"
+  ],
+  "project.project|action_open_project_vendor_bills": [
+   "Vendor Bills",
+   "فواتير الموردين",
+   "vendor_bill_count"
+  ],
+  "project.project|action_project_task_burndown_chart_report": [
+   "Burndown Chart",
+   "مخطط الإنجاز"
+  ],
+  "project.project|action_real_margin": [
+   "Margin",
+   "الهامش"
+  ],
+  "project.project|action_view_all_rating": [
+   "Rating",
+   "التقييم"
+  ],
+  "project.project|action_view_sols": [
+   "Sales Order Items",
+   "بنود أوامر البيع",
+   "sale_order_line_count"
+  ],
+  "project.project|action_view_sos": [
+   "Sales Order",
+   "أمر البيع"
+  ],
+  "project.project|action_view_tasks": [
+   "Tasks",
+   "المهام",
+   "task_count"
+  ],
+  "project.project|project_update_all_action": [
+   "Updates",
+   "التحديثات"
+  ],
+  "project.task|action_open_documents": [
+   "Documents",
+   "المستندات",
+   "document_count"
+  ],
+  "project.task|action_open_parent_task": [
+   "Parent Task",
+   "المهمة الرئيسية"
+  ],
+  "project.task|action_open_ratings": [
+   "Rating",
+   "التقييم"
+  ],
+  "project.task|action_open_subtasks": [
+   "Sub-tasks",
+   "المهام الفرعية",
+   "subtask_count"
+  ],
+  "project.task|action_view_so": [
+   "Sales Order",
+   "أمر البيع"
+  ],
+  "purchase.order|action_bill_matching": [
+   "Bill Matching",
+   "مطابقة الفواتير"
+  ],
+  "purchase.order|action_purchase_comparison": [
+   "Compare",
+   "مقارنة"
+  ],
+  "purchase.order|action_view_invoice": [
+   "Vendor Bills",
+   "فواتير الموردين",
+   "invoice_count"
+  ],
+  "purchase.order|action_view_sale_orders": [
+   "Sales",
+   "المبيعات",
+   "sale_order_count"
+  ],
+  "res.lang|41": [
+   "Activate and Translate",
+   "تفعيل وترجمة"
+  ],
+  "res.partner|254": [
+   "Payment Methods",
+   "طرق الدفع",
+   "payment_token_count"
+  ],
+  "res.partner|326": [
+   "Vendor Bills",
+   "فواتير الموردين",
+   "supplier_invoice_count"
+  ],
+  "res.partner|794": [
+   "Purchases",
+   "المشتريات",
+   "purchase_order_count"
+  ],
+  "res.partner|action_open_employees": [
+   "Employees",
+   "الموظفون",
+   "employees_count"
+  ],
+  "res.partner|action_open_helpdesk_ticket": [
+   "Tickets",
+   "التذاكر",
+   "ticket_count"
+  ],
+  "res.partner|action_open_partner_cars": [
+   "Cars",
+   "السيارات",
+   "partner_cars_count"
+  ],
+  "res.partner|action_open_planning_slots": [
+   "Planning",
+   "التخطيط"
+  ],
+  "res.partner|action_see_documents": [
+   "Documents",
+   "المستندات",
+   "document_count"
+  ],
+  "res.partner|action_view_certifications": [
+   "Certifications",
+   "الشهادات",
+   "certifications_company_count"
+  ],
+  "res.partner|action_view_partner_invoices": [
+   "Invoiced",
+   "تمت فوترته",
+   "total_invoiced",
+   "monetary"
+  ],
+  "res.partner|action_view_tasks": [
+   "Tasks",
+   "المهام",
+   "task_count"
+  ],
+  "res.partner|open_follow_up_report": [
+   "Due",
+   "مستحق",
+   "total_due",
+   "monetary"
+  ],
+  "res.partner|open_signatures": [
+   "Signature Requests",
+   "طلبات التوقيع",
+   "signature_count"
+  ],
+  "res.partner|sale.act_res_partner_2_sale_order": [
+   "Sales",
+   "المبيعات",
+   "sale_order_count"
+  ],
+  "res.partner|schedule_meeting": [
+   "Meetings",
+   "الاجتماعات",
+   "meeting_count"
+  ],
+  "res.users|action_open_employees": [
+   "Employees",
+   "الموظفون",
+   "employee_count"
+  ],
+  "res.users|action_related_contact": [
+   "Contact",
+   "جهة الاتصال"
+  ],
+  "resource.calendar|199": [
+   "Resources",
+   "الموارد"
+  ],
+  "sale.order|656": [
+   "Planned",
+   "مخطط",
+   "planning_hours_planned",
+   "float_time"
+  ],
+  "sale.order|action_open_sale_order_spreadsheet": [
+   "Spreadsheet",
+   "جدول البيانات"
+  ],
+  "sale.order|action_view_invoice": [
+   "Invoices",
+   "الفواتير",
+   "invoice_count"
+  ],
+  "sale.order|action_view_planning": [
+   "To Plan",
+   "للتخطيط",
+   "planning_hours_to_plan",
+   "float_time"
+  ],
+  "sale.order|action_view_project_ids": [
+   "Projects",
+   "المشاريع",
+   "project_count"
+  ],
+  "sale.order|action_view_purchase_orders": [
+   "Purchase",
+   "الشراء",
+   "purchase_order_count"
+  ],
+  "sign.template|open_requests": [
+   "Signature Requests",
+   "طلبات التوقيع"
+  ],
+  "survey.survey|action_survey_user_input": [
+   "Registered",
+   "المسجلون",
+   "answer_count"
+  ],
+  "survey.survey|action_survey_user_input_certified": [
+   "Certified",
+   "الحاصلون على شهادة",
+   "success_count"
+  ],
+  "survey.survey|action_survey_user_input_completed": [
+   "Completed",
+   "المكتملة",
+   "answer_done_count"
+  ],
+  "survey.user_input|action_redirect_to_attempts": [
+   "Attempts",
+   "المحاولات",
+   "attempts_count"
+  ],
+  "uom.uom|action_open_packaging_barcodes": [
+   "Barcodes",
+   "الباركودات"
+  ]
  }
 }

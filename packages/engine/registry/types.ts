@@ -61,6 +61,8 @@ export interface FieldDef {
   m2mColumn2?: string;
   selection?: SelectionOption[];
   default?: unknown;
+  /** Schema sync writes `default` into existing rows where this field is empty. */
+  fillNulls?: boolean;
   /** Name of a registered compute function. */
   compute?: string;
   store?: boolean;
@@ -336,4 +338,10 @@ export interface Registry {
   appIcons: AppIconDef[];
   /** Default records per model, exactly as captured (Part I). */
   seed: Record<string, Record<string, unknown>[]>;
+  /**
+   * Idempotent statements schema sync runs after the default fills: data that
+   * behaviour added later would have written (a partner's customer rank from
+   * the invoices posted before ranking existed).
+   */
+  syncSql?: string[];
 }

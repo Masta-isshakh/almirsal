@@ -19,6 +19,8 @@ import { paidAmount, registerPayments } from './payment.js';
 const SALE_TYPES = new Set(['out_invoice', 'out_refund', 'out_receipt']);
 const PURCHASE_TYPES = new Set(['in_invoice', 'in_refund', 'in_receipt']);
 const REFUND_TYPES = new Set(['out_refund', 'in_refund']);
+/** Documents the company pays: their signed amounts are negative, as in Odoo. */
+const OUTGOING_TYPES = new Set(['in_invoice', 'in_receipt', 'out_refund']);
 const PRODUCT_LINE_TYPES = ['product', 'line_section', 'line_note'];
 
 function today(): string {
@@ -217,7 +219,17 @@ export function registerAccount(registry: Registry): void {
         if (partner?.property_payment_term_id) out.invoice_payment_term_id = m2oId(partner.property_payment_term_id);
       }
       if (out.invoice_date && !out.invoice_date_due) out.invoice_date_due = out.invoice_date;
-      if (!out.journal_id) out.journal_id = await defaultJournal(env, String(out.move_type ?? 'entry'));
+      // A customer invoice belongs in a sales journal and a bill in a purchase
+      // one — Odoo refuses anything else. A journal picked by the defaults for
+      // another kind of document (an entry's Miscellaneous journal, when nothing
+      // said this was an invoice) is replaced rather than kept.
+      const moveType = String(out.move_type ?? 'entry');
+      if (out.journal_id && moveType !== 'entry') {
+        const journal = await env.cr.query<{ type: string }>(`SELECT type FROM account_journal WHERE id = $1`, [m2oId(out.journal_id)]);
+        const wanted = SALE_TYPES.has(moveType) ? 'sale' : PURCHASE_TYPES.has(moveType) ? 'purchase' : null;
+        if (wanted && journal.rows[0]?.type !== wanted) out.journal_id = false;
+      }
+      if (!out.journal_id) out.journal_id = await defaultJournal(env, moveType);
       if (!out.currency_id && out.journal_id) {
         const journal = await env.cr.query<{ currency_id: number | null }>(`SELECT currency_id FROM account_journal WHERE id = $1`, [m2oId(out.journal_id)]);
         if (journal.rows[0]?.currency_id) out.currency_id = Number(journal.rows[0].currency_id);
@@ -226,7 +238,11 @@ export function registerAccount(registry: Registry): void {
     },
 
     computes: [{
-      fields: ['amount_untaxed', 'amount_tax', 'amount_total', 'amount_residual', 'amount_untaxed_signed', 'amount_total_signed', 'payment_state'],
+      fields: [
+        'amount_untaxed', 'amount_tax', 'amount_total', 'amount_residual', 'payment_state',
+        'amount_untaxed_signed', 'amount_total_signed', 'amount_tax_signed', 'amount_residual_signed',
+        'amount_untaxed_in_currency_signed', 'amount_total_in_currency_signed',
+      ],
       depends: ['invoice_line_ids.price_subtotal', 'invoice_line_ids.price_total', 'invoice_line_ids', 'line_ids', 'currency_id', 'move_type', 'state'],
       compute: async (env, ids) => {
         const rows = await env.cr.query<{ id: number; move_type: string; state: string | null; payment_state: string | null; untaxed: number; total: number }>(
@@ -240,14 +256,23 @@ export function registerAccount(registry: Registry): void {
           const rounding = await currencyRounding(env, Number(row.id));
           const untaxed = floatRound(row.untaxed, rounding);
           const total = floatRound(row.total, rounding);
-          const sign = REFUND_TYPES.has(row.move_type) ? -1 : 1;
+          // Odoo signs a document's amounts by the way the money goes: what the
+          // company receives is positive (an invoice, a vendor credit note) and
+          // what it pays is negative (a bill, a customer credit note) — which is
+          // why the Bills list shows negative totals.
+          const sign = OUTGOING_TYPES.has(row.move_type) ? -1 : 1;
           // Residual = total less the posted payments linked to the invoice (payment.ts).
           const paid = row.state === 'posted' && total > 0 ? floatRound(await paidAmount(env, Number(row.id)), rounding) : 0;
           const residual = row.payment_state === 'reversed' ? 0 : Math.max(0, floatRound(total - paid, rounding));
           const paymentState = row.payment_state === 'reversed' ? 'reversed' : row.state !== 'posted' || total === 0 ? 'not_paid' : residual <= 0 ? 'paid' : paid > 0 ? 'partial' : 'not_paid';
+          const tax = floatRound(total - untaxed, rounding);
           out[Number(row.id)] = {
-            amount_untaxed: untaxed, amount_tax: floatRound(total - untaxed, rounding), amount_total: total,
-            amount_residual: residual, amount_untaxed_signed: sign * untaxed, amount_total_signed: sign * total, payment_state: paymentState,
+            amount_untaxed: untaxed, amount_tax: tax, amount_total: total, amount_residual: residual, payment_state: paymentState,
+            amount_untaxed_signed: sign * untaxed, amount_total_signed: sign * total, amount_tax_signed: sign * tax,
+            amount_residual_signed: sign * residual,
+            // One currency per company here, so the document's currency and the
+            // company's agree.
+            amount_untaxed_in_currency_signed: sign * untaxed, amount_total_in_currency_signed: sign * total,
           };
         }
         return out;
@@ -308,6 +333,17 @@ export function registerAccount(registry: Registry): void {
           }
           await moves.write(id, vals);
           await rebuildBalancingLines(env, id);
+          // Odoo ranks the partner on posting: a sale document makes it (and its
+          // company) a customer, a purchase one a vendor — which is what the
+          // Customers and Vendors menus filter on.
+          const rank = SALE_TYPES.has(moveType) ? 'customer_rank' : PURCHASE_TYPES.has(moveType) ? 'supplier_rank' : null;
+          const partnerId = m2oId(move.partner_id);
+          if (rank && partnerId) {
+            await env.cr.query(
+              `UPDATE res_partner SET ${rank} = coalesce(${rank}, 0) + 1
+                WHERE id = $1 OR id = (SELECT commercial_partner_id FROM res_partner WHERE id = $1)`, [partnerId],
+            );
+          }
         }
       },
       button_draft: async (env, ids) => {

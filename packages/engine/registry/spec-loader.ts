@@ -1078,6 +1078,62 @@ export interface ExtraModels {
    * screens read (a vehicle's contract reminders) is given its expression here.
    */
   field_sql?: Record<string, Record<string, string> | string>;
+  /** Odoo defaults that existing rows must carry as well (see schema sync). */
+  fill_defaults?: Record<string, Record<string, unknown> | string>;
+  /**
+   * Fields of `field_sql` Odoo computes with an inverse: they read from SQL but
+   * stay editable, and a model hook turns what is written into records.
+   */
+  inverse_fields?: Record<string, string[] | string>;
+  /** Smart-button labels and counters the export dropped (see `applyStatButtons`). */
+  stat_buttons?: Record<string, string | [string, string, string?, string?]>;
+  /** Idempotent data fixes schema sync runs (see `Registry.syncSql`). */
+  sync_sql?: { README?: string; statements: string[] };
+}
+
+/**
+ * Odoo draws a smart button from what is inside it — a counter field with the
+ * `statinfo` widget, or an `o_stat_text` label — and the export kept only the
+ * button. Each one gets back its label and, when the model has it, the counter
+ * (read with the record: a hidden field node joins the button box). A button
+ * the map does not know opens an action, whose name is then its label.
+ */
+function applyStatButtons(
+  views: Record<string, ViewDef>,
+  models: Record<string, ModelDef>,
+  actions: Record<string, ActionDef>,
+  map: Record<string, string | [string, string, string?, string?]>,
+): void {
+  const visit = (node: unknown, model: string): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { for (const item of node) visit(item, model); return; }
+    const record = node as { kind?: string; children?: unknown[] };
+    if (record.kind === 'buttonbox' && Array.isArray(record.children)) {
+      const counters: string[] = [];
+      for (const child of record.children as ButtonNode[]) {
+        if (child.kind !== 'button' || child.string) continue;
+        const entry = map[`${model}|${child.name}`];
+        if (Array.isArray(entry)) {
+          const [en, ar, field, widget] = entry;
+          child.string = { en, ar };
+          if (field && models[model]?.fields[field]) {
+            child.statField = field;
+            if (widget === 'monetary' || widget === 'float' || widget === 'float_time') child.statWidget = widget;
+            counters.push(field);
+          }
+        } else if (child.type === 'action' && child.name && actions[child.name]) {
+          child.string = actions[child.name].name;
+        }
+      }
+      const present = new Set((record.children as { kind?: string; name?: string }[]).filter((child) => child.kind === 'field').map((child) => child.name));
+      for (const name of new Set(counters)) {
+        if (!present.has(name)) record.children.push({ kind: 'field', name, hidden: true, decorations: {}, attrs: {} } satisfies FieldNode);
+      }
+      return;
+    }
+    for (const value of Object.values(record)) visit(value, model);
+  };
+  for (const view of Object.values(views)) if (view.arch.type === 'form') visit(view.arch.body, view.model);
 }
 
 /** One2many fields Odoo declares `copy=True`: duplicating the parent duplicates these lines. */
@@ -1416,6 +1472,15 @@ export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
   addMissingRequiredFields(models, views);
   // Smart-button counters, read from the relation they count.
   addCounterExpressions(models);
+  for (const [model, fields] of Object.entries(extra?.fill_defaults ?? {})) {
+    if (typeof fields === 'string') continue; // the section's own README
+    for (const [name, value] of Object.entries(fields)) {
+      const field = models[model]?.fields[name];
+      if (!field || field.sqlExpr) continue;
+      field.default = value;
+      field.fillNulls = true;
+    }
+  }
   for (const [model, fields] of Object.entries(extra?.field_sql ?? {})) {
     if (typeof fields === 'string') continue; // the section's own README
     for (const [name, sql] of Object.entries(fields)) {
@@ -1426,12 +1491,22 @@ export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
       field.store = false;
     }
   }
+  for (const [model, names] of Object.entries(extra?.inverse_fields ?? {})) {
+    if (typeof names === 'string') continue; // the section's own README
+    for (const name of names) {
+      const field = models[model]?.fields[name];
+      if (field?.sqlExpr) field.readonly = false;
+    }
+  }
+
+  const actions = convertActions(spec);
+  applyStatButtons(views, models, actions, extra?.stat_buttons ?? {});
 
   return {
     session: spec.session,
     models,
     views,
-    actions: convertActions(spec),
+    actions,
     menus: roots,
     menuIndex: index,
     groups: convertGroups(spec),
@@ -1439,6 +1514,7 @@ export function loadRegistry(spec: RawSpec, extra?: ExtraModels): Registry {
     accountReports: convertAccountReports(spec),
     appIcons: convertAppIcons(spec),
     seed: spec.seed,
+    syncSql: extra?.sync_sql?.statements ?? [],
   };
 }
 

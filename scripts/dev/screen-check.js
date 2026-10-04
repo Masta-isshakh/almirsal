@@ -171,8 +171,10 @@ const ANY_VIEW = Object.values(VIEW_OF).concat(['.o_settings', '.o_account_repor
       await newButton.click({ timeout: 8000 }).catch(() => {});
       await settle();
       const bad = await errorDialog();
-      const form = await page.locator('.o_form_view, .o_dialog .o_form_view').count();
-      const fields = await page.locator('.o_form_view .o_field_widget, .o_dialog .o_field_widget').count();
+      // An editable list adds the new row in place, with its editors.
+      const inline = await page.locator('tr.o_selected_row .o_field_widget').count();
+      const form = (await page.locator('.o_form_view, .o_dialog .o_form_view').count()) || inline;
+      const fields = (await page.locator('.o_form_view .o_field_widget, .o_dialog .o_field_widget').count()) || inline;
       if (bad) fails.push(`New errors: ${bad}`);
       else if (!form) fails.push('New opens no form');
       else if (!fields) fails.push('New opens a form with no fields');
@@ -192,8 +194,10 @@ const ANY_VIEW = Object.values(VIEW_OF).concat(['.o_settings', '.o_account_repor
       await row.click({ timeout: 8000 }).catch(() => {});
       await settle();
       const bad = await errorDialog();
-      const form = await page.locator('.o_form_view').count();
-      const fields = await page.locator('.o_form_view .o_field_widget').count();
+      const inline = await page.locator('tr.o_selected_row .o_field_widget').count();
+      const form = (await page.locator('.o_form_view').count()) || inline;
+      const fields = (await page.locator('.o_form_view .o_field_widget').count()) || inline;
+      // An editable list edits the row in place instead of opening a form.
       // A card can open its form, or take you somewhere else entirely —
       // Discuss channels open the conversation, a helpdesk team its tickets.
       // Only a click that changes nothing at all is a failure, and a kanban

@@ -133,7 +133,7 @@ export function registerAccountExtra(): void {
           if (move.inalterable_hash) continue;
           const seed = `${move.name}|${move.date}|${move.amount_total}|${id}`;
           let h = 0; for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-          await env.cr.query(`UPDATE account_move SET inalterable_hash = $2, restrict_mode_hash_table = true WHERE id = $1`, [id, `sha-${h.toString(16)}`]);
+          await env.cr.query(`UPDATE account_move SET inalterable_hash = $2 WHERE id = $1`, [id, `sha-${h.toString(16)}`]);
           await note(env, 'account.move', id, { en: 'Entry locked with an inalterability hash.', ar: 'تم قفل القيد بتجزئة عدم القابلية للتغيير.' });
         }
       },
@@ -410,11 +410,20 @@ export function registerAccountExtra(): void {
   });
 
   registerModelHooks('account.account', {
+    // Opening balances (Accounting > Configuration > Chart of Accounts setup):
+    // the debit and credit typed on an account are lines of the company's
+    // opening entry, kept balanced on the undistributed-profits account.
+    onCreate: async (env, ids, list) => {
+      for (let index = 0; index < ids.length; index++) await applyOpening(env, ids[index], list[index] ?? {});
+    },
+    onWrite: async (env, ids, vals) => {
+      for (const id of ids) await applyOpening(env, id, vals);
+    },
     methods: {
       action_open_related_taxes: async (_env, ids) => windowAction('account.tax', { en: 'Taxes', ar: 'الضرائب' }, { domain: [['invoice_repartition_line_ids.account_id', 'in', ids]] }),
       action_open_reconcile: async (_env, ids) => windowAction('account.move.line', { en: 'Reconcile', ar: 'تسوية' }, { domain: [['account_id', 'in', ids], ['reconciled', '=', false]], viewMode: 'list' }),
       action_validate_opening_move: async (env) => {
-        const draft = await env.model('account.move').search([['move_type', '=', 'entry'], ['state', '=', 'draft'], ['ref', 'ilike', 'Opening']]);
+        const draft = await env.model('account.move').search([['move_type', '=', 'entry'], ['state', '=', 'draft'], ['ref', '=', OPENING_REF], ['company_id', '=', env.companyId]]);
         for (const id of draft) await env.model('account.move').callButton(id, 'action_post');
         return notify(draft.length ? { en: 'Opening entry posted.', ar: 'تم ترحيل القيد الافتتاحي.' } : { en: 'No draft opening entry to post.', ar: 'لا يوجد قيد افتتاحي مسودة للترحيل.' }, draft.length ? 'success' : 'info');
       },
@@ -433,4 +442,88 @@ export function registerAccountExtra(): void {
     },
   });
   void now;
+}
+
+/** The opening entry's reference — how Odoo names it and how it is found. */
+export const OPENING_REF = 'Opening Journal Entry';
+const BALANCING_LABEL = 'Automatic Balancing Line';
+
+/**
+ * Odoo's `_set_opening_debit_credit` and `_auto_balance_opening_move`: an
+ * opening debit or credit typed on an account becomes (or updates, or drops)
+ * that account's line in the draft opening entry, created on first use in the
+ * miscellaneous journal on the first day of the year; the entry is then
+ * balanced by one line on the undistributed-profits account.
+ */
+async function applyOpening(env: Environment, accountId: number, vals: Values): Promise<void> {
+  let debit: number | undefined;
+  let credit: number | undefined;
+  if ('opening_balance' in vals && !('opening_debit' in vals) && !('opening_credit' in vals)) {
+    const balance = Number(vals.opening_balance) || 0;
+    debit = balance > 0 ? balance : 0;
+    credit = balance < 0 ? -balance : 0;
+  } else {
+    if ('opening_debit' in vals) debit = Number(vals.opening_debit) || 0;
+    if ('opening_credit' in vals) credit = Number(vals.opening_credit) || 0;
+  }
+  if (debit === undefined && credit === undefined) return;
+
+  const moveId = await openingMove(env, Boolean(debit || credit));
+  if (!moveId) return;
+  const lines = env.sudo().model('account.move.line');
+  for (const [field, amount] of [['debit', debit], ['credit', credit]] as const) {
+    if (amount === undefined) continue;
+    const existing = await env.cr.query<{ id: number }>(
+      `SELECT id FROM account_move_line WHERE move_id = $1 AND account_id = $2 AND coalesce(${field}, 0) <> 0 AND coalesce(name, '') <> $3 ORDER BY id`,
+      [moveId, accountId, BALANCING_LABEL],
+    );
+    const ids = existing.rows.map((row) => Number(row.id));
+    if (ids.length > 1) await lines.unlink(ids.slice(1));
+    const signed = field === 'debit' ? amount : -amount;
+    const amounts = { debit: field === 'debit' ? amount : 0, credit: field === 'credit' ? amount : 0, balance: signed, amount_currency: signed };
+    if (ids.length && amount) await lines.write(ids[0], amounts);
+    else if (ids.length) await lines.unlink(ids[0]);
+    else if (amount) await lines.create({ move_id: moveId, account_id: accountId, name: 'Opening balance', display_type: 'product', ...amounts });
+  }
+  await balanceOpeningMove(env, moveId);
+}
+
+/** The company's draft opening entry; created when `create` and none exists. */
+async function openingMove(env: Environment, create: boolean): Promise<number | false> {
+  const found = await env.cr.query<{ id: number; state: string }>(
+    `SELECT id, state FROM account_move WHERE move_type = 'entry' AND ref = $1 AND company_id = $2 AND state <> 'cancel' ORDER BY id LIMIT 1`,
+    [OPENING_REF, env.companyId],
+  );
+  const row = found.rows[0];
+  if (row && row.state !== 'draft') {
+    throw new UserError({ en: 'The opening entry is already posted: opening balances can no longer be changed from this screen.', ar: 'تم ترحيل القيد الافتتاحي بالفعل: لم يعد بالإمكان تغيير الأرصدة الافتتاحية من هذه الشاشة.' });
+  }
+  if (row) return Number(row.id);
+  if (!create) return false;
+  const journal = await env.cr.query<{ id: number }>(
+    `SELECT id FROM account_journal WHERE type = 'general' AND (company_id = $1 OR company_id IS NULL) AND (active IS NULL OR active = TRUE) ORDER BY sequence NULLS LAST, id LIMIT 1`,
+    [env.companyId],
+  );
+  if (!journal.rows[0]) throw new UserError({ en: 'A miscellaneous journal is needed to record opening balances.', ar: 'يلزم دفتر يومية متنوع لتسجيل الأرصدة الافتتاحية.' });
+  const date = `${today().slice(0, 4)}-01-01`;
+  return env.sudo().model('account.move').create({ move_type: 'entry', ref: OPENING_REF, journal_id: Number(journal.rows[0].id), date, company_id: env.companyId });
+}
+
+async function balanceOpeningMove(env: Environment, moveId: number): Promise<void> {
+  const lines = env.sudo().model('account.move.line');
+  const sums = await env.cr.query<{ debit: number; credit: number }>(
+    `SELECT coalesce(sum(debit), 0)::float8 AS debit, coalesce(sum(credit), 0)::float8 AS credit FROM account_move_line WHERE move_id = $1 AND coalesce(name, '') <> $2`,
+    [moveId, BALANCING_LABEL],
+  );
+  const diff = floatRound(Number(sums.rows[0].debit) - Number(sums.rows[0].credit), 0.01);
+  const existing = await env.cr.query<{ id: number }>(`SELECT id FROM account_move_line WHERE move_id = $1 AND name = $2 ORDER BY id`, [moveId, BALANCING_LABEL]);
+  const ids = existing.rows.map((row) => Number(row.id));
+  if (!diff) { if (ids.length) await lines.unlink(ids); return; }
+  const amounts = { debit: diff < 0 ? -diff : 0, credit: diff > 0 ? diff : 0, balance: -diff, amount_currency: -diff };
+  if (ids.length) { await lines.write(ids[0], amounts); if (ids.length > 1) await lines.unlink(ids.slice(1)); return; }
+  const unaffected = await env.cr.query<{ id: number }>(
+    `SELECT id FROM account_account WHERE account_type = 'equity_unaffected' AND (active IS NULL OR active = TRUE) ORDER BY code LIMIT 1`,
+  );
+  if (!unaffected.rows[0]) throw new UserError({ en: 'An account of type "Current Year Earnings" is needed to balance the opening entry.', ar: 'يلزم حساب من نوع "أرباح السنة الحالية" لموازنة القيد الافتتاحي.' });
+  await lines.create({ move_id: moveId, account_id: Number(unaffected.rows[0].id), name: BALANCING_LABEL, display_type: 'product', ...amounts });
 }

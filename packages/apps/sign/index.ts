@@ -150,7 +150,7 @@ async function signerLinks(env: Environment, requestId: number, state?: string):
   registerModelHooks('survey.user_input', {
     defaults: () => ({ state: 'new', test_entry: false, access_token: randomToken(24), attempts_number: 1 }),
     beforeCreate: async (_env, vals) => ({ ...vals, access_token: vals.access_token || randomToken(24) }),
-    onCreate: async (env, ids) => { const rows = await env.cr.query<{ s: number }>(`SELECT DISTINCT survey_id AS s FROM survey_user_input WHERE id = ANY($1)`, [ids]); for (const r of rows.rows) await env.cr.query(`UPDATE survey_survey SET answer_count = (SELECT count(*) FROM survey_user_input WHERE survey_id = $1 AND coalesce(test_entry, false) = false), answer_done_count = (SELECT count(*) FROM survey_user_input WHERE survey_id = $1 AND state = 'done') WHERE id = $1`, [r.s]).catch(() => undefined); },
+    // A survey's answer counters are counted in SQL (extra-models field_sql).
     methods: {
       action_resend: async (env, ids) => { for (const id of ids) await note(env, 'survey.user_input', id, { en: 'Invitation resent.', ar: 'تمت إعادة إرسال الدعوة.' }); return notify({ en: 'Invitation resent.', ar: 'تمت إعادة إرسال الدعوة.' }); },
       action_print_answers: async (_env, ids) => windowAction('survey.user_input.line', { en: 'Answers', ar: 'الإجابات' }, { domain: [['user_input_id', 'in', ids]], viewMode: 'list' }),

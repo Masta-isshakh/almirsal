@@ -5,10 +5,10 @@ import type { ButtonNode, FieldNode, FormArch, FormNode, GroupNode } from '@engi
 import type { FieldDef } from '@engine/registry/types';
 import { evaluate } from '@engine/expr/evaluate';
 import { rpc } from '@/lib/client/rpc';
-import { useT } from '@/lib/client/i18n';
+import { useLang, useT } from '@/lib/client/i18n';
 import { useActions } from '@/lib/client/actions';
 import { RECORD_CACHE_MS, formSpecification, isInvisible, isReadonly, isRequired, makeRecordScope } from '@/lib/client/arch';
-import { idOf, nameOf } from '@/lib/client/display';
+import { formatValue, idOf, nameOf, useCurrencies } from '@/lib/client/display';
 import { Field } from '../fields/Field';
 import { FormRecordProvider } from './form/FormContext';
 import { Chatter } from '../webclient/Chatter';
@@ -348,6 +348,8 @@ interface RenderCtx {
 
 function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
   const t = useT();
+  const lang = useLang();
+  const currencies = useCurrencies();
   const { scope } = ctx;
   switch (node.kind) {
     case 'sheet':
@@ -359,8 +361,14 @@ function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
         <div className="oe_button_box">
           {buttons.map((button, index) => (
             <button key={index} type="button" className="oe_stat_button" onClick={() => ctx.clickButton(button)}>
-              {button.icon && <i className={`fa ${button.icon}`} />}
-              <span>{button.string ? t(button.string) : ''}</span>
+              {button.icon && <i className={`fa fa-fw ${button.icon.replace(/\s*icon$/, '')}`} />}
+              {/* Odoo's statinfo: the counter above its label. */}
+              <span className="o_stat_info">
+                {button.statField && ctx.fields[button.statField] && (
+                  <span className="o_stat_value">{formatValue(ctx.fields[button.statField], ctx.values[button.statField] ?? 0, { lang, widget: button.statWidget, record: ctx.values, currencies }) || '0'}</span>
+                )}
+                <span className="o_stat_text">{button.string ? t(button.string) : ''}</span>
+              </span>
             </button>
           ))}
         </div>
@@ -399,7 +407,14 @@ function Node({ node, ctx }: { node: FormNode; ctx: RenderCtx }): ReactNode {
       );
     case 'field': return <FieldSlot node={node} ctx={ctx} withLabel={false} />;
     case 'widget':
-      if (node.name === 'web_ribbon') return isInvisible(node, scope) ? null : <div className="position-absolute top-0 end-0 m-2 badge text-bg-warning">{t(node.title)}</div>;
+      if (node.name === 'web_ribbon') {
+        if (isInvisible(node, scope)) return null;
+        // Odoo's corner ribbon: green by default; the export kept no
+        // `bg_color`, and Odoo's red ones are the archived / cancelled kind.
+        const title = t(node.title);
+        const colour = String(node.attrs?.bg_color ?? (/^(Archived|Cancelled|Canceled|Reversed|Blocked)$/.test(node.title?.en ?? '') ? 'text-bg-danger' : 'text-bg-success'));
+        return <div className="o_widget_web_ribbon" aria-label={title}><div className={`ribbon ${colour}`}><span>{title}</span></div></div>;
+      }
       return null;
     case 'app': case 'block': case 'setting': case 'create':
       return <div>{'children' in node ? node.children.map((child, index) => <Node key={index} node={child} ctx={ctx} />) : null}</div>;
@@ -461,7 +476,12 @@ function FieldSlot({ node, ctx, withLabel }: { node: FieldNode; ctx: RenderCtx; 
   control = <div className="o_field_slot" data-name={node.name}>{control}</div>;
   if (ctx.invalid.includes(node.name)) control = <div className="o_field_invalid">{control}</div>;
   if (node.class && !isLines) control = <div className={node.class}>{control}</div>;
-  if (!withLabel || node.nolabel) return isLines ? <div style={{ gridColumn: '1 / -1' }}>{control}</div> : control;
+  if (!withLabel) return isLines ? <div style={{ gridColumn: '1 / -1' }}>{control}</div> : control;
+  // A field with no label placed straight in a group spans it: Odoo's views
+  // write that as `nolabel="1" colspan="2"` (the invoice totals, the payments
+  // under them, the terms), and the export keeps the first half only. Left in
+  // one cell, it sits beside the next field and the two overlap.
+  if (node.nolabel) return <div style={{ gridColumn: '1 / -1' }}>{control}</div>;
   return (
     <>
       <label className={`o_form_label ${required ? 'o_field_required' : ''}`} title={t(node.help ?? field.help)}>{t(node.string ?? field.label)}</label>

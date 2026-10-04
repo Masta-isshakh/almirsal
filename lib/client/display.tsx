@@ -67,12 +67,14 @@ export function currencyOf(record: Record<string, unknown>, field: FieldDef, cur
 }
 
 /** Plain-text rendering of a value. */
-export function formatValue(field: FieldDef, value: unknown, options: { lang: Lang; widget?: string; record?: Record<string, unknown>; currencies?: Record<number, CurrencyDef> }): string {
+export function formatValue(field: FieldDef, value: unknown, options: { lang: Lang; widget?: string; record?: Record<string, unknown>; currencies?: Record<number, CurrencyDef>; fieldOptions?: string }): string {
   const { lang, widget, record = {}, currencies = {} } = options;
   if (value === false || value === null || value === undefined) return '';
+  // `options="{'no_symbol': True}"`: the amount without its currency.
+  const noSymbol = /['"]no_symbol['"]\s*:\s*(True|true|1)/.test(options.fieldOptions ?? '');
   switch (field.type) {
     case 'monetary':
-      return formatMonetary(value as number, currencyOf(record, field, currencies));
+      return formatMonetary(value as number, currencyOf(record, field, currencies), { noSymbol });
     case 'float':
       if (widget === 'float_time') return formatFloatTime(value as number);
       if (widget === 'percentage') return formatPercentage(value as number);

@@ -78,6 +78,9 @@ export interface ButtonNode {
   hotkey?: string;
   /** `special="cancel"` / `special="save"` in wizard footers. */
   special?: string;
+  /** A smart button's counter (Odoo's `statinfo` field) and how it is drawn. */
+  statField?: string;
+  statWidget?: 'monetary' | 'float' | 'float_time';
   attrs: Attrs;
 }
 

@@ -87,6 +87,10 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
   const [selected, setSelected] = useState<number[]>([]);
   const [allMatching, setAllMatching] = useState(false);
   const [reload, setReload] = useState(0);
+  // An editable list adds its new rows in place; while one is being edited the
+  // control panel shows Save and Discard, as Odoo does.
+  const [newRowSignal, setNewRowSignal] = useState(0);
+  const [rowEditing, setRowEditing] = useState<{ save: () => void; discard: () => void } | null>(null);
   const limit = action.limit ?? 80;
   const isForm = resolution.viewType === 'form';
   const isSettings = action.model === 'res.config.settings';
@@ -256,8 +260,11 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
 
   const goTo = (viewType: ViewType) => navigate(`/odoo/${resolution.slug}?view_type=${viewType}`);
   const openRecord = (id: number) => navigate(`/odoo/${resolution.slug}/${id}`);
-  const createRecord = () => navigate(`/odoo/${resolution.slug}/new`);
   const view = views[resolution.viewType];
+  const inlineCreate = view?.arch.type === 'list' && view.arch.editable !== undefined && groupBy.length === 0;
+  // `create="false"` on the list or kanban hides New, as in Odoo (API keys).
+  const viewAllowsCreate = !(view && (view.arch.type === 'list' || view.arch.type === 'kanban') && view.arch.create === false);
+  const createRecord = () => (inlineCreate ? setNewRowSignal((n) => n + 1) : navigate(`/odoo/${resolution.slug}/new`));
   const switcher = (action.viewMode ?? []).filter((type) => type !== 'form' && views[type]);
   const headerButtons = view?.arch.type === 'list' ? view.arch.headerButtons : [];
 
@@ -326,8 +333,14 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
       <div className="o_control_panel">
         <div className="o_control_panel_main">
           <div className="o_control_panel_breadcrumbs">
-            {!isForm && action.type === 'act_window' && views.form && !resolution.readOnlyModel && (
-              <button type="button" className="btn btn-primary" onClick={createRecord} accessKey="c">{t('New')}</button>
+            {!isForm && !rowEditing && action.type === 'act_window' && (views.form || inlineCreate) && !resolution.readOnlyModel && viewAllowsCreate && (
+              <button type="button" className="btn btn-primary o_list_button_add" onClick={createRecord} accessKey="c">{t('New')}</button>
+            )}
+            {!isForm && rowEditing && (
+              <>
+                <button type="button" className="btn btn-primary o_list_button_save" onClick={rowEditing.save}>{t('Save')}</button>
+                <button type="button" className="btn btn-secondary o_list_button_discard" onClick={rowEditing.discard}>{t('Discard')}</button>
+              </>
             )}
             {isForm && views.form && !isSettings && !resolution.readOnlyModel && <button type="button" className="btn btn-outline-primary" onClick={createRecord}>{t('New')}</button>}
             <div className="o_breadcrumb">
@@ -387,7 +400,8 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
         {!view ? <UnsupportedView type={resolution.viewType} />
           : view.arch.type === 'list' ? (
             <ListView key={JSON.stringify([domain, groupBy, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord}
-              onSelect={(ids, all) => { setSelected(ids); setAllMatching(all); }} onRecords={rememberPage} onHover={prefetch} user={user} context={actionContext} help={action.help} />
+              onSelect={(ids, all) => { setSelected(ids); setAllMatching(all); }} onRecords={rememberPage} onHover={prefetch} user={user} context={actionContext} help={action.help}
+              newRowSignal={newRowSignal} onEditing={setRowEditing} />
           ) : view.arch.type === 'kanban' ? (
             <KanbanView key={JSON.stringify([domain, groupBy, offset, reload])} arch={view.arch} fields={fields} model={action.model!} domain={domain} groupBy={groupBy} offset={offset} limit={limit} onTotal={setTotal} onOpen={openRecord} onHover={prefetch} user={user} context={actionContext} help={action.help} />
           ) : view.arch.type === 'form' ? (

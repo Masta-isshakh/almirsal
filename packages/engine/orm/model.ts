@@ -301,7 +301,10 @@ export class Model {
     if (!comodel) return null;
     const hooks = hooksFor(comodel.name);
     if (hooks.displayName && !hooks.displayNameSql) return null;
-    return `(SELECT ${this.nameSqlFor(comodel, 'n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = t.${quoteIdent(field.name)})`;
+    // A many2one computed in SQL has no column of its own: the name is looked
+    // up by the expression's value.
+    const idExpr = field.sqlExpr ? expandSqlExpr(field.sqlExpr, 't', this.sqlCtx) : `t.${quoteIdent(field.name)}`;
+    return `(SELECT ${this.nameSqlFor(comodel, 'n')} FROM ${quoteIdent(comodel.table)} n WHERE n."id" = ${idExpr})`;
   }
 
   /**

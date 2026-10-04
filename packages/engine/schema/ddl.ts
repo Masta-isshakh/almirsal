@@ -231,6 +231,8 @@ export interface SyncReport {
   foreignKeysAdded: number;
   /** Reporting views (re)created. */
   viewsCreated?: number;
+  /** Fields whose empty rows were given their Odoo default. */
+  rowsFilled?: number;
   /** True when the stored schema hash matched and nothing was checked. */
   skipped: boolean;
 }
@@ -270,10 +272,32 @@ async function existingConstraints(db: Queryable): Promise<Set<string>> {
 
 /** Cheap fingerprint of the generated DDL, stored after a successful sync. */
 export function schemaHash(registry: Registry): string {
-  const text = generateDdl(registry);
+  // The defaults existing rows must be filled with are part of what a sync
+  // does, so a new one has to make the next sync run.
+  const text = generateDdl(registry) + fillStatements(registry).join(';\n');
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
   return `${text.length}-${hash.toString(36)}`;
+}
+
+/**
+ * `UPDATE … SET field = default WHERE field IS NULL` for every field marked
+ * `fillNulls` — what Odoo does to existing records when a module gives a field a
+ * default. Only scalar defaults: a computed default has nothing to write.
+ */
+function fillStatements(registry: Registry): string[] {
+  const out: string[] = [];
+  for (const model of Object.values(registry.models)) {
+    if (model.sqlView) continue;
+    for (const field of Object.values(model.fields)) {
+      if (!field.fillNulls || field.sqlExpr || field.store === false) continue;
+      const value = field.default;
+      if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') continue;
+      const literal = typeof value === 'string' ? `'${value.replace(/'/g, "''")}'` : String(value);
+      out.push(`UPDATE ${quoteIdent(model.table)} SET ${quoteIdent(field.name)} = ${literal} WHERE ${quoteIdent(field.name)} IS NULL`);
+    }
+  }
+  return out.concat(registry.syncSql ?? []);
 }
 
 const SCHEMA_KEY = 'rodeo.schema.hash';
@@ -356,6 +380,11 @@ export async function syncSchema(db: Database, registry: Registry, options: { fo
     await runDdlBatch(db, viewStatements);
     report.viewsCreated = views.length;
   }
+
+  // Odoo's defaults for rows that predate them (extra-models `fill_defaults`).
+  const fills = fillStatements(registry);
+  for (const statement of fills) await db.query(statement);
+  report.rowsFilled = fills.length;
 
   await setParameter(db, SCHEMA_KEY, hash);
   return report;
