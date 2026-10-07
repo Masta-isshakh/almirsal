@@ -10,6 +10,7 @@ import { rpc } from '@/lib/client/rpc';
 import { CurrencyProvider } from '@/lib/client/display';
 import { useActions } from '@/lib/client/actions';
 import { useNavigation } from '@/lib/client/navigation';
+import { readActionQuery } from '@/lib/client/action-query';
 import { Dropdown } from './Navbar';
 import { useUi } from './ui';
 import type { SessionInfo } from './WebClient';
@@ -65,16 +66,18 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
 
   const idsParam = urlQuery.ids ?? null;
   // Drill-downs (financial reports, dashboards) open a list on an explicit domain.
-  const domainParam = useMemo<Domain | null>(() => { try { return urlQuery.domain ? (JSON.parse(urlQuery.domain) as Domain) : null; } catch { return null; } }, [urlQuery.domain]);
+  const returnedState = useMemo(() => readActionQuery(urlQuery), [urlQuery.domain, urlQuery.context]);
+  const domainParam = returnedState.domain ?? null;
   const defaultsParam = urlQuery.defaults ?? null;
   const actionContext = useMemo(() => {
     const base = (safeEval(action.context, { uid: user.uid, companyIds: user.companyIds, context: {} }) as Record<string, unknown>) ?? {};
+    Object.assign(base, returnedState.context);
     // Calendar / kanban quick-create hand their defaults to the form through the URL.
     if (defaultsParam) {
       try { for (const [key, value] of Object.entries(JSON.parse(defaultsParam) as Record<string, unknown>)) base[`default_${key}`] = value; } catch { /* ignore */ }
     }
     return base;
-  }, [action.context, user, defaultsParam]);
+  }, [action.context, user, defaultsParam, returnedState.context]);
   const env = useMemo<EvalEnv>(() => ({ uid: user.uid, companyIds: user.companyIds, context: actionContext }), [user, actionContext]);
   const actionDomain = useMemo(() => (safeEval(action.domain || undefined, env) as Domain) ?? [], [action.domain, env]);
 
@@ -273,8 +276,8 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
     if (button.type === 'action' && button.name) {
       await doAction(button.name, { activeIds: selected, activeId: selected[0], activeModel: action.model, onClose: refresh });
     } else if (button.type === 'object' && button.name && action.model) {
-      const result = await rpc<Record<string, unknown> | false>('callButton', action.model, { ids: selected, method: button.name }).catch(() => false);
-      if (result && typeof result === 'object') await doAction(result, { activeIds: selected, activeModel: action.model });
+      const result = await rpc<Record<string, unknown> | false>('callButton', action.model, { ids: selected, method: button.name }, { context: actionContext }).catch(() => false);
+      if (result && typeof result === 'object') await doAction(result, { activeIds: selected, activeModel: action.model, context: actionContext });
       refresh();
     }
   };
@@ -292,20 +295,20 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
       {reports.length > 0 && <div className="o_dropdown_header"><i className="fa fa-print me-1" />{t('Print')}</div>}
       {reports.map((report) => <button key={report.reportName} type="button" className="o_dropdown_item ps-4" onClick={() => openReport(report.reportName, [resolution.recordId!])}>{t(report.name)}</button>)}
       {reports.length > 0 && <div className="o_dropdown_divider" />}
-      <button type="button" className="o_dropdown_item" onClick={async () => { const id = await rpc<number>('copy', action.model!, { id: resolution.recordId }); navigate(`/odoo/${resolution.slug}/${id}`); }}><i className="fa fa-clone me-2 text-muted" />{t('Duplicate')}</button>
+      <button type="button" className="o_dropdown_item" onClick={async () => { const id = await rpc<number>('copy', action.model!, { id: resolution.recordId }, { context: actionContext }); navigate(`/odoo/${resolution.slug}/${id}`); }}><i className="fa fa-clone me-2 text-muted" />{t('Duplicate')}</button>
       {fields.active && (
         <button type="button" className="o_dropdown_item" onClick={async () => {
-          const [row] = await rpc<{ active: boolean }[]>('read', action.model!, { ids: [resolution.recordId], fields: ['active'] });
-          await rpc('write', action.model!, { ids: [resolution.recordId], values: { active: !row?.active } });
+          const [row] = await rpc<{ active: boolean }[]>('read', action.model!, { ids: [resolution.recordId], fields: ['active'] }, { context: actionContext });
+          await rpc('write', action.model!, { ids: [resolution.recordId], values: { active: !row?.active } }, { context: actionContext });
           ui.notify({ type: 'success', message: row?.active ? { en: 'Record archived.', ar: 'تمت أرشفة السجل.' } : { en: 'Record unarchived.', ar: 'تم إلغاء أرشفة السجل.' },
-            action: { label: { en: 'Undo', ar: 'تراجع' }, onClick: async () => { await rpc('write', action.model!, { ids: [resolution.recordId], values: { active: Boolean(row?.active) } }); reloadPage(); } } });
+            action: { label: { en: 'Undo', ar: 'تراجع' }, onClick: async () => { await rpc('write', action.model!, { ids: [resolution.recordId], values: { active: Boolean(row?.active) } }, { context: actionContext }); reloadPage(); } } });
           reloadPage();
         }}><i className="fa fa-archive me-2 text-muted" />{t('Archive')} / {t('Unarchive')}</button>
       )}
       <div className="o_dropdown_divider" />
       <button type="button" className="o_dropdown_item text-danger" onClick={async () => {
         if (!(await ui.confirm({ message: { en: 'Are you sure you want to delete this record?', ar: 'هل أنت متأكد من حذف هذا السجل؟' }, confirmLabel: { en: 'Delete', ar: 'حذف' } }))) return;
-        await rpc('unlink', action.model!, { ids: [resolution.recordId] });
+        await rpc('unlink', action.model!, { ids: [resolution.recordId] }, { context: actionContext });
         const next = pagerIds.filter((id) => id !== resolution.recordId);
         rememberPage(next);
         navigate(next[pagerIndex] ? `/odoo/${resolution.slug}/${next[pagerIndex]}` : `/odoo/${resolution.slug}`);
@@ -357,7 +360,7 @@ export function ActionContainer({ resolution, query: urlQuery, user }: { resolut
               <button key={index} type="button" className={`btn ${/btn-primary/.test(button.class ?? '') ? 'btn-primary' : 'btn-secondary'}`} onClick={() => runHeaderButton(button)}>{t(button.string)}</button>
             ))}
             {!isForm && selected.length > 0 && action.model && view?.arch.type === 'list' && (
-              <ListActions model={action.model} fields={fields} selected={selected} allMatching={allMatching} domain={domain} columns={listFieldNames(view.arch)} onDone={refresh} reports={reports} onPrint={(reportName, ids) => openReport(reportName, ids)} />
+              <ListActions model={action.model} fields={fields} selected={selected} allMatching={allMatching} domain={domain} context={actionContext} columns={listFieldNames(view.arch)} onDone={refresh} reports={reports} onPrint={(reportName, ids) => openReport(reportName, ids)} />
             )}
           </div>
           {!isForm && search && (

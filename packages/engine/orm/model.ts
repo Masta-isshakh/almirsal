@@ -136,10 +136,14 @@ export class Model {
   }
 
   /** Domain implied by the environment: active_test, multi-company, rules. */
-  private implicitDomain(operation: 'read' | 'write' | 'unlink', activeTest?: boolean): Domain {
+  private implicitDomain(operation: 'read' | 'write' | 'unlink', activeTest?: boolean, domain: Domain = []): Domain {
     const parts: Domain[] = [];
     const testActive = activeTest ?? this.env.context.active_test !== false;
-    if (testActive && this.fields.active) parts.push([['active', '=', true]]);
+    // An explicit active filter (including an OR with inactive records) must
+    // not be contradicted by the default active=true condition. Company and
+    // record rules still apply to every result.
+    const explicitActive = domain.some((item) => Array.isArray(item) && item[0] === 'active');
+    if (testActive && this.fields.active && !explicitActive) parts.push([['active', '=', true]]);
     if (this.fields.company_id && this.name !== 'res.company' && !this.env.superuser) {
       parts.push(['|', ['company_id', 'in', this.env.companyIds], ['company_id', '=', false]]);
     }
@@ -156,6 +160,12 @@ export class Model {
       alias, paramOffset, unaccent: false, uid: this.env.uid,
       nameSql: (model, a) => (hooksFor(model.name).displayNameSql ? hooksFor(model.name).displayNameSql!(a) : null),
     });
+  }
+
+  /** Internal aggregate queries use the same access, company and record rules as search. */
+  readWhere(domain: Domain, alias: string, paramOffset = 0) {
+    this.checkAccess('read');
+    return this.compileWhere(combineDomains([domain,this.implicitDomain('read',false,domain)],'&'),alias,paramOffset);
   }
 
   /** ORDER BY clause; many2one terms sort by the comodel's record name. */
@@ -188,7 +198,7 @@ export class Model {
 
   async search(domain: Domain = [], options: SearchOptions = {}): Promise<number[]> {
     this.checkAccess('read');
-    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest)], '&');
+    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest, domain)], '&');
     const alias = 't';
     const where = this.compileWhere(full, alias);
     const params = [...where.params];
@@ -202,7 +212,7 @@ export class Model {
   /** Page of ids plus the total in one round trip (a window count), for `web_search_read`. */
   async searchWithCount(domain: Domain = [], options: SearchOptions = {}): Promise<{ ids: number[]; total: number }> {
     this.checkAccess('read');
-    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest)], '&');
+    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest, domain)], '&');
     const alias = 't';
     const where = this.compileWhere(full, alias);
     const params = [...where.params];
@@ -216,7 +226,7 @@ export class Model {
 
   async searchCount(domain: Domain = [], options: Pick<SearchOptions, 'activeTest'> = {}): Promise<number> {
     this.checkAccess('read');
-    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest)], '&');
+    const full = combineDomains([domain, this.implicitDomain('read', options.activeTest, domain)], '&');
     const where = this.compileWhere(full, 't');
     const result = await this.env.cr.query<{ n: string }>(
       `SELECT count(*)::text AS n FROM ${quoteIdent(this.table)} t WHERE ${where.text}`, where.params,
@@ -470,7 +480,7 @@ export class Model {
 
   async readGroup(domain: Domain, fields: string[], groupby: string[], options: ReadGroupOptions = {}): Promise<ReadGroupRow[]> {
     this.checkAccess('read');
-    return readGroup(this, domain, this.implicitDomain('read', options.activeTest), fields, groupby, options);
+    return readGroup(this, domain, this.implicitDomain('read', options.activeTest, domain), fields, groupby, options);
   }
 
   /** Public for read-group and friends. */

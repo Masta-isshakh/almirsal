@@ -4723,6 +4723,11 @@
    }
   },
   "res.company": {
+   "fiscalyear_lock_date": { "s": "Lock Everything", "ar": "قفل الكل", "t": "date" },
+   "sale_lock_date": { "s": "Lock Sales", "ar": "إقفال المبيعات", "t": "date" },
+   "purchase_lock_date": { "s": "Lock Purchases", "ar": "إقفال المشتريات", "t": "date" },
+   "tax_lock_date": { "s": "Lock Tax Return", "ar": "إقفال الإقرار الضريبي", "t": "date" },
+   "hard_lock_date": { "s": "Hard Lock", "ar": "تاريخ القفل الثابت", "t": "date" },
    "primary_color": {
     "s": "Primary Color",
     "ar": "اللون الأساسي",
@@ -5061,6 +5066,7 @@
    }
   },
   "account.move": {
+   "secure_sequence_number": { "s": "Secure Sequence Number", "ar": "رقم التسلسل الآمن", "t": "integer", "ro": 1 },
    "amount_tax": {
     "s": "Tax",
     "ar": "الضريبة",
@@ -5289,6 +5295,12 @@
     "s": "Journal Item Label",
     "ar": "عنوان بند اليومية",
     "t": "char"
+   },
+   "writeoff_account_id": {
+    "s": "Difference Account",
+    "ar": "حساب الفرق",
+    "t": "many2one",
+    "rel": "account.account"
    },
    "line_ids": {
     "s": "Journal items",
@@ -6067,7 +6079,7 @@
    "company_currency_id": "SELECT c.currency_id FROM res_company c WHERE c.id = {alias}.company_id",
    "is_same_currency": "{alias}.currency_id IS NULL OR {alias}.currency_id = (SELECT c.currency_id FROM res_company c WHERE c.id = {alias}.company_id)",
    "residual_at_date": "coalesce({alias}.amount_residual, 0)",
-   "account_internal_group": "SELECT a.internal_group FROM account_account a WHERE a.id = {alias}.account_id",
+   "account_internal_group": "SELECT CASE WHEN a.account_type = 'off_balance' THEN 'off' WHEN a.account_type LIKE 'asset%' THEN 'asset' WHEN a.account_type LIKE 'liability%' THEN 'liability' WHEN a.account_type LIKE 'equity%' THEN 'equity' WHEN a.account_type LIKE 'income%' THEN 'income' WHEN a.account_type LIKE 'expense%' THEN 'expense' END FROM account_account a WHERE a.id = {alias}.account_id",
    "is_account_reconcile": "SELECT coalesce(a.reconcile, false) FROM account_account a WHERE a.id = {alias}.account_id"
   },
   "res.partner": {

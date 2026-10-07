@@ -869,6 +869,71 @@ compute role holds read, write and delete on it.
   them) and `sync_sql` (idempotent data fixes); both are part of the schema
   hash, so the next sync after a change runs them once.
 
+### Cross-app project links and purchase coverage (2026-10-07)
+
+- **Project → Sales:** the Sales Orders button now follows the project's
+  direct order, reinvoicing order, sales line, task sales links and orders
+  assigned to the project. It previously used a missing `task_id` field on
+  sales lines. Sales Order Items uses the same links, and a task can open the
+  order associated with its sales line.
+- **Project → Accounting:** Invoices now follows the invoice lines' sales
+  relationships instead of an empty origin filter. Editing an invoice's
+  reference does not break the relationship, and an unrelated invoice with
+  the same reference is excluded.
+- **Project → Documents:** the project button includes attachments on its
+  tasks, including archived tasks, while excluding other projects' files.
+- **Phase 5 regression coverage:** `tests/cross-app-project.test.ts` covers
+  five scenarios, including multiple projects and empty results.
+  `tests/cross-app-purchase.test.ts` covers approval gating, supplier grouping,
+  receipt requirements, vendor billing, outbound payment and journal balance.
+  These use isolated in-memory Postgres databases; no cloud data is changed.
+- Local workflow verification: **153 checks passed, zero failed**, across
+  the 15 scenarios in `scripts/verify-workflows.mts`; results are saved in
+  `docs/workflow-verification-2026-10-07.json`.
+- Final validation: **258 tests passed across 29 files**, TypeScript passed
+  and the production build completed. Webpack reported non-fatal cache
+  snapshot warnings. Browser screenshot parity and cloud deployment were
+  not performed in this pass.
+
+This closes the specific links and test gaps above. Full phase 5 coverage
+(service-generated projects/planning, helpdesk conversion, HR/overtime,
+cross-app signing, document mirroring and dashboard/report comparisons) and
+phase 6 polish still require work. WebRTC, the spreadsheet editor, OCR, SMS
+and website modules remain separate unfinished features; earlier completion
+claims do not establish full master-spec acceptance or screenshot parity.
+
+### Accounting: Chart of Accounts actions (2026-10-07)
+
+The five standard selection-menu options now preserve accounting data:
+
+- **Export:** selected accounts or every matching account, paginated without
+  the former 5,000-row cutoff; inactive selections are included, filters and
+  context persist, and Excel preserves leading zeros in account codes while
+  balances remain numeric. CSV and Arabic labels are covered by regression tests.
+- **Archive / Unarchive:** inactive filters work for lists, counts and grouped
+  results. Ledger amounts and journal links are retained. Undo restores only
+  records that changed, including mixed active/inactive selections.
+- **Duplicate:** copies account settings into an active account with a new code,
+  without copying opening balances. Codes are unique across overlapping companies,
+  include archived reservations, and allocation is serialized within transactions.
+- **Delete:** unused accounts can be deleted; accounts referenced by draft or
+  posted journal items are rejected, including bulk deletion. Account rows are
+  locked before the history check so concurrent references cannot be detached.
+
+`packages/apps/account/accounts.ts` is registered by normal app startup.
+Company and record rules remain enforced when inactive records are requested.
+Returned window actions retain their complete filters and context, so account
+Journal Items / Reconcile links no longer open unrelated journal entries.
+The five categories (Assets, Liabilities, Equity, Income and Expenses) already
+derive from account type in SQL and are now tested on creation and type changes.
+
+Tests: `tests/chart-of-accounts.test.ts`, `tests/list-actions.test.ts`,
+`tests/action-query.test.ts`, `tests/account-export.test.ts` and the ORM suite.
+Final validation: **286 tests passed across 33 files**, TypeScript passed and
+the production build completed (non-fatal Webpack cache snapshot warnings).
+Browser verification could not run because the in-app browser connection timed
+out. These changes are local; no cloud deployment was performed.
+
 ## Next — J-1 build phases
 
 J-1 fixes the order and the gate for each phase:

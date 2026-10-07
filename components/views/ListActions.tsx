@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Domain, FieldDef } from '@engine/registry/types';
 import { rpc } from '@/lib/client/rpc';
+import { changeActive, fetchAllIds, fetchAllRecords, restoreActive } from '@/lib/client/list-actions';
 import { useLang, useT } from '@/lib/client/i18n';
 import { formatValue, useCurrencies } from '@/lib/client/display';
 import { Dropdown } from '../webclient/Navbar';
@@ -19,6 +20,7 @@ interface Props {
   allMatching: boolean;
   domain: Domain;
   columns: string[];
+  context?: Record<string, unknown>;
   onDone: () => void;
   reports?: { reportName: string; name: { en: string; ar: string } }[];
   onPrint?: (reportName: string, ids: number[]) => void;
@@ -29,28 +31,39 @@ interface Props {
  * picker, CSV or Excel, selection or every matching record), Archive /
  * Unarchive with an Undo toast, Duplicate and Delete with confirmation.
  */
-export function ListActions({ model, fields, selected, allMatching, domain, columns, onDone, reports = [], onPrint }: Props) {
+export function ListActions({ model, fields, selected, allMatching, domain, columns, context = {}, onDone, reports = [], onPrint }: Props) {
   const t = useT();
   const ui = useUi();
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const targetDomain: Domain = allMatching ? domain : [['id', 'in', selected]];
   const label = allMatching ? t('all matching records') : `${selected.length} ${t(selected.length === 1 ? 'record' : 'records')}`;
 
-  const ids = async (): Promise<number[]> => (allMatching ? rpc<number[]>('search', model, { domain, limit: 5000 }) : selected);
+  const ids = async (): Promise<number[]> => (allMatching ? fetchAllIds(rpc, model, domain, context) : [...selected]);
+
+  const run = async (operation: () => Promise<void>) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try { await operation(); } catch { /* RPC errors are displayed by the web client. */ }
+    finally { busyRef.current = false; setBusy(false); }
+  };
 
   const archive = async (active: boolean) => {
     const targets = await ids();
-    await rpc('write', model, { ids: targets, values: { active } });
+    const previous = await changeActive(rpc, model, targets, active, context);
     onDone();
+    if (!previous.length) return;
     ui.notify({
       type: 'success',
-      message: { en: `${targets.length} ${active ? 'record(s) unarchived' : 'record(s) archived'}.`, ar: `${targets.length} ${active ? 'سجل تم إلغاء أرشفته' : 'سجل تمت أرشفته'}.` },
-      action: { label: { en: 'Undo', ar: 'تراجع' }, onClick: async () => { await rpc('write', model, { ids: targets, values: { active: !active } }); onDone(); } },
+      message: { en: `${previous.length} ${active ? 'record(s) unarchived' : 'record(s) archived'}.`, ar: `${previous.length} ${active ? 'سجل تم إلغاء أرشفته' : 'سجل تمت أرشفته'}.` },
+      action: { label: { en: 'Undo', ar: 'تراجع' }, onClick: () => run(async () => { await restoreActive(rpc, model, previous, context); onDone(); }) },
     });
   };
 
   const duplicate = async () => {
     const targets = await ids();
-    for (const id of targets) await rpc('copy', model, { id });
+    for (const id of targets) await rpc('copy', model, { id }, { context });
     onDone();
     ui.notify({ type: 'success', message: { en: `${targets.length} record(s) duplicated.`, ar: `تم تكرار ${targets.length} سجل.` } });
   };
@@ -58,7 +71,7 @@ export function ListActions({ model, fields, selected, allMatching, domain, colu
   const remove = async () => {
     const targets = await ids();
     if (!(await ui.confirm({ message: { en: `Are you sure you want to delete ${targets.length} record(s)? This cannot be undone.`, ar: `هل أنت متأكد من حذف ${targets.length} سجل؟ لا يمكن التراجع عن هذا.` }, confirmLabel: { en: 'Delete', ar: 'حذف' } }))) return;
-    await rpc('unlink', model, { ids: targets });
+    await rpc('unlink', model, { ids: targets }, { context });
     onDone();
   };
 
@@ -68,27 +81,27 @@ export function ListActions({ model, fields, selected, allMatching, domain, colu
       title: { en: 'Export Data', ar: 'تصدير البيانات' },
       size: 'lg',
       footer: null,
-      body: <ExportDialog model={model} fields={fields} columns={columns} domain={targetDomain} count={allMatching ? null : selected.length} onClose={() => ui.closeDialog(dialogId)} />,
+      body: <ExportDialog model={model} fields={fields} columns={columns} domain={targetDomain} context={allMatching ? context : { ...context, active_test: false }} count={allMatching ? null : selected.length} onClose={() => ui.closeDialog(dialogId)} />,
     });
   };
 
   return (
-    <Dropdown toggle={() => <button type="button" className="btn btn-secondary"><i className="fa fa-cog me-1" />{t('Actions')} <i className="fa fa-caret-down" /></button>}>
+    <Dropdown toggle={() => <button type="button" className="btn btn-secondary" disabled={busy}><i className={`fa ${busy ? 'fa-spinner fa-spin' : 'fa-cog'} me-1`} />{t('Actions')} <i className="fa fa-caret-down" /></button>}>
       <div className="o_dropdown_header">{label}</div>
-      <button type="button" className="o_dropdown_item" onClick={openExport}><i className="fa fa-upload me-2 text-muted" />{t('Export')}</button>
-      {reports.map((report) => <button key={report.reportName} type="button" className="o_dropdown_item" onClick={async () => onPrint?.(report.reportName, await ids())}><i className="fa fa-print me-2 text-muted" />{t('Print')}: {t(report.name)}</button>)}
-      {fields.active && <button type="button" className="o_dropdown_item" onClick={() => archive(false)}><i className="fa fa-archive me-2 text-muted" />{t('Archive')}</button>}
-      {fields.active && <button type="button" className="o_dropdown_item" onClick={() => archive(true)}><i className="fa fa-folder-open-o me-2 text-muted" />{t('Unarchive')}</button>}
-      <button type="button" className="o_dropdown_item" onClick={duplicate}><i className="fa fa-clone me-2 text-muted" />{t('Duplicate')}</button>
+      <button type="button" className="o_dropdown_item" disabled={busy} onClick={openExport}><i className="fa fa-upload me-2 text-muted" />{t('Export')}</button>
+      {reports.map((report) => <button key={report.reportName} type="button" className="o_dropdown_item" disabled={busy} onClick={() => run(async () => { onPrint?.(report.reportName, await ids()); })}><i className="fa fa-print me-2 text-muted" />{t('Print')}: {t(report.name)}</button>)}
+      {fields.active && <button type="button" className="o_dropdown_item" disabled={busy} onClick={() => run(() => archive(false))}><i className="fa fa-archive me-2 text-muted" />{t('Archive')}</button>}
+      {fields.active && <button type="button" className="o_dropdown_item" disabled={busy} onClick={() => run(() => archive(true))}><i className="fa fa-folder-open-o me-2 text-muted" />{t('Unarchive')}</button>}
+      <button type="button" className="o_dropdown_item" disabled={busy} onClick={() => run(duplicate)}><i className="fa fa-clone me-2 text-muted" />{t('Duplicate')}</button>
       <div className="o_dropdown_divider" />
-      <button type="button" className="o_dropdown_item text-danger" onClick={remove}><i className="fa fa-trash-o me-2" />{t('Delete')}</button>
+      <button type="button" className="o_dropdown_item text-danger" disabled={busy} onClick={() => run(remove)}><i className="fa fa-trash-o me-2" />{t('Delete')}</button>
     </Dropdown>
   );
 }
 
 const SKIP = new Set(['id', 'display_name', 'create_uid', 'write_uid', 'create_date', 'write_date', 'message_ids', 'message_follower_ids', 'activity_ids', 'website_message_ids', 'message_main_attachment_id', 'image_1920', 'image_1024', 'image_512', 'image_256', 'image_128', 'avatar_128', 'avatar_1920']);
 
-function ExportDialog({ model, fields, columns, domain, count, onClose }: { model: string; fields: Record<string, FieldDef>; columns: string[]; domain: Domain; count: number | null; onClose: () => void }) {
+function ExportDialog({ model, fields, columns, domain, context, count, onClose }: { model: string; fields: Record<string, FieldDef>; columns: string[]; domain: Domain; context: Record<string, unknown>; count: number | null; onClose: () => void }) {
   const t = useT();
   const lang = useLang();
   const currencies = useCurrencies();
@@ -96,15 +109,18 @@ function ExportDialog({ model, fields, columns, domain, count, onClose }: { mode
   const [format, setFormat] = useState<'csv' | 'xls'>('xls');
   const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const available = Object.values(fields)
     .filter((field) => !SKIP.has(field.name) && field.type !== 'binary' && field.type !== 'one2many' && field.type !== 'html')
     .filter((field) => !query || t(field.label).toLowerCase().includes(query.toLowerCase()) || field.name.includes(query.toLowerCase()))
     .sort((a, b) => t(a.label).localeCompare(t(b.label)));
 
   const run = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     try {
-      const rows = await rpc<Rec[]>('searchRead', model, { domain, fields: chosen, limit: 5000 });
+      const rows = await fetchAllRecords<Rec & { id: number }>(rpc, model, domain, chosen, context);
       const header = chosen.map((name) => t(fields[name].label));
       const lines = rows.map((row) => chosen.map((name) => {
         const field = fields[name];
@@ -117,7 +133,8 @@ function ExportDialog({ model, fields, columns, domain, count, onClose }: { mode
       const stamp = new Date().toISOString().slice(0, 10);
       if (format === 'csv') downloadCsv(`${model}-${stamp}.csv`, [header, ...lines]); else downloadXls(`${model}-${stamp}.xls`, [header, ...lines]);
       onClose();
-    } finally { setBusy(false); }
+    } catch { /* RPC errors are displayed by the web client. */ }
+    finally { busyRef.current = false; setBusy(false); }
   };
 
   const move = (name: string, direction: -1 | 1) => setChosen((list) => {

@@ -1,0 +1,780 @@
+{
+ "db": "pglite",
+ "results": [
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "quotation number S00001 style",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "state draft",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "untaxed 1450",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "tax 72.5",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "total 1522.5",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "invoice_status no",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "invoice address from partner",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "send opens composer",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "state sent after email",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "state sale",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "invoice_status to invoice",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "date_order set",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "chatter has creation + confirmation messages",
+   "ok": true,
+   "detail": "count=3"
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "state change tracked",
+   "ok": true,
+   "detail": "tracking rows=2"
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "draft invoice",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "customer invoice",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "invoice partner",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "invoice total equals order",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "invoice has lines",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "order invoiced",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "posted number INV/2026/…",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "posted",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "not paid",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "residual = total",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "journal items balanced",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "wizard amount",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "wizard inbound customer",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "wizard closes",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "residual after partial",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "partial state",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "residual 0",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "paid",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "two payments",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "payment numbering PBNK1/…",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "payments paid",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "payment entry PBNK1/2026/00001 balanced",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "payment entry PBNK1/2026/00002 balanced",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "paid invoice cannot go back to draft",
+   "ok": true
+  },
+  {
+   "scenario": "Quote → order → invoice → payment",
+   "step": "nothing left to pay",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "cancelled",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "back to draft",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "confirming twice is refused",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "locked",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "unlocked",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "missing partner is a validation error",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "unknown field rejected",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "copy gets a new number",
+   "ok": true,
+   "detail": "S00003 vs S00002"
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "copy is a draft",
+   "ok": true
+  },
+  {
+   "scenario": "Quotation lifecycle: cancel, reset, lock, validation",
+   "step": "copy keeps lines",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "draft bill",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "bill total (no purchase tax on product)",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "bill number BILL/2026/…",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "posted",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "outbound supplier",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "bill paid",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "bill residual 0",
+   "ok": true
+  },
+  {
+   "scenario": "Vendor bill → payment",
+   "step": "one outbound payment",
+   "ok": true
+  },
+  {
+   "scenario": "Journal entry balance rules",
+   "step": "chart of accounts seeded",
+   "ok": true
+  },
+  {
+   "scenario": "Journal entry balance rules",
+   "step": "entry number MISC/2026/…",
+   "ok": true
+  },
+  {
+   "scenario": "Journal entry balance rules",
+   "step": "entry posted",
+   "ok": true
+  },
+  {
+   "scenario": "Journal entry balance rules",
+   "step": "unbalanced entry cannot be posted",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "message posted",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "message count +1",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "message_ids field lists the messages",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "activity_state today",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "activity deadline",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "activity user",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "activity summary column",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "my_activity_date_deadline (SQL-computed)",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "activity_ids lists the activity",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "search on my_activity_date_deadline",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "search on activity_state",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "activity_state cleared after done",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "no open activity",
+   "ok": true
+  },
+  {
+   "scenario": "Chatter, activities and activity filters",
+   "step": "message_is_follower is searchable",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "Settings round trip",
+   "step": "a plain boolean setting exists",
+   "ok": true,
+   "detail": "external_email_server_default"
+  },
+  {
+   "scenario": "Settings round trip",
+   "step": "setting external_email_server_default toggled",
+   "ok": true
+  },
+  {
+   "scenario": "Settings round trip",
+   "step": "setting external_email_server_default restored",
+   "ok": true
+  },
+  {
+   "scenario": "Settings round trip",
+   "step": "defaults reflect stored value",
+   "ok": true
+  },
+  {
+   "scenario": "Users and preferences (no authentication involved)",
+   "step": "partner auto-created",
+   "ok": true
+  },
+  {
+   "scenario": "Users and preferences (no authentication involved)",
+   "step": "login lowercased/kept",
+   "ok": true
+  },
+  {
+   "scenario": "Users and preferences (no authentication involved)",
+   "step": "duplicate login (case-insensitive) is refused",
+   "ok": true
+  },
+  {
+   "scenario": "Users and preferences (no authentication involved)",
+   "step": "user can change own language",
+   "ok": true,
+   "detail": "ar_001"
+  },
+  {
+   "scenario": "Users and preferences (no authentication involved)",
+   "step": "related contact action",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "group counts sum to searchCount",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "sum aggregate equals rows",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "__domain of group draft selects its rows",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "date group-by works",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "many2many group-by works",
+   "ok": true,
+   "detail": "[object Object]"
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "many2one text search",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "relative date domain",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "pagination total",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "pagination page size",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "sale.report view lists the order lines",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "sale.report subtotal equals the orders untaxed total",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "sale.report is read-only",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "favorite saved",
+   "ok": true
+  },
+  {
+   "scenario": "Search / group-by consistency and favorites",
+   "step": "favorite found",
+   "ok": true
+  },
+  {
+   "scenario": "Concurrent creates keep numbering unique",
+   "step": "four distinct numbers",
+   "ok": true
+  },
+  {
+   "scenario": "Access control for a non-superuser",
+   "step": "admin belongs to groups",
+   "ok": true,
+   "detail": "groups=19"
+  },
+  {
+   "scenario": "Access control for a non-superuser",
+   "step": "admin (non-superuser env) can read sales orders",
+   "ok": true,
+   "detail": "11"
+  },
+  {
+   "scenario": "Access control for a non-superuser",
+   "step": "admin can create a quotation",
+   "ok": true,
+   "detail": "12"
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "RFQ number P00001 style",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "draft RFQ",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "untaxed 100",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "nothing to bill yet",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "RFQ sent",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "purchase order",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "approval date set",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "bill before receipt is refused (receive policy)",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "fully received",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "to bill",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "bill action",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "vendor bill",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "bill total 100",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "origin is the PO",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "fully billed",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "cancel with billed lines refused",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "copy is a draft RFQ",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "copy keeps lines",
+   "ok": true
+  },
+  {
+   "scenario": "Purchase: RFQ → order → receipt → vendor bill",
+   "step": "copy has a new number",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "new request",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "approver row created",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "submit without the required date is refused",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "submitted",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "my approver status pending (SQL-computed per user)",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "still pending after withdraw",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "approved",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "my status approved",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "approver activity closed",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "cancelled",
+   "ok": true
+  },
+  {
+   "scenario": "Approvals: submit → approve with a required approver",
+   "step": "back to draft",
+   "ok": true
+  },
+  {
+   "scenario": "Smart buttons resolve to related records",
+   "step": "sale.order › Invoices opens account.move",
+   "ok": true
+  },
+  {
+   "scenario": "Smart buttons resolve to related records",
+   "step": "partner › Sales opens sale.order (generic resolver)",
+   "ok": true
+  },
+  {
+   "scenario": "Smart buttons resolve to related records",
+   "step": "unknown method still raises",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "rental order is marked as one",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "rental status follows the quotation",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "the line took the order period",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "pickup refuses an unconfirmed order",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "confirmed rental is reserved",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "pickup records the delivered quantity",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "picked-up order is out on rental",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "return records the returned quantity",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "returned order is returned",
+   "ok": true
+  },
+  {
+   "scenario": "Renting: rental order → pickup → return",
+   "step": "the Rental app finds it",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "vehicle is named after brand and model",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "the model counts its vehicles",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "the driver is kept in the history",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "a contract about to run out is due soon",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "a contract past its date is overdue",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "the contract state follows the date",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "the vehicle counts its contracts",
+   "ok": true
+  },
+  {
+   "scenario": "Fleet: vehicle → driver history → contract reminders → odometer",
+   "step": "the odometer reads the last log",
+   "ok": true
+  }
+ ]
+}

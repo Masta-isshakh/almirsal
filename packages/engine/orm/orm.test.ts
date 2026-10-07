@@ -299,6 +299,38 @@ describe('search', () => {
     expect(await makeEnv({ context: { active_test: false } }).model('res.partner').search([['name', '=', 'Archived Co']])).toEqual([id]);
   });
 
+  it('honours explicit inactive filters in lists, counts, pages and grouped results', async () => {
+    const partners = env.model('res.partner');
+    const archived = await partners.create({ name: 'Inactive filter test', autopost_bills: 'ask', active: false });
+    const active = await partners.create({ name: 'Inactive filter test', autopost_bills: 'ask', active: true });
+    const domain: import('../registry/types.js').Domain = [['name', '=', 'Inactive filter test'], ['active', '=', false]];
+    expect(await partners.search(domain)).toEqual([archived]);
+    expect(await partners.searchCount(domain)).toBe(1);
+    expect(await partners.searchWithCount(domain)).toEqual({ ids: [archived], total: 1 });
+    expect((await partners.searchRead(domain, ['name'])).map((row) => row.id)).toEqual([archived]);
+    expect((await partners.readGroup(domain, [], ['active'])).map((row) => row.__count)).toEqual([1]);
+    expect((await partners.search(['|', ['id', '=', active], '&', ['id', '=', archived], ['active', '=', false]])).sort()).toEqual([archived, active].sort());
+  });
+
+  it('keeps company and record rules when an inactive filter is explicit', async () => {
+    const partners = env.model('res.partner');
+    const allowed = await partners.create({ name: 'Inactive security test', autopost_bills: 'ask', active: false, company_id: companyId });
+    const denied = await env.sudo().model('res.partner').create({ name: 'Inactive security test', autopost_bills: 'ask', active: false, company_id: companyId });
+    const otherPartner = await env.sudo().model('res.partner').create({ name: 'Other inactive company partner', autopost_bills: 'ask', is_company: true });
+    const otherCompany = await env.sudo().model('res.company').create({ name: 'Other inactive company', partner_id: otherPartner, currency_id: currencyId });
+    const outside = await env.sudo().model('res.partner').create({ name: 'Inactive security test', autopost_bills: 'ask', active: false, company_id: otherCompany });
+    const def = registry.models['res.partner'];
+    const previousRules = def.recordRules;
+    def.recordRules = [{ name: 'Inactive allowed records', domain: [['id', 'in', [allowed, outside]]], global: true, perms: { read: true, write: true, create: false, unlink: true } }];
+    try {
+      const domain: import('../registry/types.js').Domain = [['id', 'in', [allowed, denied, outside]], ['active', '=', false]];
+      expect(await partners.search(domain)).toEqual([allowed]);
+      expect(await partners.searchCount(domain)).toBe(1);
+      expect(await partners.searchWithCount(domain)).toEqual({ ids: [allowed], total: 1 });
+      expect((await partners.readGroup(domain, [], ['active'])).map((row) => row.__count)).toEqual([1]);
+    } finally { def.recordRules = previousRules; }
+  });
+
   it('toggles active', async () => {
     const partners = env.model('res.partner');
     const id = await partners.create({ name: 'Toggle Co', autopost_bills: 'ask' });

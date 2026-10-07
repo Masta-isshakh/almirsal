@@ -37,59 +37,6 @@ async function reverseMove(env: Environment, moveId: number, options: { date?: s
   return reversal;
 }
 
-/* ---------- assets ---------- */
-
-/** Straight-line (or degressive) depreciation board as journal entries. */
-async function computeBoard(env: Environment, assetId: number): Promise<void> {
-  const assets = env.model('account.asset');
-  const [asset] = await assets.read(assetId, ['name', 'original_value', 'salvage_value', 'method', 'method_number', 'method_period', 'acquisition_date', 'account_depreciation_id', 'account_depreciation_expense_id', 'journal_id', 'depreciation_move_ids', 'already_depreciated_amount_import', 'state', 'company_id', 'currency_id']);
-  const posted = await env.model('account.move').searchRead([['id', 'in', (asset.depreciation_move_ids as number[]) ?? []], ['state', '=', 'posted']], ['id']);
-  const drafts = ((asset.depreciation_move_ids as number[]) ?? []).filter((id) => !posted.some((p) => p.id === id));
-  if (drafts.length) await env.model('account.move').unlink(drafts);
-  const original = Number(asset.original_value ?? 0); const salvage = Number(asset.salvage_value ?? 0);
-  const alreadyDone = Number(asset.already_depreciated_amount_import ?? 0) + posted.length * 0;
-  const periods = Math.max(1, Math.round(Number(asset.method_number ?? 1)));
-  const months = Number(asset.method_period ?? 12) || 12;
-  const total = Math.max(0, original - salvage - alreadyDone);
-  if (total <= 0 || !m2o(asset.account_depreciation_id) || !m2o(asset.account_depreciation_expense_id)) return;
-  const start = String(asset.acquisition_date || today()).slice(0, 10);
-  let remaining = total;
-  let bookValue = original - alreadyDone;
-  const moveIds: number[] = [];
-  const degressiveRate = asset.method === 'degressive' || asset.method === 'degressive_then_linear' ? Math.min(1, (2 / periods)) : 0;
-  for (let i = posted.length; i < periods; i++) {
-    const d = new Date(`${start}T00:00:00Z`);
-    d.setUTCMonth(d.getUTCMonth() + months * (i + 1));
-    d.setUTCDate(0); // last day of the period
-    const linear = remaining / (periods - i);
-    let amount = degressiveRate ? Math.max(linear, bookValue * degressiveRate) : linear;
-    if (i === periods - 1 || amount > remaining) amount = remaining;
-    amount = floatRound(amount, 0.01);
-    remaining -= amount; bookValue -= amount;
-    const moveId = await env.with({ context: { default_move_type: 'entry' } }).model('account.move').create({
-      move_type: 'entry', date: d.toISOString().slice(0, 10), journal_id: m2o(asset.journal_id) || false, ref: `${asset.name} (${i + 1}/${periods})`, asset_id: assetId, company_id: m2o(asset.company_id) || env.companyId, currency_id: m2o(asset.currency_id) || false,
-      line_ids: [
-        [0, 0, { name: String(asset.name), account_id: m2o(asset.account_depreciation_expense_id), debit: amount, credit: 0 }],
-        [0, 0, { name: String(asset.name), account_id: m2o(asset.account_depreciation_id), debit: 0, credit: amount }],
-      ],
-    });
-    moveIds.push(moveId);
-    if (remaining <= 0.005) break;
-  }
-  await env.cr.query(`UPDATE account_asset SET book_value = $2, value_residual = $2 WHERE id = $1`, [assetId, floatRound(original - alreadyDone - (total - remaining) + 0, 0.01)]);
-  void moveIds;
-}
-
-async function refreshAssetValues(env: Environment, assetId: number): Promise<void> {
-  const sums = await env.cr.query<{ depreciated: number }>(
-    `SELECT coalesce(sum(l.credit), 0)::float8 AS depreciated FROM account_move m JOIN account_move_line l ON l.move_id = m.id JOIN account_asset a ON a.id = m.asset_id
-     WHERE m.asset_id = $1 AND m.state = 'posted' AND l.account_id = a.account_depreciation_id`, [assetId],
-  );
-  const [asset] = await env.model('account.asset').read(assetId, ['original_value', 'salvage_value', 'already_depreciated_amount_import']);
-  const book = Number(asset.original_value ?? 0) - Number(asset.already_depreciated_amount_import ?? 0) - (sums.rows[0]?.depreciated ?? 0);
-  await env.cr.query(`UPDATE account_asset SET book_value = $2, value_residual = $3 WHERE id = $1`, [assetId, floatRound(book, 0.01), floatRound(book - Number(asset.salvage_value ?? 0), 0.01)]);
-}
-
 /* ---------- loans ---------- */
 
 async function buildLoanSchedule(env: Environment, loanId: number): Promise<void> {
@@ -124,18 +71,6 @@ export function registerAccountExtra(): void {
       action_reverse: async (env, ids) => {
         const [move] = await env.model('account.move').read(ids[0], ['move_type', 'journal_id', 'amount_residual']);
         return windowAction('account.move.reversal', { en: 'Credit Note', ar: 'إشعار دائن' }, { viewMode: 'form', target: 'new', context: { default_move_ids: [[6, 0, ids]], default_move_type: move.move_type, default_journal_id: m2o(move.journal_id), default_date: today(), default_residual: move.amount_residual, active_ids: ids, active_model: 'account.move' } });
-      },
-      button_hash: async (env, ids) => {
-        const moves = env.model('account.move');
-        for (const id of ids) {
-          const [move] = await moves.read(id, ['state', 'name', 'date', 'amount_total', 'inalterable_hash']);
-          if (move.state !== 'posted') throw new UserError({ en: 'Only posted entries can be locked.', ar: 'يمكن قفل القيود المرحّلة فقط.' });
-          if (move.inalterable_hash) continue;
-          const seed = `${move.name}|${move.date}|${move.amount_total}|${id}`;
-          let h = 0; for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-          await env.cr.query(`UPDATE account_move SET inalterable_hash = $2 WHERE id = $1`, [id, `sha-${h.toString(16)}`]);
-          await note(env, 'account.move', id, { en: 'Entry locked with an inalterability hash.', ar: 'تم قفل القيد بتجزئة عدم القابلية للتغيير.' });
-        }
       },
       button_request_cancel: async (env, ids) => { await env.model('account.move').write(ids, { need_cancel_request: true }); return notify({ en: 'Cancellation requested.', ar: 'تم طلب الإلغاء.' }); },
       action_reload_imported_data: async () => notify({ en: 'No imported data to reload for this entry.', ar: 'لا توجد بيانات مستوردة لإعادة تحميلها لهذا القيد.' }, 'info'),
@@ -222,7 +157,6 @@ export function registerAccountExtra(): void {
 
   registerModelHooks('account.payment', {
     methods: {
-      action_reject: async (env, ids) => { await env.model('account.payment').write(ids, { state: 'rejected' }); },
       action_refund_wizard: async (env, ids) => {
         const created: number[] = [];
         for (const id of ids) {
@@ -231,72 +165,13 @@ export function registerAccountExtra(): void {
         }
         return openRecords('account.payment', { en: 'Refunds', ar: 'المبالغ المستردة' }, created);
       },
-      button_request_cancel: async (env, ids) => { await env.model('account.payment').write(ids, { state: 'canceled' }); },
-      button_open_invoices: async (env, ids) => env.model('account.move').callButton([], 'open_payments').catch(async () => { const rel = env.registry.models['account.payment'].fields.reconciled_invoice_ids; const inv = rel?.m2mTable ? (await env.cr.query<{ id: number }>(`SELECT "${rel.m2mColumn2}" AS id FROM "${rel.m2mTable}" WHERE "${rel.m2mColumn1}" = ANY($1)`, [ids])).rows.map((r) => Number(r.id)) : []; return windowAction('account.move', { en: 'Invoices', ar: 'الفواتير' }, { domain: [['id', 'in', inv]] }); }),
+      button_request_cancel: async (env, ids) => { await env.model('account.payment').write(ids, { need_cancel_request: true }); },
+      button_open_invoices: async (env, ids) => { const rel = env.registry.models['account.payment'].fields.reconciled_invoice_ids; const inv = rel?.m2mTable ? (await env.cr.query<{ id: number }>(`SELECT "${rel.m2mColumn2}" AS id FROM "${rel.m2mTable}" WHERE "${rel.m2mColumn1}" = ANY($1)`, [ids])).rows.map((r) => Number(r.id)) : []; return windowAction('account.move', { en: 'Invoices', ar: 'الفواتير' }, { domain: [['id', 'in', inv],['move_type','in',['out_invoice','out_refund','out_receipt']]] }); },
       button_open_bills: async (env, ids) => { const rel = env.registry.models['account.payment'].fields.reconciled_invoice_ids; const inv = rel?.m2mTable ? (await env.cr.query<{ id: number }>(`SELECT "${rel.m2mColumn2}" AS id FROM "${rel.m2mTable}" WHERE "${rel.m2mColumn1}" = ANY($1)`, [ids])).rows.map((r) => Number(r.id)) : []; return windowAction('account.move', { en: 'Bills', ar: 'الفواتير' }, { domain: [['id', 'in', inv]] }); },
       button_open_statement_lines: async (_env, ids) => windowAction('account.bank.statement.line', { en: 'Bank Transactions', ar: 'المعاملات البنكية' }, { domain: [['move_id.origin_payment_id', 'in', ids]], viewMode: 'list' }),
       button_open_journal_entry: async (env, ids) => { const [p] = await env.model('account.payment').read(ids[0], ['move_id']); const mid = m2o(p.move_id); return mid ? windowAction('account.move', { en: 'Journal Entry', ar: 'قيد اليومية' }, { resId: mid }) : notify({ en: 'This payment has no journal entry yet: confirm it first.', ar: 'ليس لهذه الدفعة قيد يومية بعد: قم بتأكيدها أولاً.' }, 'info'); },
       action_open_manual_reconciliation_widget: async (env, ids) => { const [p] = await env.model('account.payment').read(ids[0], ['partner_id']); return windowAction('account.move.line', { en: 'Payment Matching', ar: 'مطابقة المدفوعات' }, { domain: [['partner_id', '=', m2o(p.partner_id) || 0], ['account_id.account_type', 'in', ['asset_receivable', 'liability_payable']], ['reconciled', '=', false]], viewMode: 'list' }); },
       action_view_refunds: async (env, ids) => { const [p] = await env.model('account.payment').read(ids[0], ['memo']); return windowAction('account.payment', { en: 'Refunds', ar: 'المبالغ المستردة' }, { domain: [['memo', '=', `Refund of ${p.memo ?? ''}`.trim()]] }); },
-    },
-  });
-
-  registerModelHooks('account.asset', {
-    defaults: (env) => ({ state: 'draft', method: 'linear', method_number: 5, method_period: '12', prorata_computation_type: 'none', acquisition_date: today(), company_id: env.companyId, active: true, original_value: 0, salvage_value: 0, book_value: 0, value_residual: 0 }),
-    tracked: ['state', 'original_value', 'method_number'],
-    beforeCreate: async (env, vals) => {
-      const out = { ...vals };
-      const modelId = m2o(out.model_id);
-      if (modelId) {
-        const [model] = await env.sudo().model('account.depreciation.model').read(modelId, ['method', 'method_number', 'method_period', 'account_asset_id', 'account_depreciation_id', 'account_depreciation_expense_id', 'journal_id']).catch(() => [] as Values[]);
-        for (const key of ['method', 'method_number', 'method_period', 'account_asset_id', 'account_depreciation_id', 'account_depreciation_expense_id', 'journal_id']) if (model && (out[key] === undefined || out[key] === false) && model[key] !== undefined) out[key] = m2o(model[key]) || model[key];
-      }
-      if (out.book_value === undefined || out.book_value === 0) out.book_value = out.original_value ?? 0;
-      return out;
-    },
-    onchange: {
-      model_id: async (env, values) => {
-        const modelId = m2o(values.model_id);
-        if (!modelId) return {};
-        const [model] = await env.sudo().model('account.depreciation.model').read(modelId, ['method', 'method_number', 'method_period', 'account_asset_id', 'account_depreciation_id', 'account_depreciation_expense_id', 'journal_id']).catch(() => [] as Values[]);
-        if (!model) return {};
-        return { value: { method: model.method, method_number: model.method_number, method_period: model.method_period, account_asset_id: m2o(model.account_asset_id), account_depreciation_id: m2o(model.account_depreciation_id), account_depreciation_expense_id: m2o(model.account_depreciation_expense_id), journal_id: m2o(model.journal_id) } };
-      },
-      original_value: async (_env, values) => ({ value: { book_value: values.original_value, value_residual: Number(values.original_value ?? 0) - Number(values.salvage_value ?? 0) } }),
-    },
-    methods: {
-      compute_depreciation_board: async (env, ids) => { for (const id of ids) { await computeBoard(env, id); await refreshAssetValues(env, id); } },
-      validate: async (env, ids) => {
-        for (const id of ids) {
-          const [asset] = await env.model('account.asset').read(id, ['state', 'original_value', 'account_depreciation_id', 'account_depreciation_expense_id', 'depreciation_move_ids']);
-          if (asset.state !== 'draft') throw new UserError({ en: 'Only draft assets can be confirmed.', ar: 'يمكن تأكيد الأصول في حالة المسودة فقط.' });
-          if (!Number(asset.original_value)) throw new UserError({ en: 'Set the original value before confirming.', ar: 'حدد القيمة الأصلية قبل التأكيد.' });
-          if (!m2o(asset.account_depreciation_id) || !m2o(asset.account_depreciation_expense_id)) throw new UserError({ en: 'Set the depreciation and expense accounts before confirming.', ar: 'حدد حسابي الإهلاك والمصروف قبل التأكيد.' });
-          if (!(asset.depreciation_move_ids as number[]).length) await computeBoard(env, id);
-          await env.model('account.asset').write(id, { state: 'open' });
-          await refreshAssetValues(env, id);
-          await note(env, 'account.asset', id, { en: 'Asset confirmed: depreciation running.', ar: 'تم تأكيد الأصل: الإهلاك جارٍ.' });
-        }
-      },
-      set_to_running: async (env, ids) => { await env.model('account.asset').write(ids, { state: 'open' }); },
-      resume_after_pause: async (env, ids) => { await env.model('account.asset').write(ids, { state: 'open' }); },
-      action_asset_modify: async (env, ids) => { await env.model('account.asset').write(ids, { state: 'paused' }); return notify({ en: 'Depreciation paused. Edit the asset and use "Set to Running" to resume; the board is recomputed.', ar: 'تم إيقاف الإهلاك مؤقتاً. عدّل الأصل ثم استخدم "تعيين كجارٍ" للاستئناف؛ سيُعاد حساب الجدول.' }, 'info', { sticky: true }); },
-      set_to_cancelled: async (env, ids) => {
-        for (const id of ids) {
-          const [asset] = await env.model('account.asset').read(id, ['depreciation_move_ids']);
-          const drafts = await env.model('account.move').search([['id', 'in', (asset.depreciation_move_ids as number[]) ?? []], ['state', '!=', 'posted']]);
-          if (drafts.length) await env.model('account.move').unlink(drafts);
-          await env.model('account.asset').write(id, { state: 'cancelled' });
-        }
-      },
-      set_to_draft: async (env, ids) => { await env.model('account.asset').write(ids, { state: 'draft' }); },
-      action_open_linked_assets: async (_env, ids) => windowAction('account.asset', { en: 'Linked Assets', ar: 'الأصول المرتبطة' }, { domain: [['parent_id', 'in', ids]] }),
-      open_related_entries: async (_env, ids) => windowAction('account.move', { en: 'Related Entries', ar: 'القيود المرتبطة' }, { domain: [['asset_id', 'in', ids]] }),
-      open_entries: async (_env, ids) => windowAction('account.move', { en: 'Depreciation Entries', ar: 'قيود الإهلاك' }, { domain: [['asset_id', 'in', ids]] }),
-      open_increase: async (_env, ids) => windowAction('account.asset', { en: 'Gross Increases', ar: 'الزيادات الإجمالية' }, { domain: [['parent_id', 'in', ids]] }),
-      open_parent_id: async (env, ids) => { const [a] = await env.model('account.asset').read(ids[0], ['parent_id']); const pid = m2o(a.parent_id); return pid ? windowAction('account.asset', { en: 'Parent Asset', ar: 'الأصل الأصلي' }, { resId: pid }) : notify({ en: 'This asset has no parent.', ar: 'ليس لهذا الأصل أصل أصلي.' }, 'info'); },
-      action_open_linked_loans: async (_env, ids) => windowAction('account.loan', { en: 'Loans', ar: 'القروض' }, { domain: [['asset_group_id.asset_ids', 'in', ids]] }),
-      action_open_vehicle: async (env, ids) => { const [a] = await env.model('account.asset').read(ids[0], ['vehicle_id']); const vid = m2o(a.vehicle_id); return vid ? windowAction('fleet.vehicle', { en: 'Vehicle', ar: 'المركبة' }, { resId: vid }) : notify({ en: 'No vehicle is linked to this asset.', ar: 'لا توجد مركبة مرتبطة بهذا الأصل.' }, 'info'); },
     },
   });
 
@@ -342,7 +217,7 @@ export function registerAccountExtra(): void {
       change_lock_date: async (env, ids) => {
         const [w] = await env.model('account.change.lock.date').read(ids[0], ['fiscalyear_lock_date', 'tax_lock_date', 'sale_lock_date', 'purchase_lock_date', 'hard_lock_date']);
         const columns = ['fiscalyear_lock_date', 'tax_lock_date', 'sale_lock_date', 'purchase_lock_date', 'hard_lock_date'].filter((c) => env.registry.models['res.company'].fields[c]);
-        if (columns.length) await env.cr.query(`UPDATE res_company SET ${columns.map((c, i) => `${c} = $${i + 2}::date`).join(', ')} WHERE id = $1`, [env.companyId, ...columns.map((c) => (w[c] ? String(w[c]).slice(0, 10) : null))]);
+        if (columns.length) await env.model('res.company').write(env.companyId,Object.fromEntries(columns.map(c => [c,w[c] ? String(w[c]).slice(0,10) : false])));
         for (const c of columns) await setParameter(env.cr, `rodeo.lock.${c}`, w[c] ? String(w[c]).slice(0, 10) : '');
         return notify({ en: 'Lock dates saved.', ar: 'تم حفظ تواريخ القفل.' }, 'success', { next: closeDialog() });
       },

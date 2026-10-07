@@ -84,8 +84,15 @@ interface Ctx {
   registryLines: Map<string, I18n>;
 }
 
-function stateClause(alias: string, includeDraft?: boolean): string {
-  return includeDraft ? `${alias}.state <> 'cancel'` : `${alias}.state = 'posted'`;
+function stateClause(alias: string, ctx: Ctx, params: unknown[], lineAlias = alias==='bm' ? 'b' : alias==='xm' ? 'x' : 'l'): string {
+  const domain: Domain=[['state',ctx.options.includeDraft ? '!=' : '=',ctx.options.includeDraft ? 'cancel' : 'posted']];
+  if (ctx.options.journalIds?.length) domain.push(['journal_id','in',ctx.options.journalIds]);
+  const moves=ctx.env.model('account.move').readWhere(domain,alias,params.length);
+  params.push(...moves.params);
+  const lineDomain: Domain=ctx.options.partnerIds?.length ? [['partner_id','in',ctx.options.partnerIds]] : [];
+  const lines=ctx.env.model('account.move.line').readWhere(lineDomain,lineAlias,params.length);
+  params.push(...lines.params);
+  return `(${moves.text}) AND (${lines.text})`;
 }
 
 /** Fiscal year start for a date, from the company's fiscal year end. */
@@ -108,7 +115,7 @@ async function fiscalYearStart(env: Environment, date: string): Promise<string> 
 async function typeBalances(ctx: Ctx, types: string[], from: string | null, to: string, perAccount = false): Promise<Row[]> {
   const { env, options } = ctx;
   const params: unknown[] = [types, to];
-  let where = `a.account_type = ANY($1) AND coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', options.includeDraft)}`;
+  let where = `a.account_type = ANY($1) AND coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx, params)}`;
   if (from) { params.push(from); where += ` AND coalesce(l.date, m.date) >= $${params.length}::date`; }
   if (options.journalIds?.length) { params.push(options.journalIds); where += ` AND m.journal_id = ANY($${params.length})`; }
   if (options.partnerIds?.length) { params.push(options.partnerIds); where += ` AND l.partner_id = ANY($${params.length})`; }
@@ -280,7 +287,7 @@ async function cashFlow(ctx: Ctx): Promise<ReportLine[]> {
                  ELSE 'unclassified' END AS kind,
             coalesce(sum(l.debit), 0)::float8 AS cash_in, coalesce(sum(l.credit), 0)::float8 AS cash_out
      FROM account_move_line l JOIN account_move m ON m.id = l.move_id JOIN account_account a ON a.id = l.account_id
-     WHERE a.account_type = 'asset_cash' AND coalesce(l.date, m.date) BETWEEN $1::date AND $2::date AND ${stateClause('m', ctx.options.includeDraft)}
+     WHERE a.account_type = 'asset_cash' AND coalesce(l.date, m.date) BETWEEN $1::date AND $2::date AND ${stateClause('m', ctx, params)}
      GROUP BY 1`, params,
   );
   const get = (kind: string, key: 'cash_in' | 'cash_out') => num(flows.rows.find((r) => r.kind === kind)?.[key]);
@@ -322,7 +329,7 @@ async function trialBalance(ctx: Ctx): Promise<ReportLine[]> {
             coalesce(sum(CASE WHEN coalesce(l.date, m.date) >= $1::date THEN l.debit END), 0)::float8 AS debit,
             coalesce(sum(CASE WHEN coalesce(l.date, m.date) >= $1::date THEN l.credit END), 0)::float8 AS credit
      FROM account_move_line l JOIN account_move m ON m.id = l.move_id JOIN account_account a ON a.id = l.account_id
-     WHERE coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx.options.includeDraft)}${extra}
+     WHERE coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx, params)}${extra}
      GROUP BY a.id, a.code, a.name ORDER BY a.code`, params,
   );
   const lines: ReportLine[] = rows.rows.map((r) => {
@@ -343,7 +350,7 @@ async function ledger(ctx: Ctx, by: 'account' | 'partner' | 'journal'): Promise<
   const { dateTo } = ctx.options;
   const from = ctx.options.dateFrom ?? (by === 'account' ? ctx.fyStart : null);
   const params: unknown[] = [dateTo];
-  let where = `coalesce(l.date, m.date) <= $1::date AND ${stateClause('m', ctx.options.includeDraft)}`;
+  let where = `coalesce(l.date, m.date) <= $1::date AND ${stateClause('m', ctx, params)}`;
   if (from) { params.push(from); where += ` AND coalesce(l.date, m.date) >= $${params.length}::date`; }
   if (ctx.options.journalIds?.length) { params.push(ctx.options.journalIds); where += ` AND m.journal_id = ANY($${params.length})`; }
   if (ctx.options.partnerIds?.length) { params.push(ctx.options.partnerIds); where += ` AND l.partner_id = ANY($${params.length})`; }
@@ -370,7 +377,7 @@ async function ledger(ctx: Ctx, by: 'account' | 'partner' | 'journal'): Promise<
     };
     if (ctx.options.unfoldAll || ctx.options.unfold === id) {
       const itemParams: unknown[] = [dateTo];
-      let itemWhere = `coalesce(l.date, m.date) <= $1::date AND ${stateClause('m', ctx.options.includeDraft)}`;
+      let itemWhere = `coalesce(l.date, m.date) <= $1::date AND ${stateClause('m', ctx, itemParams)}`;
       if (from) { itemParams.push(from); itemWhere += ` AND coalesce(l.date, m.date) >= $${itemParams.length}::date`; }
       if (rid) { itemParams.push(rid); itemWhere += ` AND ${by === 'account' ? 'l.account_id' : by === 'partner' ? 'l.partner_id' : 'm.journal_id'} = $${itemParams.length}`; } else itemWhere += ` AND l.partner_id IS NULL`;
       if (by === 'partner') itemWhere += ` AND a.account_type IN ('asset_receivable', 'liability_payable')`;
@@ -407,9 +414,11 @@ async function aged(ctx: Ctx, kind: 'receivable' | 'payable'): Promise<ReportLin
   const sign = kind === 'receivable' ? 1 : -1;
   const rows = await ctx.env.cr.query<Row>(
     `SELECT p.id AS pid, coalesce(p.name, '') AS partner, l.id, coalesce(l.date, m.date) AS date, coalesce(l.date_maturity, coalesce(l.date, m.date)) AS due, m.name AS move_name, a.code AS account,
-            (${sign} * coalesce(l.amount_residual, coalesce(l.balance, coalesce(l.debit, 0) - coalesce(l.credit, 0))))::float8 AS residual
+            (${sign} * (coalesce(l.debit,0)-coalesce(l.credit,0)
+              -coalesce((SELECT sum(pr.amount) FROM account_partial_reconcile pr WHERE pr.debit_move_id=l.id AND pr.max_date<=$1::date),0)
+              +coalesce((SELECT sum(pr.amount) FROM account_partial_reconcile pr WHERE pr.credit_move_id=l.id AND pr.max_date<=$1::date),0)))::float8 AS residual
      FROM account_move_line l JOIN account_move m ON m.id = l.move_id JOIN account_account a ON a.id = l.account_id LEFT JOIN res_partner p ON p.id = l.partner_id
-     WHERE a.account_type = $2 AND coalesce(l.date, m.date) <= $1::date AND coalesce(l.reconciled, false) = false AND ${stateClause('m', ctx.options.includeDraft)}${extra}
+     WHERE a.account_type = $2 AND coalesce(l.date, m.date) <= $1::date AND ${stateClause('m', ctx, params)}${extra}
      ORDER BY p.name, coalesce(l.date, m.date)`, params,
   );
   const bucket = (due: string): number => {
@@ -431,7 +440,7 @@ async function aged(ctx: Ctx, kind: 'receivable' | 'payable'): Promise<ReportLin
     const id = `aged:${pid}`;
     const line: ReportLine = {
       id, name: ar(entry.name, entry.name), level: 1, unfoldable: true, values: ['', '', '', ...entry.values], model: 'res.partner', resId: pid || undefined,
-      domain: itemsDomain(ctx, [['partner_id', pid ? '=' : '=', pid || false], ['account_id.account_type', '=', kind === 'receivable' ? 'asset_receivable' : 'liability_payable'], ['reconciled', '=', false]], null, dateTo),
+      domain: itemsDomain(ctx, [['id','in',entry.items.map(item => Number(item.id))]], null, dateTo),
     };
     if (ctx.options.unfoldAll || ctx.options.unfold === id) {
       line.children = entry.items.map((it) => {
@@ -455,9 +464,9 @@ async function taxReport(ctx: Ctx): Promise<ReportLine[]> {
   const taxes = await ctx.env.cr.query<Row>(
     `SELECT t.id, t.name, t.type_tax_use, t.amount, t.amount_type,
             coalesce((SELECT sum(-coalesce(b.balance, coalesce(b.debit, 0) - coalesce(b.credit, 0))) FROM ${rel?.m2mTable ?? 'account_move_line_tax_ids_rel'} r JOIN account_move_line b ON b.id = r.${rel?.m2mColumn1 ?? 'account_move_line_id'} JOIN account_move bm ON bm.id = b.move_id
-                      WHERE r.${rel?.m2mColumn2 ?? 'account_tax_id'} = t.id AND coalesce(b.date, bm.date) BETWEEN $1::date AND $2::date AND ${stateClause('bm', ctx.options.includeDraft)}), 0)::float8 AS net,
+                      WHERE r.${rel?.m2mColumn2 ?? 'account_tax_id'} = t.id AND coalesce(b.date, bm.date) BETWEEN $1::date AND $2::date AND ${stateClause('bm', ctx, params)}), 0)::float8 AS net,
             coalesce((SELECT sum(-coalesce(x.balance, coalesce(x.debit, 0) - coalesce(x.credit, 0))) FROM account_move_line x JOIN account_move xm ON xm.id = x.move_id
-                      WHERE x.tax_line_id = t.id AND coalesce(x.date, xm.date) BETWEEN $1::date AND $2::date AND ${stateClause('xm', ctx.options.includeDraft)}), 0)::float8 AS tax
+                      WHERE x.tax_line_id = t.id AND coalesce(x.date, xm.date) BETWEEN $1::date AND $2::date AND ${stateClause('xm', ctx, params)}), 0)::float8 AS tax
      FROM account_tax t WHERE coalesce(t.active, true) ORDER BY t.type_tax_use, t.sequence, t.id`, params,
   );
   const lines: ReportLine[] = [];
@@ -485,7 +494,7 @@ async function deferred(ctx: Ctx, kind: 'revenue' | 'expense'): Promise<ReportLi
             abs(coalesce(l.balance, coalesce(l.debit, 0) - coalesce(l.credit, 0)))::float8 AS total
      FROM account_move_line l JOIN account_move m ON m.id = l.move_id JOIN account_account a ON a.id = l.account_id
      WHERE l.deferred_start_date IS NOT NULL AND l.deferred_end_date IS NOT NULL AND a.account_type IN (${kind === 'revenue' ? "'income', 'income_other'" : "'expense', 'expense_direct_cost', 'expense_other'"})
-       AND ${stateClause('m', ctx.options.includeDraft)} AND l.deferred_start_date <= $2::date AND l.deferred_end_date >= $1::date
+       AND ${stateClause('m', ctx, params)} AND l.deferred_start_date <= $2::date AND l.deferred_end_date >= $1::date
      ORDER BY a.code, l.deferred_start_date`, params,
   );
   const lines: ReportLine[] = rows.rows.map((r) => {
@@ -527,17 +536,22 @@ async function depreciation(ctx: Ctx): Promise<ReportLine[]> {
 
 async function bankReconciliation(ctx: Ctx): Promise<ReportLine[]> {
   const { dateTo } = ctx.options;
-  const journals = await ctx.env.cr.query<Row>(`SELECT j.id, j.name, j.default_account_id FROM account_journal j WHERE j.type = 'bank' AND coalesce(j.active, true) ORDER BY j.sequence, j.id`, []);
+  const journalDomain: Domain=[['type','=','bank'],['active','=',true]];
+  if (ctx.options.journalIds?.length) journalDomain.push(['id','in',ctx.options.journalIds]);
+  const journalWhere=ctx.env.model('account.journal').readWhere(journalDomain,'j');
+  const journals = await ctx.env.cr.query<Row>(`SELECT j.id, j.name, j.default_account_id FROM account_journal j WHERE ${journalWhere.text} ORDER BY j.sequence, j.id`, journalWhere.params);
   const lines: ReportLine[] = [];
   for (const j of journals.rows) {
+    const params: unknown[]=[j.default_account_id,dateTo];
     const gl = await ctx.env.cr.query<Row>(
       `SELECT coalesce(sum(coalesce(l.balance, coalesce(l.debit, 0) - coalesce(l.credit, 0))), 0)::float8 AS balance FROM account_move_line l JOIN account_move m ON m.id = l.move_id
-       WHERE l.account_id = $1 AND coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx.options.includeDraft)}`, [j.default_account_id, dateTo],
+       WHERE l.account_id = $1 AND coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx, params)}`, params,
     );
+    const outstandingParams: unknown[]=[j.id,dateTo];
     const outstanding = await ctx.env.cr.query<Row>(
       `SELECT coalesce(sum(CASE WHEN l.debit > 0 THEN l.debit END), 0)::float8 AS receipts, coalesce(sum(CASE WHEN l.credit > 0 THEN l.credit END), 0)::float8 AS payments
        FROM account_move_line l JOIN account_move m ON m.id = l.move_id JOIN account_account a ON a.id = l.account_id
-       WHERE m.journal_id = $1 AND a.account_type = 'asset_current' AND coalesce(l.reconciled, false) = false AND coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx.options.includeDraft)}`, [j.id, dateTo],
+       WHERE m.journal_id = $1 AND a.account_type = 'asset_current' AND coalesce(l.reconciled, false) = false AND coalesce(l.date, m.date) <= $2::date AND ${stateClause('m', ctx, outstandingParams)}`, outstandingParams,
     );
     const balance = num(gl.rows[0]?.balance); const receipts = num(outstanding.rows[0]?.receipts); const payments = num(outstanding.rows[0]?.payments);
     const jid = `bank:${j.id}`;
@@ -556,11 +570,12 @@ async function bankReconciliation(ctx: Ctx): Promise<ReportLine[]> {
 async function fiscalReport(ctx: Ctx): Promise<ReportLine[]> {
   const { dateTo } = ctx.options;
   const from = ctx.options.dateFrom ?? `${Number(dateTo.slice(0, 4)) - 1}-01-01`;
+  const params: unknown[]=[from,dateTo];
   const rows = await ctx.env.cr.query<Row>(
-    `SELECT c.id, c.name, coalesce(sum(-coalesce(l.balance, coalesce(l.debit, 0) - coalesce(l.credit, 0))), 0)::float8 AS base
+    `SELECT c.id, c.name, coalesce(sum(CASE WHEN m.id IS NOT NULL THEN -coalesce(l.balance, coalesce(l.debit, 0) - coalesce(l.credit, 0)) ELSE 0 END), 0)::float8 AS base
      FROM account_fiscal_category c LEFT JOIN account_account a ON a.fiscal_category_id = c.id
-     LEFT JOIN account_move_line l ON l.account_id = a.id LEFT JOIN account_move m ON m.id = l.move_id AND ${stateClause('m', ctx.options.includeDraft)} AND coalesce(l.date, m.date) BETWEEN $1::date AND $2::date
-     GROUP BY c.id, c.name ORDER BY c.sequence, c.id`, [from, dateTo],
+     LEFT JOIN account_move_line l ON l.account_id = a.id LEFT JOIN account_move m ON m.id = l.move_id AND ${stateClause('m', ctx, params)} AND coalesce(l.date, m.date) BETWEEN $1::date AND $2::date
+     GROUP BY c.id, c.name ORDER BY c.sequence, c.id`, params,
   ).catch(() => ({ rows: [] as Row[] }));
   return rows.rows.map((r) => ({ id: `fc:${r.id}`, name: ar(String(r.name), String(r.name)), level: 1, values: [num(r.base), '', num(r.base)], model: 'account.fiscal.category', resId: Number(r.id) }));
 }

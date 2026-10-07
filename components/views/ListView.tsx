@@ -95,13 +95,13 @@ export function ListView(props: Props) {
       if (groupBy.length) {
         const rows = await rpc<ReadGroupRow[]>('readGroup', model, {
           domain, fields: sumColumns.map((c) => `${c.name}:${c.avg ? 'avg' : 'sum'}`), groupby: groupBy, options: { lazy: true, orderby: order },
-        });
+        }, { context });
         if (cancelled) return;
         setGroups(rows);
         setRecords(null);
         onTotal(rows.reduce((sum, row) => sum + row.__count, 0));
       } else {
-        const result = await rpc<{ length: number; records: Rec[] }>('webSearchRead', model, { domain, specification: spec, offset, limit, order });
+        const result = await rpc<{ length: number; records: Rec[] }>('webSearchRead', model, { domain, specification: spec, offset, limit, order }, { context });
         if (cancelled) return;
         setRecords(result.records);
         setGroups(null);
@@ -110,18 +110,18 @@ export function ListView(props: Props) {
         setTotal(result.length);
         onTotal(result.length);
         if (sumColumns.length && result.length) {
-          const agg = await rpc<ReadGroupRow[]>('readGroup', model, { domain, fields: sumColumns.map((c) => `${c.name}:${c.avg ? 'avg' : 'sum'}`), groupby: [] });
+          const agg = await rpc<ReadGroupRow[]>('readGroup', model, { domain, fields: sumColumns.map((c) => `${c.name}:${c.avg ? 'avg' : 'sum'}`), groupby: [] }, { context });
           if (!cancelled) setTotals(agg[0] ?? null);
         }
       }
       setLoading(false);
     })().catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [model, domain, groupBy, offset, limit, order, spec]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [model, domain, groupBy, offset, limit, order, spec, context]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function expandGroup(row: ReadGroupRow, key: string) {
     if (expanded[key]) { setExpanded((map) => { const next = { ...map }; delete next[key]; return next; }); return; }
-    const result = await rpc<{ length: number; records: Rec[] }>('webSearchRead', model, { domain: row.__domain, specification: spec, limit: 80, order });
+    const result = await rpc<{ length: number; records: Rec[] }>('webSearchRead', model, { domain: row.__domain, specification: spec, limit: 80, order }, { context });
     setExpanded((map) => ({ ...map, [key]: result.records }));
   }
 

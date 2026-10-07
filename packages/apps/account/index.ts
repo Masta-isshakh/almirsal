@@ -6,7 +6,8 @@ import { UserError, ValidationError } from '../../engine/orm/errors.js';
 import { nextByCode } from '../../engine/orm/sequence.js';
 import { floatRound } from '../../engine/format/index.js';
 import { m2oId } from '../base/index.js';
-import { paidAmount, registerPayments } from './payment.js';
+import { applyPayment, unapplyPayment, paidAmount, registerPayments } from './payment.js';
+import { postingDate } from './integrity.js';
 
 /**
  * D-3 — Accounting core: journal entries and invoices (`account.move`),
@@ -39,10 +40,7 @@ async function defaultJournal(env: Environment, moveType: string): Promise<numbe
 
 /** First account of a type in the company chart (receivable, payable, tax…). */
 async function accountOfType(env: Environment, accountType: string): Promise<number | false> {
-  const row = await env.cr.query<{ id: number }>(
-    `SELECT id FROM account_account WHERE account_type = $1 AND (active IS NULL OR active = TRUE) ORDER BY code LIMIT 1`, [accountType],
-  );
-  return row.rows[0]?.id ?? false;
+  return (await env.model('account.account').search([['account_type','=',accountType]],{ order: 'code',limit: 1 }))[0] || false;
 }
 
 /**
@@ -126,7 +124,9 @@ async function rebuildBalancingLines(env: Environment, moveId: number): Promise<
       debit: sign > 0 ? 0 : tax, credit: sign > 0 ? tax : 0, balance: -sign * tax, amount_currency: -sign * tax, sequence: 9000,
     });
   }
-  const counterpart = await accountOfType(env, SALE_TYPES.has(moveType) ? 'asset_receivable' : 'liability_payable');
+  const property = SALE_TYPES.has(moveType) ? 'property_account_receivable_id' : 'property_account_payable_id';
+  const partner = m2oId(move.partner_id) ? (await env.model('res.partner').read(Number(m2oId(move.partner_id)),[property]))[0] : undefined;
+  const counterpart = m2oId(partner?.[property]) || await accountOfType(env, SALE_TYPES.has(moveType) ? 'asset_receivable' : 'liability_payable');
   await lines.create({
     ...base, display_type: 'payment_term', name: String(move.invoice_date_due ?? move.invoice_date ?? ''), account_id: counterpart,
     debit: sign > 0 ? total : 0, credit: sign > 0 ? 0 : total, balance: sign * total, amount_currency: sign * total,
@@ -148,7 +148,8 @@ export function registerAccount(registry: Registry): void {
             { kind: 'group', children: [field('journal_id', { options: "{'no_create': True}" }), field('payment_method_line_id', { options: "{'no_create': True}" }), field('partner_id', { invisible: 'not partner_id', options: "{'no_create': True}" })] },
             { kind: 'group', children: [field('amount'), field('currency_id', { options: "{'no_create': True}", invisible: 'not currency_id' }), field('payment_date'), field('communication')] },
           ] },
-          { kind: 'group', invisible: 'not payment_difference', children: [field('source_amount'), field('payment_difference'), field('payment_difference_handling', { widget: 'radio' })] },
+          { kind: 'group', invisible: 'not payment_difference', children: [field('source_amount'), field('payment_difference'), field('payment_difference_handling', { widget: 'radio' }), field('writeoff_account_id', { invisible: "payment_difference_handling != 'reconcile'", required: "payment_difference_handling == 'reconcile'" }), field('writeoff_label', { invisible: "payment_difference_handling != 'reconcile'" })] },
+          { kind: 'group', children: [field('group_payment')] },
           { kind: 'element', tag: 'footer', attrs: {}, children: [
             { kind: 'button', type: 'object', name: 'action_create_payments', string: { en: 'Create Payment', ar: 'إنشاء الدفعة' }, class: 'btn-primary', attrs: {} },
             { kind: 'button', type: 'object', special: 'cancel', string: { en: 'Discard', ar: 'تجاهل' }, class: 'btn-secondary', attrs: {} },
@@ -298,7 +299,9 @@ export function registerAccount(registry: Registry): void {
       action_post: async (env, ids) => {
         const moves = env.model('account.move');
         for (const id of ids) {
-          const [move] = await moves.read(id, ['state', 'move_type', 'journal_id', 'invoice_date', 'date', 'name', 'invoice_line_ids', 'partner_id', 'invoice_date_due']);
+          await moves.read(id,['id']);
+          await env.cr.query(`SELECT id FROM account_move WHERE id=$1 FOR UPDATE`,[id]);
+          const [move] = await moves.read(id, ['state','move_type','company_id','journal_id','invoice_date','date','name','invoice_line_ids','partner_id','invoice_date_due']);
           if (move.state !== 'draft') throw new UserError({ en: 'Only draft entries can be posted.', ar: 'يمكن ترحيل القيود في حالة المسودة فقط.' });
           const moveType = String(move.move_type);
           const isInvoice = moveType !== 'entry';
@@ -320,7 +323,8 @@ export function registerAccount(registry: Registry): void {
             }
           }
           const invoiceDate = isInvoice ? String(move.invoice_date || today()) : String(move.date || today());
-          const vals: Values = { state: 'posted', posted_before: true, date: invoiceDate };
+          const accountingDate = await postingDate(env,move,String(move.date || invoiceDate));
+          const vals: Values = { state: 'posted', posted_before: true, date: accountingDate };
           if (isInvoice) {
             vals.invoice_date = invoiceDate;
             if (!move.invoice_date_due) vals.invoice_date_due = invoiceDate;
@@ -328,11 +332,13 @@ export function registerAccount(registry: Registry): void {
           if (!move.name || move.name === '/') {
             const journalId = m2oId(move.journal_id);
             if (!journalId) throw new UserError({ en: 'Please set a journal before posting.', ar: 'يرجى تحديد دفتر اليومية قبل الترحيل.' });
+            await env.cr.query(`SELECT id FROM account_journal WHERE id=$1 FOR UPDATE`,[journalId]);
             const code = await journalSequence(env, journalId, REFUND_TYPES.has(moveType));
-            vals.name = await nextByCode(env, code, { date: new Date(`${invoiceDate}T00:00:00Z`) });
+            vals.name = await nextByCode(env, code, { date: new Date(`${accountingDate}T00:00:00Z`) });
           }
-          await moves.write(id, vals);
+          await moves.write(id,{ ...vals,state: 'draft',posted_before: false });
           await rebuildBalancingLines(env, id);
+          await moves.write(id, { state: 'posted',posted_before: true });
           // Odoo ranks the partner on posting: a sale document makes it (and its
           // company) a customer, a purchase one a vendor — which is what the
           // Customers and Vendors menus filter on.
@@ -372,22 +378,12 @@ export function registerAccount(registry: Registry): void {
         const paymentId = Number((context as Values).payment_id ?? 0);
         const moveId = ids[0];
         if (!paymentId || !moveId) throw new UserError({ en: 'Select a payment to add.', ar: 'اختر دفعة لإضافتها.' });
-        const [move] = await env.model('account.move').read(moveId, ['state', 'partner_id', 'amount_residual', 'move_type']);
-        if (move.state !== 'posted') throw new UserError({ en: 'Only a posted invoice can be paid.', ar: 'يمكن دفع الفاتورة المرحّلة فقط.' });
-        if (Number(move.amount_residual) <= 0) throw new UserError({ en: 'This invoice is already paid.', ar: 'هذه الفاتورة مدفوعة بالفعل.' });
-        const [payment] = await env.model('account.payment').read(paymentId, ['partner_id', 'state', 'reconciled_invoice_ids']);
-        if (m2oId(payment.partner_id) !== m2oId(move.partner_id)) throw new UserError({ en: 'The payment belongs to another partner.', ar: 'الدفعة تتعلق بشريك آخر.' });
-        if (!['paid', 'in_process'].includes(String(payment.state))) throw new UserError({ en: 'Only a confirmed payment can be applied.', ar: 'يمكن تطبيق الدفعات المؤكدة فقط.' });
-        await env.model('account.payment').write(paymentId, { reconciled_invoice_ids: [[4, moveId]] });
-        // The residual is computed from the applied payments, and the write
-        // above was on the payment, so the invoice has to be recomputed.
-        await env.model('account.move').recompute([moveId], ['line_ids'], false);
+        await applyPayment(env, paymentId, moveId);
       },
       js_remove_outstanding_partial: async (env, ids, context) => {
         const paymentId = Number((context as Values).payment_id ?? 0);
         if (!paymentId || !ids[0]) throw new UserError({ en: 'Select a payment to remove.', ar: 'اختر دفعة لإزالتها.' });
-        await env.model('account.payment').write(paymentId, { reconciled_invoice_ids: [[3, ids[0]]] });
-        await env.model('account.move').recompute([ids[0]], ['line_ids'], false);
+        await unapplyPayment(env, paymentId, ids[0]);
       },
       /** "Pay": the Register Payment wizard (D-3), see payment.ts. */
       action_register_payment: async (_env, ids) => ({
@@ -403,7 +399,9 @@ export function registerAccount(registry: Registry): void {
       const out = { ...vals };
       const moveId = m2oId(out.move_id);
       if (moveId) {
-        const [move] = await env.sudo().model('account.move').read(moveId, ['partner_id', 'currency_id', 'date', 'journal_id', 'move_type']);
+        const [move] = await env.sudo().model('account.move').read(moveId, ['partner_id','company_id','currency_id','date','journal_id','move_type']);
+        out.company_id = m2oId(move.company_id);
+        out.journal_id = m2oId(move.journal_id);
         if (!out.partner_id) out.partner_id = m2oId(move.partner_id);
         if (!out.currency_id) out.currency_id = m2oId(move.currency_id);
         if (!out.date) out.date = move.date;

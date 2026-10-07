@@ -8,6 +8,7 @@ import { useUi } from '@/components/webclient/ui';
 import { ActionDialog } from '@/components/webclient/ActionDialog';
 import { Composer } from '@/components/webclient/Composer';
 import { ClientAction } from '@/components/clientactions';
+import { actionHref } from './action-query';
 
 /**
  * The action manager's `doAction` (A-4 §1, C-4): runs whatever a menu,
@@ -54,12 +55,6 @@ interface ActionRunner {
 }
 
 const ActionContext = createContext<ActionRunner | null>(null);
-
-function idsQuery(domain: unknown): string {
-  if (!Array.isArray(domain)) return '';
-  const leaf = domain.find((item) => Array.isArray(item) && item[0] === 'id' && item[1] === 'in');
-  return leaf && Array.isArray(leaf[2]) ? `?ids=${(leaf[2] as number[]).join(',')}` : '';
-}
 
 export function ActionRunnerProvider({ children }: { children: ReactNode }) {
   const { navigate } = useNavigation();
@@ -131,7 +126,7 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
       const slug = found?.slug ?? `m/${model}`;
       const resId = result.res_id ? Number(result.res_id) : null;
       options.onClose?.(true);
-      navigate(resId ? `/odoo/${slug}/${resId}` : `/odoo/${slug}${idsQuery(result.domain)}`);
+      navigate(actionHref(slug, resId, result.domain, context));
       return;
     }
     if (type === 'ir.actions.server') {
@@ -157,7 +152,7 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
           return;
         }
         opts.onClose?.(true);
-        navigate(`/odoo/${description.slug}`);
+        navigate(actionHref(description.slug, null, undefined, context));
         return;
       }
       if (action.type === 'server') {
@@ -168,7 +163,7 @@ export function ActionRunnerProvider({ children }: { children: ReactNode }) {
       if (action.target === 'new') { openDialog(description, context, opts); return; }
       const resId = override?.res_id ? Number(override.res_id) : null;
       opts.onClose?.(true);
-      navigate(resId ? `/odoo/${description.slug}/${resId}` : `/odoo/${description.slug}${idsQuery(override?.domain)}`);
+      navigate(actionHref(description.slug, resId, override?.domain, context));
     }
 
     function openDialog(description: ActionDescription, context: Record<string, unknown>, opts: DoActionOptions): void {

@@ -28,6 +28,30 @@ async function stageFold(env: Environment, model: string, stageId: number | fals
   return Boolean(row.rows[0]?.fold);
 }
 
+/** Follow actual sales links, including work sold on a task's order line. */
+async function projectSaleOrders(env: Environment, ids: number[]): Promise<number[]> {
+  const projects = await env.model('project.project').read(ids, ['sale_order_id', 'reinvoiced_sale_order_id', 'sale_line_id']);
+  const tasks = await env.model('project.task').searchRead([['project_id', 'in', ids]], ['sale_order_id', 'sale_line_id'], { activeTest: false });
+  const orderIds = new Set<number>();
+  const lineIds = new Set<number>();
+  for (const record of [...projects, ...tasks]) {
+    for (const field of ['sale_order_id', 'reinvoiced_sale_order_id']) {
+      const id = m2o(record[field]);
+      if (id) orderIds.add(id);
+    }
+    const lineId = m2o(record.sale_line_id);
+    if (lineId) lineIds.add(lineId);
+  }
+  if (lineIds.size) {
+    for (const line of await env.model('sale.order.line').read([...lineIds], ['order_id'])) {
+      const orderId = m2o(line.order_id);
+      if (orderId) orderIds.add(orderId);
+    }
+  }
+  for (const id of await env.model('sale.order').search([['project_id', 'in', ids]], { activeTest: false })) orderIds.add(id);
+  return [...orderIds];
+}
+
 /* ---------- helpdesk SLA ---------- */
 
 async function applySla(env: Environment, ticketId: number): Promise<void> {
@@ -79,15 +103,15 @@ export function registerProject(): void {
     },
     methods: {
       action_view_tasks: async (_env, ids) => windowAction('project.task', { en: 'Tasks', ar: 'المهام' }, { domain: [['project_id', 'in', ids]], viewMode: 'kanban,list,form,calendar,pivot,graph,activity', context: { default_project_id: ids[0] } }),
-      action_view_sos: async (env, ids) => { const [p] = await env.model('project.project').read(ids[0], ['sale_order_id', 'reinvoiced_sale_order_id']); const so = [m2o(p.sale_order_id), m2o(p.reinvoiced_sale_order_id)].filter(Boolean) as number[]; return windowAction('sale.order', { en: 'Sales Orders', ar: 'أوامر البيع' }, { domain: ['|', ['id', 'in', so], ['order_line.task_id.project_id', 'in', ids]] }); },
-      action_view_sols: async (_env, ids) => windowAction('sale.order.line', { en: 'Sales Order Items', ar: 'بنود أوامر البيع' }, { domain: [['order_id.project_id', 'in', ids]], viewMode: 'list' }),
+      action_view_sos: async (env, ids) => windowAction('sale.order', { en: 'Sales Orders', ar: 'أوامر البيع' }, { domain: [['id', 'in', await projectSaleOrders(env, ids)]] }),
+      action_view_sols: async (env, ids) => windowAction('sale.order.line', { en: 'Sales Order Items', ar: 'بنود أوامر البيع' }, { domain: [['order_id', 'in', await projectSaleOrders(env, ids)]], viewMode: 'list' }),
       action_real_margin: async (_env, ids) => windowAction('account.analytic.line', { en: 'Margins', ar: 'الهوامش' }, { domain: [['account_id.name', 'in', []]], viewMode: 'pivot,graph,list', context: { search_default_project_id: ids[0] } }),
       project_update_all_action: async (_env, ids) => windowAction('project.update', { en: 'Updates', ar: 'التحديثات' }, { domain: [['project_id', 'in', ids]], viewMode: 'kanban,list,form', context: { default_project_id: ids[0] } }),
-      action_open_project_invoices: async (_env, ids) => windowAction('account.move', { en: 'Invoices', ar: 'الفواتير' }, { domain: [['move_type', 'in', ['out_invoice', 'out_refund']], ['invoice_origin', 'in', []]], context: { default_move_type: 'out_invoice', search_default_project: ids[0] } }),
+      action_open_project_invoices: async (env, ids) => windowAction('account.move', { en: 'Invoices', ar: 'الفواتير' }, { domain: [['move_type', 'in', ['out_invoice', 'out_refund']], ['invoice_line_ids.sale_line_ids.order_id', 'in', await projectSaleOrders(env, ids)]], context: { default_move_type: 'out_invoice' } }),
       action_open_project_vendor_bills: async (_env, ids) => windowAction('account.move', { en: 'Vendor Bills', ar: 'فواتير الموردين' }, { domain: [['move_type', 'in', ['in_invoice', 'in_refund']], ['purchase_id.project_id', 'in', ids]], context: { default_move_type: 'in_invoice' } }),
       action_open_project_purchase_orders: async (_env, ids) => windowAction('purchase.order', { en: 'Purchase Orders', ar: 'أوامر الشراء' }, { domain: [['project_id', 'in', ids]] }),
       action_open_project_assets: async (_env, ids) => windowAction('account.asset', { en: 'Assets', ar: 'الأصول' }, { domain: [['id', 'in', []]], context: { search_default_project: ids[0] } }),
-      action_open_documents: async (_env, ids) => windowAction('ir.attachment', { en: 'Documents', ar: 'المستندات' }, { domain: ['|', '&', ['res_model', '=', 'project.project'], ['res_id', 'in', ids], '&', ['res_model', '=', 'project.task'], ['res_id', 'in', []]], viewMode: 'kanban,list' }),
+      action_open_documents: async (env, ids) => windowAction('ir.attachment', { en: 'Documents', ar: 'المستندات' }, { domain: ['|', '&', ['res_model', '=', 'project.project'], ['res_id', 'in', ids], '&', ['res_model', '=', 'project.task'], ['res_id', 'in', await env.model('project.task').search([['project_id', 'in', ids]], { activeTest: false })]], viewMode: 'kanban,list' }),
       action_project_task_burndown_chart_report: async (_env, ids) => windowAction('project.task', { en: 'Burndown Chart', ar: 'مخطط الإنجاز' }, { domain: [['project_id', 'in', ids]], viewMode: 'graph,pivot', context: { graph_groupbys: ['date_deadline:week', 'stage_id'] } }),
       action_view_all_rating: async (_env, ids) => windowAction('rating.rating', { en: 'Ratings', ar: 'التقييمات' }, { domain: [['parent_res_model', '=', 'project.project'], ['parent_res_id', 'in', ids]], viewMode: 'kanban,list,graph' }),
       action_customer_preview: async (_env, ids) => notify({ en: `The customer portal for project ${ids[0]} is not published yet.`, ar: `لم يتم نشر بوابة العملاء للمشروع ${ids[0]} بعد.` }, 'info'),
@@ -140,7 +164,13 @@ export function registerProject(): void {
       action_convert_to_task: async (env, ids) => windowAction('project.task', { en: 'Convert to Task', ar: 'تحويل إلى مهمة' }, { resId: ids[0], viewMode: 'form', context: { form_view_ref: 'project.view_task_form2' } }),
       action_open_parent_task: async (env, ids) => { const [t] = await env.model('project.task').read(ids[0], ['parent_id']); const pid = m2o(t.parent_id); return pid ? windowAction('project.task', { en: 'Parent Task', ar: 'المهمة الأصلية' }, { resId: pid }) : notify({ en: 'This task has no parent task.', ar: 'ليس لهذه المهمة مهمة أصلية.' }, 'info'); },
       action_open_subtasks: async (_env, ids) => windowAction('project.task', { en: 'Sub-tasks', ar: 'المهام الفرعية' }, { domain: [['parent_id', 'in', ids]], viewMode: 'kanban,list,form', context: { default_parent_id: ids[0] } }),
-      action_view_so: async (env, ids) => { const [t] = await env.model('project.task').read(ids[0], ['sale_order_id', 'sale_line_id']); const so = m2o(t.sale_order_id); return so ? windowAction('sale.order', { en: 'Sales Order', ar: 'أمر البيع' }, { resId: so }) : notify({ en: 'No sales order is linked to this task.', ar: 'لا يوجد أمر بيع مرتبط بهذه المهمة.' }, 'info'); },
+      action_view_so: async (env, ids) => {
+        const [task] = await env.model('project.task').read(ids[0], ['sale_order_id', 'sale_line_id']);
+        let orderId = m2o(task.sale_order_id);
+        const lineId = m2o(task.sale_line_id);
+        if (!orderId && lineId) orderId = m2o((await env.model('sale.order.line').read(lineId, ['order_id']))[0]?.order_id);
+        return orderId ? windowAction('sale.order', { en: 'Sales Order', ar: 'أمر البيع' }, { resId: orderId }) : notify({ en: 'No sales order is linked to this task.', ar: 'لا يوجد أمر بيع مرتبط بهذه المهمة.' }, 'info');
+      },
       action_open_ratings: async (_env, ids) => windowAction('rating.rating', { en: 'Ratings', ar: 'التقييمات' }, { domain: [['res_model', '=', 'project.task'], ['res_id', 'in', ids]], viewMode: 'kanban,list' }),
       action_open_documents: async (_env, ids) => windowAction('ir.attachment', { en: 'Documents', ar: 'المستندات' }, { domain: [['res_model', '=', 'project.task'], ['res_id', 'in', ids]], viewMode: 'kanban,list' }),
       action_assign_to_me: async (env, ids) => { for (const id of ids) await env.model('project.task').write(id, { user_ids: [[4, env.uid]] }); },
